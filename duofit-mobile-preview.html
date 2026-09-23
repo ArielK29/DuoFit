@@ -1,0 +1,487 @@
+<title>DuoFit Mobile Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --ink: #f5f5f5;
+    --mute: #8a8a8a;
+    --magenta: #FF00A8;
+    --cyan: #00E5FF;
+    --card: #101010;
+    --border: #26262b;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    direction: rtl;
+  }
+  .page {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding-block: 48px;
+    padding-inline: 16px;
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .page-header h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    margin: 0 0 12px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .page-header p {
+    color: var(--mute);
+    font-size: 14px;
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .phones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    justify-items: center;
+  }
+  .stage svg, .app-header svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .stage {
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .phone-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .phone-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+  .phone-label strong {
+    font-family: 'Anton', sans-serif;
+    font-size: 20px;
+    color: var(--ink);
+    display: block;
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  /* Actual phone frame */
+  .phone {
+    width: min(320px, 100%);
+    height: 680px;
+    border-radius: 40px;
+    padding: 10px;
+    background: #18181b;
+    box-shadow:
+      inset 0 0 0 2px #2a2a2e,
+      0 30px 60px -20px rgba(0,0,0,0.7);
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 24px;
+    background: #0a0a0c;
+    border-radius: 14px;
+    z-index: 10;
+  }
+  .screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: #050505;
+  }
+  .status-bar {
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+    font-size: 12px;
+    color: #f5f5f5;
+    flex-shrink: 0;
+  }
+  .status-bar .icons {
+    display: flex;
+    gap: 4px;
+  }
+  .status-bar .icons span {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    gap: 32px;
+  }
+  .stage-cta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--mute);
+    text-transform: uppercase;
+  }
+  .stage-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-align: center;
+    line-height: 1.1;
+  }
+  .stage-divider {
+    height: 1px;
+    background: var(--border);
+    width: 100%;
+    margin: 12px 0;
+  }
+  .stage-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--mute);
+    letter-spacing: 0.1em;
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .stage svg { display: block; }
+
+  /* Small helper for header showing logo in the app */
+  .app-header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .app-header-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .app-header-actions span {
+    width: 32px;
+    height: 32px;
+    background: #101010;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+  }
+
+  .app-icon-preview {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .app-icon-preview .icon-frame {
+    width: 68px;
+    height: 68px;
+    border-radius: 16px;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .app-icon-preview .icon-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: #fff;
+  }
+</style>
+
+<div class="page">
+  <div class="page-header">
+    <span class="eyebrow">// DUOFIT · MOBILE PREVIEW · 375PX</span>
+    <h1>הלוגו על מובייל</h1>
+    <p>4 הקונספטים בתוך מסגרות טלפון בגודל אמיתי. גלול למטה כדי לראות איך זה נראה כ-App Icon על מסך הבית של הטלפון.</p>
+  </div>
+
+  <div class="phones">
+
+    <!-- CONCEPT 1 -->
+    <div class="phone-column">
+      <div class="phone-label">
+        קונספט 01
+        <strong>DUOMARK</strong>
+      </div>
+      <div class="phone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="icons"><span></span><span></span><span></span></div>
+          </div>
+          <div class="app-header">
+            <svg viewBox="0 0 220 60" width="130" height="36">
+              <path d="M4 4 L28 4 L38 14 L38 34 L28 44 L4 44 Z" fill="#FF00A8"/>
+              <rect x="12" y="10" width="20" height="28" fill="#050505"/>
+              <path d="M64 4 L40 4 L30 14 L30 34 L40 44 L64 44 Z" fill="#00E5FF" transform="translate(0,20)"/>
+              <rect x="36" y="30" width="20" height="28" fill="#050505"/>
+              <text x="80" y="42" font-family="Anton" font-size="34" fill="#f5f5f5" letter-spacing="0.5">DUOFIT</text>
+            </svg>
+            <div class="app-header-actions">
+              <span>≡</span>
+            </div>
+          </div>
+          <div class="stage">
+            <div class="stage-caption">HERO SIZE</div>
+            <svg viewBox="0 0 220 100" width="240" height="110">
+              <path d="M6 6 L44 6 L60 22 L60 60 L44 76 L6 76 Z" fill="#FF00A8"/>
+              <rect x="20" y="18" width="32" height="46" fill="#050505"/>
+              <path d="M108 6 L70 6 L54 22 L54 60 L70 76 L108 76 Z" fill="#00E5FF" transform="translate(0,20)"/>
+              <rect x="62" y="38" width="32" height="46" fill="#050505"/>
+              <text x="126" y="72" font-family="Anton" font-size="52" fill="#f5f5f5" letter-spacing="0.5">DUOFIT</text>
+            </svg>
+            <div class="stage-divider"></div>
+            <div class="stage-caption">ICON ONLY</div>
+            <svg viewBox="0 0 100 100" width="72" height="72">
+              <path d="M8 8 L44 8 L60 24 L60 52 L44 68 L8 68 Z" fill="#FF00A8"/>
+              <rect x="20" y="18" width="30" height="40" fill="#050505"/>
+              <path d="M92 8 L56 8 L40 24 L40 52 L56 68 L92 68 Z" fill="#00E5FF" transform="translate(0,32)"/>
+              <rect x="50" y="50" width="30" height="40" fill="#050505"/>
+            </svg>
+          </div>
+          <div class="app-icon-preview">
+            <div class="icon-frame">
+              <svg viewBox="0 0 100 100" width="60" height="60">
+                <path d="M8 8 L44 8 L60 24 L60 52 L44 68 L8 68 Z" fill="#FF00A8"/>
+                <rect x="20" y="18" width="30" height="40" fill="#000"/>
+                <path d="M92 8 L56 8 L40 24 L40 52 L56 68 L92 68 Z" fill="#00E5FF" transform="translate(0,32)"/>
+                <rect x="50" y="50" width="30" height="40" fill="#000"/>
+              </svg>
+            </div>
+            <div class="icon-label">DuoFit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONCEPT 2 -->
+    <div class="phone-column">
+      <div class="phone-label">
+        קונספט 02
+        <strong>THE BAR</strong>
+      </div>
+      <div class="phone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="icons"><span></span><span></span><span></span></div>
+          </div>
+          <div class="app-header">
+            <svg viewBox="0 0 240 50" width="140" height="30">
+              <rect x="2" y="15" width="14" height="20" fill="#FF00A8"/>
+              <rect x="16" y="21" width="5" height="8" fill="#FF00A8"/>
+              <rect x="21" y="23" width="22" height="4" fill="#f5f5f5"/>
+              <rect x="43" y="21" width="5" height="8" fill="#00E5FF"/>
+              <rect x="48" y="15" width="14" height="20" fill="#00E5FF"/>
+              <text x="72" y="36" font-family="Anton" font-size="30" fill="#f5f5f5" letter-spacing="0.5">DUOFIT</text>
+            </svg>
+            <div class="app-header-actions">
+              <span>≡</span>
+            </div>
+          </div>
+          <div class="stage">
+            <div class="stage-caption">HERO SIZE</div>
+            <svg viewBox="0 0 260 90" width="240" height="80">
+              <rect x="4" y="16" width="24" height="60" fill="#FF00A8"/>
+              <rect x="28" y="26" width="8" height="40" fill="#FF00A8"/>
+              <rect x="36" y="38" width="72" height="12" fill="#f5f5f5"/>
+              <rect x="108" y="26" width="8" height="40" fill="#00E5FF"/>
+              <rect x="116" y="16" width="24" height="60" fill="#00E5FF"/>
+              <text x="156" y="60" font-family="Anton" font-size="52" fill="#f5f5f5" letter-spacing="0.5">DUOFIT</text>
+            </svg>
+            <div class="stage-divider"></div>
+            <div class="stage-caption">ICON ONLY</div>
+            <svg viewBox="0 0 100 60" width="120" height="72">
+              <rect x="4" y="12" width="20" height="36" fill="#FF00A8"/>
+              <rect x="24" y="20" width="8" height="20" fill="#FF00A8"/>
+              <rect x="32" y="24" width="36" height="12" fill="#f5f5f5"/>
+              <rect x="68" y="20" width="8" height="20" fill="#00E5FF"/>
+              <rect x="76" y="12" width="20" height="36" fill="#00E5FF"/>
+            </svg>
+          </div>
+          <div class="app-icon-preview">
+            <div class="icon-frame">
+              <svg viewBox="0 0 100 100" width="60" height="60">
+                <rect x="10" y="35" width="16" height="30" fill="#FF00A8"/>
+                <rect x="26" y="43" width="6" height="14" fill="#FF00A8"/>
+                <rect x="32" y="46" width="36" height="8" fill="#f5f5f5"/>
+                <rect x="68" y="43" width="6" height="14" fill="#00E5FF"/>
+                <rect x="74" y="35" width="16" height="30" fill="#00E5FF"/>
+              </svg>
+            </div>
+            <div class="icon-label">DuoFit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONCEPT 3 -->
+    <div class="phone-column">
+      <div class="phone-label">
+        קונספט 03
+        <strong>PURE TYPE</strong>
+      </div>
+      <div class="phone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="icons"><span></span><span></span><span></span></div>
+          </div>
+          <div class="app-header">
+            <svg viewBox="0 0 200 50" width="140" height="34">
+              <text x="4" y="40" font-family="Anton" font-size="42" fill="#f5f5f5">D</text>
+              <text x="32" y="40" font-family="Anton" font-size="42" fill="#f5f5f5">U</text>
+              <clipPath id="mL"><rect x="0" y="0" width="86" height="60"/></clipPath>
+              <clipPath id="mR"><rect x="86" y="0" width="100" height="60"/></clipPath>
+              <text x="62" y="40" font-family="Anton" font-size="42" fill="#FF00A8" clip-path="url(#mL)">O</text>
+              <text x="62" y="40" font-family="Anton" font-size="42" fill="#00E5FF" clip-path="url(#mR)">O</text>
+              <text x="94" y="40" font-family="Anton" font-size="42" fill="#f5f5f5">F</text>
+              <text x="120" y="40" font-family="Anton" font-size="42" fill="#f5f5f5">I</text>
+              <text x="134" y="40" font-family="Anton" font-size="42" fill="#f5f5f5">T</text>
+            </svg>
+            <div class="app-header-actions">
+              <span>≡</span>
+            </div>
+          </div>
+          <div class="stage">
+            <div class="stage-caption">HERO SIZE</div>
+            <svg viewBox="0 0 300 90" width="240" height="72">
+              <text x="4" y="72" font-family="Anton" font-size="72" fill="#f5f5f5">D</text>
+              <text x="52" y="72" font-family="Anton" font-size="72" fill="#f5f5f5">U</text>
+              <clipPath id="hL"><rect x="0" y="0" width="140" height="100"/></clipPath>
+              <clipPath id="hR"><rect x="140" y="0" width="200" height="100"/></clipPath>
+              <text x="102" y="72" font-family="Anton" font-size="72" fill="#FF00A8" clip-path="url(#hL)">O</text>
+              <text x="102" y="72" font-family="Anton" font-size="72" fill="#00E5FF" clip-path="url(#hR)">O</text>
+              <text x="156" y="72" font-family="Anton" font-size="72" fill="#f5f5f5">F</text>
+              <text x="198" y="72" font-family="Anton" font-size="72" fill="#f5f5f5">I</text>
+              <text x="222" y="72" font-family="Anton" font-size="72" fill="#f5f5f5">T</text>
+            </svg>
+            <div class="stage-divider"></div>
+            <div class="stage-caption">MONOGRAM</div>
+            <svg viewBox="0 0 100 100" width="72" height="72">
+              <rect x="0" y="0" width="100" height="100" fill="#101010" stroke="#26262b"/>
+              <text x="50" y="76" font-family="Anton" font-size="80" fill="#f5f5f5" text-anchor="middle">D</text>
+            </svg>
+          </div>
+          <div class="app-icon-preview">
+            <div class="icon-frame" style="background:linear-gradient(135deg,#FF00A8 0%,#050505 55%,#00E5FF 100%);">
+              <svg viewBox="0 0 100 100" width="60" height="60">
+                <text x="50" y="76" font-family="Anton" font-size="70" fill="#f5f5f5" text-anchor="middle">DF</text>
+              </svg>
+            </div>
+            <div class="icon-label">DuoFit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONCEPT 4 -->
+    <div class="phone-column">
+      <div class="phone-label">
+        קונספט 04
+        <strong>FUSION</strong>
+      </div>
+      <div class="phone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="icons"><span></span><span></span><span></span></div>
+          </div>
+          <div class="app-header">
+            <svg viewBox="0 0 220 50" width="140" height="32">
+              <rect x="4" y="8" width="26" height="26" fill="#FF00A8"/>
+              <rect x="20" y="18" width="26" height="26" fill="#00E5FF"/>
+              <rect x="20" y="18" width="10" height="16" fill="#f5f5f5"/>
+              <text x="58" y="38" font-family="Anton" font-size="32" fill="#f5f5f5" letter-spacing="0.5">DUOFIT</text>
+            </svg>
+            <div class="app-header-actions">
+              <span>≡</span>
+            </div>
+          </div>
+          <div class="stage">
+            <div class="stage-caption">HERO SIZE</div>
+            <svg viewBox="0 0 260 100" width="240" height="90">
+              <rect x="4" y="12" width="56" height="56" fill="#FF00A8"/>
+              <rect x="36" y="36" width="56" height="56" fill="#00E5FF"/>
+              <rect x="36" y="36" width="24" height="32" fill="#f5f5f5"/>
+              <text x="112" y="72" font-family="Anton" font-size="52" fill="#f5f5f5" letter-spacing="0.5">DUOFIT</text>
+            </svg>
+            <div class="stage-divider"></div>
+            <div class="stage-caption">ICON ONLY</div>
+            <svg viewBox="0 0 100 100" width="72" height="72">
+              <rect x="6" y="10" width="52" height="52" fill="#FF00A8"/>
+              <rect x="42" y="38" width="52" height="52" fill="#00E5FF"/>
+              <rect x="42" y="38" width="16" height="24" fill="#050505"/>
+            </svg>
+          </div>
+          <div class="app-icon-preview">
+            <div class="icon-frame">
+              <svg viewBox="0 0 100 100" width="60" height="60">
+                <rect x="6" y="10" width="52" height="52" fill="#FF00A8"/>
+                <rect x="42" y="38" width="52" height="52" fill="#00E5FF"/>
+                <rect x="42" y="38" width="16" height="24" fill="#000"/>
+              </svg>
+            </div>
+            <div class="icon-label">DuoFit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

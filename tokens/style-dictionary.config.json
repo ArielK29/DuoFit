@@ -1,0 +1,55 @@
+{
+  "$description": "Style Dictionary config — auto-generates CSS/SCSS/JS/Android/iOS from design-tokens.json. Install: npm i -D style-dictionary. Run: npx style-dictionary build --config tokens/style-dictionary.config.json",
+  "source": ["tokens/design-tokens.json"],
+  "platforms": {
+    "css": {
+      "transformGroup": "css",
+      "buildPath": "build/css/",
+      "files": [{
+        "destination": "tokens.css",
+        "format": "css/variables"
+      }]
+    },
+    "scss": {
+      "transformGroup": "scss",
+      "buildPath": "build/scss/",
+      "files": [{
+        "destination": "_tokens.scss",
+        "format": "scss/variables"
+      }]
+    },
+    "js": {
+      "transformGroup": "js",
+      "buildPath": "build/js/",
+      "files": [{
+        "destination": "tokens.js",
+        "format": "javascript/es6"
+      }]
+    },
+    "json-flat": {
+      "transformGroup": "js",
+      "buildPath": "build/json/",
+      "files": [{
+        "destination": "tokens-flat.json",
+        "format": "json/flat"
+      }]
+    },
+    "ios-swift": {
+      "transformGroup": "ios-swift",
+      "buildPath": "build/ios/",
+      "files": [{
+        "destination": "Tokens.swift",
+        "format": "ios-swift/class.swift",
+        "className": "DuoFitTokens"
+      }]
+    },
+    "android": {
+      "transformGroup": "android",
+      "buildPath": "build/android/",
+      "files": [
+        { "destination": "colors.xml", "format": "android/colors" },
+        { "destination": "dimens.xml", "format": "android/dimens" }
+      ]
+    }
+  }
+}

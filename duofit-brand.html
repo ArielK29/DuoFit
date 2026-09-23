@@ -1,0 +1,1007 @@
+<title>DuoFit Brand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --bg: #050505;
+    --ink: #f5f5f5;
+    --mute: #7a7a7a;
+    --line: #1a1a1a;
+    --card: #0d0d0d;
+    --magenta: #FF00A8;
+    --cyan: #00E5FF;
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    direction: rtl;
+    line-height: 1.5;
+  }
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-block: 48px;
+    padding-inline: 16px;
+  }
+  @media (min-width: 640px) { .page { padding-inline: 32px; } }
+
+  /* ======================= LOGO SVG STYLES ======================= */
+  .logo-svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  .logo-svg text {
+    font-family: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+
+  /* Page header */
+  .cover {
+    padding: 40px 0 64px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 48px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .cover-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+  .cover h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(24px, 5vw, 40px);
+    margin: 0;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--mute);
+  }
+  .cover-logo {
+    width: min(480px, 100%);
+    color: var(--ink);
+  }
+  .cover-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--mute);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 72px;
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--cyan);
+    min-width: 40px;
+  }
+  .section-head h2 {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(22px, 4vw, 32px);
+    margin: 0;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .section-desc {
+    color: var(--mute);
+    font-size: 14px;
+    margin: 0 0 32px;
+    max-width: 620px;
+    line-height: 1.7;
+  }
+
+  /* Logo showcase card */
+  .showcase-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .showcase-card .canvas {
+    background: #000;
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    overflow: hidden;
+  }
+  .showcase-card .canvas.light { background: #f5f5f5; color: #050505; }
+  .showcase-card .canvas.mag { background: var(--magenta); color: #050505; }
+  .showcase-card .canvas.cyan-bg { background: var(--cyan); color: #050505; }
+  .showcase-card .canvas .logo-svg { width: 80%; max-width: 300px; }
+  .showcase-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--mute);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    flex-wrap: wrap;
+  }
+  .showcase-meta .name { color: var(--ink); }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  @media (min-width: 720px) { .grid-2 { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ======================= APP SCREENS ======================= */
+  .screens-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px 24px;
+    justify-items: center;
+  }
+  .screen-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .screen-label {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .screen-label .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+  .screen-label .name {
+    font-family: 'Anton', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .screen-label .desc {
+    font-size: 12px;
+    color: var(--mute);
+    max-width: 260px;
+    line-height: 1.5;
+    margin-top: 2px;
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 280px;
+    height: 580px;
+    border-radius: 34px;
+    padding: 8px;
+    background: #18181b;
+    box-shadow: inset 0 0 0 2px #2a2a2e, 0 20px 40px -10px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 20px;
+    background: #050505;
+    border-radius: 12px;
+    z-index: 10;
+  }
+  .screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 26px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: #050505;
+    color: var(--ink);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+  }
+  .status-bar {
+    height: 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    flex-shrink: 0;
+    color: var(--ink);
+  }
+  .status-bar .dots { display: flex; gap: 4px; }
+  .status-bar .dots span { width: 4px; height: 4px; border-radius: 50%; background: currentColor; display: inline-block; }
+  .screen-body {
+    flex: 1;
+    padding: 12px 18px 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .tabbar {
+    flex-shrink: 0;
+    height: 54px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 16px 8px;
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .tabbar .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.05em;
+    color: var(--mute);
+  }
+  .tabbar .tab.active { color: var(--magenta); }
+
+  /* Helpers used inside screens */
+  .h-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+  .h-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+  .h-muted {
+    color: var(--mute);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .chunky-btn {
+    background: var(--magenta);
+    color: #050505;
+    font-family: 'Anton', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 14px;
+    text-align: center;
+    clip-path: polygon(0 0, 100% 0, 100% 82%, 92% 100%, 0 100%);
+  }
+  .cyan-btn {
+    background: var(--cyan);
+    color: #050505;
+    font-family: 'Anton', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 14px;
+    text-align: center;
+    clip-path: polygon(0 0, 100% 0, 100% 82%, 92% 100%, 0 100%);
+  }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .col { display: flex; flex-direction: column; }
+  .avatar {
+    width: 40px; height: 40px;
+    background: #222;
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Anton', sans-serif;
+    font-size: 18px;
+  }
+  .avatar.mag { background: var(--magenta); color: #050505; }
+  .avatar.cyan { background: var(--cyan); color: #050505; }
+
+  /* Color chip */
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .color-chip {
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    aspect-ratio: 5/3;
+    justify-content: flex-end;
+    border: 1px solid var(--line);
+  }
+  .color-chip.dark-ink { color: #050505; }
+  .color-chip .role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+  .color-chip .hex {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .color-chip .label {
+    font-family: 'Anton', sans-serif;
+    font-size: 18px;
+    text-transform: uppercase;
+    margin-top: auto;
+    letter-spacing: 0.02em;
+  }
+
+  /* Type sample */
+  .type-row {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .type-row:last-child { border-bottom: none; }
+  .type-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    min-width: 100px;
+  }
+  .type-sample { line-height: 1; flex: 1; min-width: 200px; }
+  .type-sample.display {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .type-sample.body { font-family: 'Space Grotesk', sans-serif; font-size: 16px; line-height: 1.6; }
+  .type-sample.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--cyan);
+    letter-spacing: 0.05em;
+  }
+  .type-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--mute);
+    letter-spacing: 0.1em;
+    min-width: 100px;
+    text-transform: uppercase;
+    text-align: end;
+  }
+
+  /* Home screen mockup */
+  .home-screen-mock {
+    background: radial-gradient(ellipse at top, #1a1a2e 0%, #050505 60%), #050505;
+    padding: 24px;
+    border: 1px solid var(--line);
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+    justify-content: center;
+  }
+  .home-time {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 56px;
+    font-weight: 300;
+    color: #fff;
+    line-height: 1;
+  }
+  .home-date {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 500;
+  }
+  .home-icons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px 16px;
+    max-width: 320px;
+    margin-top: 16px;
+  }
+  .home-app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .home-app .frame {
+    width: 60px; height: 60px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    background: #222;
+  }
+  .home-app .frame.duofit {
+    background: linear-gradient(135deg, #FF00A8 0%, #050505 55%, #00E5FF 100%);
+  }
+  .home-app .frame.mock1 { background: linear-gradient(135deg, #4ECDC4, #556270); }
+  .home-app .frame.mock2 { background: #FF6B6B; }
+  .home-app .frame.mock3 { background: linear-gradient(135deg, #FFB84A, #FF6B6B); }
+  .home-app .frame.mock4 { background: #1a73e8; }
+  .home-app .frame.mock5 { background: #25D366; }
+  .home-app .frame.mock6 { background: #000; border: 1px solid #333; }
+  .home-app .frame.mock7 { background: linear-gradient(135deg, #833AB4, #E1306C, #F77737); }
+  .home-app .name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: #fff;
+    text-align: center;
+  }
+
+  /* Icon sizes row */
+  .min-sizes {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 24px;
+    padding: 28px 16px;
+    background: #000;
+    border: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .min-size { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .min-size .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--mute);
+    letter-spacing: 0.1em;
+  }
+  .min-size .frame.duofit {
+    background: linear-gradient(135deg, #FF00A8 0%, #050505 55%, #00E5FF 100%);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+
+  .divider { height: 1px; background: var(--line); margin: 40px 0; }
+</style>
+
+<div class="page">
+
+  <!-- ============ COVER ============ -->
+  <div class="cover">
+    <span class="cover-eyebrow">// DUOFIT BRAND SYSTEM · V2.0 · 2026-09-22</span>
+    <svg class="logo-svg cover-logo" viewBox="0 0 400 110" direction="ltr">
+      <defs>
+        <linearGradient id="coverO" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+          <stop offset="50%" stop-color="#FF00A8"/>
+          <stop offset="50%" stop-color="#00E5FF"/>
+        </linearGradient>
+      </defs>
+      <text x="200" y="88" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="96" fill="currentColor" letter-spacing="0.5">
+        <tspan>DU</tspan><tspan fill="url(#coverO)">O</tspan><tspan>FIT</tspan>
+      </text>
+    </svg>
+    <h1>מערכת המותג</h1>
+    <span class="cover-sub">Underground · Pure Type · Mobile-First</span>
+  </div>
+
+  <!-- ============ 01 PRIMARY LOGO (FIXED) ============ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2>הלוגו הראשי</h2>
+    </div>
+    <p class="section-desc">הלוגו הוא Wordmark יחיד — DUOFIT — עם האות O האמצעית מפוצלת חצי-חצי בין מגנטה משמאל וציאן מימין. כל האותיות בגובה ובריווח אחיד (Anton font-family). התיקון בגרסה 2: השתמשנו ב-tspan עם gradient כדי שהאותיות לא ייחתכו ולא יהיו רווחים לא מכוונים.</p>
+
+    <div class="showcase-card">
+      <div class="canvas">
+        <svg class="logo-svg" viewBox="0 0 400 110" direction="ltr">
+          <defs>
+            <linearGradient id="mainO" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+              <stop offset="50%" stop-color="#FF00A8"/>
+              <stop offset="50%" stop-color="#00E5FF"/>
+            </linearGradient>
+          </defs>
+          <text x="200" y="88" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="96" fill="#f5f5f5" letter-spacing="0.5">
+            <tspan>DU</tspan><tspan fill="url(#mainO)">O</tspan><tspan>FIT</tspan>
+          </text>
+        </svg>
+      </div>
+      <div class="showcase-meta">
+        <span class="name">DUOFIT · Primary Wordmark</span>
+        <span>SPLIT-O · V2</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 02 LOGO ON DIFFERENT BACKGROUNDS ============ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2>הלוגו על רקעים שונים</h2>
+    </div>
+    <p class="section-desc">4 רקעים תקניים: שחור (העיקרי), לבן, מגנטה, ציאן. על רקעי הצבע — הלוגו הופך למונו-שחור לקריאות מיטבית.</p>
+
+    <div class="grid-2">
+      <div class="showcase-card">
+        <div class="canvas">
+          <svg class="logo-svg" viewBox="0 0 400 110" direction="ltr">
+            <defs>
+              <linearGradient id="bg1O" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+                <stop offset="50%" stop-color="#FF00A8"/><stop offset="50%" stop-color="#00E5FF"/>
+              </linearGradient>
+            </defs>
+            <text x="200" y="88" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="96" fill="#f5f5f5" letter-spacing="0.5">
+              <tspan>DU</tspan><tspan fill="url(#bg1O)">O</tspan><tspan>FIT</tspan>
+            </text>
+          </svg>
+        </div>
+        <div class="showcase-meta"><span class="name">Dark · Primary</span><span>#050505</span></div>
+      </div>
+
+      <div class="showcase-card">
+        <div class="canvas light">
+          <svg class="logo-svg" viewBox="0 0 400 110" direction="ltr">
+            <defs>
+              <linearGradient id="bg2O" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+                <stop offset="50%" stop-color="#FF00A8"/><stop offset="50%" stop-color="#00E5FF"/>
+              </linearGradient>
+            </defs>
+            <text x="200" y="88" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="96" fill="#050505" letter-spacing="0.5">
+              <tspan>DU</tspan><tspan fill="url(#bg2O)">O</tspan><tspan>FIT</tspan>
+            </text>
+          </svg>
+        </div>
+        <div class="showcase-meta"><span class="name">Light Mode</span><span>#F5F5F5</span></div>
+      </div>
+
+      <div class="showcase-card">
+        <div class="canvas mag">
+          <svg class="logo-svg" viewBox="0 0 400 110" direction="ltr">
+            <text x="200" y="88" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="96" fill="#050505" letter-spacing="0.5">DUOFIT</text>
+          </svg>
+        </div>
+        <div class="showcase-meta"><span class="name">On Magenta · Mono</span><span>#FF00A8</span></div>
+      </div>
+
+      <div class="showcase-card">
+        <div class="canvas cyan-bg">
+          <svg class="logo-svg" viewBox="0 0 400 110" direction="ltr">
+            <text x="200" y="88" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="96" fill="#050505" letter-spacing="0.5">DUOFIT</text>
+          </svg>
+        </div>
+        <div class="showcase-meta"><span class="name">On Cyan · Mono</span><span>#00E5FF</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 03 APP ICON ============ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2>App Icon</h2>
+    </div>
+    <p class="section-desc">האייקון של האפליקציה על מסך הבית הוא מונוגרם "DF" על גרדיאנט מגנטה→שחור→ציאן באלכסון. הרקע האלכסוני מקבל את שני הצבעים בלי להצטופף במונוגרם עצמו — נשאר קריא עד 16px.</p>
+
+    <div class="home-screen-mock">
+      <div style="text-align:center;">
+        <div class="home-time">9:41</div>
+        <div class="home-date">שלישי, 22 בספטמבר</div>
+      </div>
+      <div class="home-icons">
+        <div class="home-app">
+          <div class="frame duofit">
+            <svg viewBox="0 0 100 100" width="46" height="46">
+              <text x="50" y="72" font-family="Anton, Impact, sans-serif" font-size="60" fill="#f5f5f5" text-anchor="middle" letter-spacing="0.5">DF</text>
+            </svg>
+          </div>
+          <span class="name">DuoFit</span>
+        </div>
+        <div class="home-app"><div class="frame mock1"></div><span class="name">Fitness</span></div>
+        <div class="home-app"><div class="frame mock2"></div><span class="name">Health</span></div>
+        <div class="home-app"><div class="frame mock3"></div><span class="name">Photos</span></div>
+        <div class="home-app"><div class="frame mock4"></div><span class="name">Maps</span></div>
+        <div class="home-app"><div class="frame mock5"></div><span class="name">WhatsApp</span></div>
+        <div class="home-app"><div class="frame mock6"></div><span class="name">Uber</span></div>
+        <div class="home-app"><div class="frame mock7"></div><span class="name">Instagram</span></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--cyan);margin:0 0 16px;">Icon sizes</h3>
+    <div class="min-sizes">
+      <div class="min-size">
+        <div class="frame duofit" style="width:120px;height:120px;border-radius:26px;">
+          <svg viewBox="0 0 100 100" width="90" height="90">
+            <text x="50" y="72" font-family="Anton, Impact, sans-serif" font-size="60" fill="#f5f5f5" text-anchor="middle" letter-spacing="0.5">DF</text>
+          </svg>
+        </div>
+        <div class="label">120PX</div>
+      </div>
+      <div class="min-size">
+        <div class="frame duofit" style="width:60px;height:60px;border-radius:14px;">
+          <svg viewBox="0 0 100 100" width="46" height="46">
+            <text x="50" y="72" font-family="Anton, Impact, sans-serif" font-size="60" fill="#f5f5f5" text-anchor="middle" letter-spacing="0.5">DF</text>
+          </svg>
+        </div>
+        <div class="label">60PX</div>
+      </div>
+      <div class="min-size">
+        <div class="frame duofit" style="width:32px;height:32px;border-radius:8px;">
+          <svg viewBox="0 0 100 100" width="24" height="24">
+            <text x="50" y="72" font-family="Anton, Impact, sans-serif" font-size="60" fill="#f5f5f5" text-anchor="middle">DF</text>
+          </svg>
+        </div>
+        <div class="label">32PX</div>
+      </div>
+      <div class="min-size">
+        <div class="frame duofit" style="width:16px;height:16px;border-radius:4px;">
+          <svg viewBox="0 0 100 100" width="12" height="12">
+            <text x="50" y="78" font-family="Anton, Impact, sans-serif" font-size="80" fill="#f5f5f5" text-anchor="middle">D</text>
+          </svg>
+        </div>
+        <div class="label">16PX (D בלבד)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 04 APP SCREENS ============ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <h2>מסכי האפליקציה</h2>
+    </div>
+    <p class="section-desc">6 המסכים המרכזיים של MVP, כל אחד עם שם ברור ותיאור התפקיד שלו בזרימת המשתמש. כל המסכים באותה שפת עיצוב: שחור, Anton לכותרות ומספרים, מגנטה לפעולות, ציאן ל-Streak/Success.</p>
+
+    <div class="screens-grid">
+
+      <!-- SCREEN 1: SPLASH -->
+      <div class="screen-item">
+        <div class="phone">
+          <div class="screen" style="justify-content:center;align-items:center;padding:40px;background:radial-gradient(ellipse at center, #1a1a2e 0%, #050505 70%);">
+            <svg class="logo-svg" viewBox="0 0 400 110" direction="ltr" style="width:180px;">
+              <defs>
+                <linearGradient id="splashO" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+                  <stop offset="50%" stop-color="#FF00A8"/><stop offset="50%" stop-color="#00E5FF"/>
+                </linearGradient>
+              </defs>
+              <text x="200" y="88" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="96" fill="#f5f5f5" letter-spacing="0.5">
+                <tspan>DU</tspan><tspan fill="url(#splashO)">O</tspan><tspan>FIT</tspan>
+              </text>
+            </svg>
+            <div style="position:absolute;bottom:32px;left:0;right:0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;color:var(--mute);text-transform:uppercase;">
+              // LOADING...
+            </div>
+          </div>
+        </div>
+        <div class="screen-label">
+          <span class="tag">01 / SPLASH</span>
+          <span class="name">מסך פתיחה</span>
+          <span class="desc">הלוגו מופיע ב-2 שניות בזמן טעינת האפליקציה. חוזר תחושה קולנועית.</span>
+        </div>
+      </div>
+
+      <!-- SCREEN 2: ONBOARDING -->
+      <div class="screen-item">
+        <div class="phone">
+          <div class="screen">
+            <div class="status-bar">
+              <span>9:41</span>
+              <div class="dots"><span></span><span></span><span></span></div>
+            </div>
+            <div class="screen-body">
+              <div class="h-eyebrow">// STEP 02 OF 03</div>
+              <div class="h-title">איזה סגנון<br>אימון שלך?</div>
+              <div class="h-muted">אפשר לבחור יותר מאחד</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+                <div style="padding:8px 12px;border:1px solid var(--magenta);color:var(--magenta);font-family:'Anton',sans-serif;font-size:12px;text-transform:uppercase;">קליסטניקס ✓</div>
+                <div style="padding:8px 12px;border:1px solid var(--line);color:var(--mute);font-family:'Anton',sans-serif;font-size:12px;text-transform:uppercase;">משקולות</div>
+                <div style="padding:8px 12px;border:1px solid var(--magenta);color:var(--magenta);font-family:'Anton',sans-serif;font-size:12px;text-transform:uppercase;">ריצה ✓</div>
+                <div style="padding:8px 12px;border:1px solid var(--line);color:var(--mute);font-family:'Anton',sans-serif;font-size:12px;text-transform:uppercase;">HIIT</div>
+                <div style="padding:8px 12px;border:1px solid var(--line);color:var(--mute);font-family:'Anton',sans-serif;font-size:12px;text-transform:uppercase;">יוגה</div>
+                <div style="padding:8px 12px;border:1px solid var(--line);color:var(--mute);font-family:'Anton',sans-serif;font-size:12px;text-transform:uppercase;">הליכה</div>
+              </div>
+              <div class="h-eyebrow" style="margin-top:16px;">רמה</div>
+              <div style="display:flex;gap:6px;">
+                <div style="flex:1;padding:10px;text-align:center;border:1px solid var(--line);color:var(--mute);font-family:'Anton',sans-serif;font-size:12px;text-transform:uppercase;">מתחיל</div>
+                <div style="flex:1;padding:10px;text-align:center;border:1px solid var(--cyan);color:var(--cyan);font-family:'Anton',sans-serif;font-size:12px;text-transform:uppercase;">בינוני</div>
+                <div style="flex:1;padding:10px;text-align:center;border:1px solid var(--line);color:var(--mute);font-family:'Anton',sans-serif;font-size:12px;text-transform:uppercase;">מתקדם</div>
+              </div>
+              <div style="margin-top:auto;"></div>
+              <div class="chunky-btn">המשך →</div>
+            </div>
+          </div>
+        </div>
+        <div class="screen-label">
+          <span class="tag">02 / ONBOARDING</span>
+          <span class="name">הרשמה — שלב 2</span>
+          <span class="desc">בחירת סגנון אימון (Multi-select) ורמה. אחד מ-3 מסכי ההרשמה.</span>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: HOME / DISCOVER -->
+      <div class="screen-item">
+        <div class="phone">
+          <div class="screen">
+            <div class="status-bar">
+              <span>9:41</span>
+              <div class="dots"><span></span><span></span><span></span></div>
+            </div>
+            <div class="screen-body">
+              <div class="row" style="justify-content:space-between;">
+                <div class="h-title" style="font-size:18px;">גילוי</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);">// 12 PARTNERS · 5KM</div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <div style="padding:6px 10px;background:var(--magenta);color:#050505;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;">הכל</div>
+                <div style="padding:6px 10px;border:1px solid var(--line);color:var(--mute);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;">קליסטניקס</div>
+                <div style="padding:6px 10px;border:1px solid var(--line);color:var(--mute);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;">ריצה</div>
+              </div>
+              <div style="flex:1;background:#0a0a0f;border:1px solid var(--line);position:relative;overflow:hidden;">
+                <div style="position:absolute;inset:0;background:
+                  linear-gradient(to right, rgba(255,0,168,0.05) 1px, transparent 1px) 0 0/40px 40px,
+                  linear-gradient(to bottom, rgba(0,229,255,0.05) 1px, transparent 1px) 0 0/40px 40px,
+                  #0a0a0f;
+                "></div>
+                <div style="position:absolute;top:30%;left:40%;width:24px;height:24px;background:var(--magenta);border:2px solid #050505;font-family:'Anton',sans-serif;color:#050505;display:flex;align-items:center;justify-content:center;font-size:12px;">נ</div>
+                <div style="position:absolute;top:55%;left:25%;width:24px;height:24px;background:var(--cyan);border:2px solid #050505;font-family:'Anton',sans-serif;color:#050505;display:flex;align-items:center;justify-content:center;font-size:12px;">ר</div>
+                <div style="position:absolute;top:45%;left:65%;width:24px;height:24px;background:var(--magenta);border:2px solid #050505;font-family:'Anton',sans-serif;color:#050505;display:flex;align-items:center;justify-content:center;font-size:12px;">א</div>
+                <div style="position:absolute;top:70%;left:55%;width:24px;height:24px;background:var(--cyan);border:2px solid #050505;font-family:'Anton',sans-serif;color:#050505;display:flex;align-items:center;justify-content:center;font-size:12px;">מ</div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab active">גילוי</div>
+              <div class="tab">צ'אט</div>
+              <div class="tab">אני</div>
+            </div>
+          </div>
+        </div>
+        <div class="screen-label">
+          <span class="tag">03 / DISCOVER</span>
+          <span class="name">מפה + פרטנרים</span>
+          <span class="desc">המסך הראשי. מפה עם pins צבועים לפי סוג האימון. סינון מלמעלה.</span>
+        </div>
+      </div>
+
+      <!-- SCREEN 4: CHAT + INVITE -->
+      <div class="screen-item">
+        <div class="phone">
+          <div class="screen">
+            <div class="status-bar">
+              <span>9:41</span>
+              <div class="dots"><span></span><span></span><span></span></div>
+            </div>
+            <div class="screen-body">
+              <div class="row" style="padding-bottom:8px;border-bottom:1px solid var(--line);">
+                <div class="avatar mag">נ</div>
+                <div class="col">
+                  <div style="font-family:'Anton',sans-serif;font-size:16px;">ניתאי</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);">// ONLINE</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;flex:1;padding:8px 0;">
+                <div style="align-self:flex-end;background:var(--magenta);color:#050505;padding:8px 12px;font-size:11px;max-width:70%;">מחר בבוקר בפארק?</div>
+                <div style="align-self:flex-start;background:#101010;padding:8px 12px;font-size:11px;max-width:70%;">בטוח, איזה שעה?</div>
+                <div style="align-self:flex-end;background:var(--magenta);color:#050505;padding:8px 12px;font-size:11px;max-width:70%;">7:30 בירקון?</div>
+                <div style="align-self:flex-start;background:#0d0d0d;border:1px solid var(--cyan);padding:10px 12px;max-width:80%;">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">// הזמנה לאימון</div>
+                  <div style="font-family:'Anton',sans-serif;font-size:14px;color:var(--ink);">רביעי, 7:30</div>
+                  <div style="font-size:10px;color:var(--mute);">פארק הירקון · קליסטניקס</div>
+                  <div style="display:flex;gap:6px;margin-top:8px;">
+                    <div style="flex:1;background:var(--cyan);color:#050505;padding:6px;text-align:center;font-family:'Anton',sans-serif;font-size:11px;">אישור ✓</div>
+                    <div style="flex:1;border:1px solid var(--line);padding:6px;text-align:center;font-family:'Anton',sans-serif;font-size:11px;color:var(--mute);">דחייה</div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <div style="flex:1;background:#101010;padding:8px 10px;font-size:11px;color:var(--mute);">הקלד הודעה...</div>
+                <div style="width:36px;background:var(--magenta);display:flex;align-items:center;justify-content:center;color:#050505;font-family:'Anton',sans-serif;">→</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="screen-label">
+          <span class="tag">04 / CHAT</span>
+          <span class="name">צ'אט + הזמנה</span>
+          <span class="desc">הזמנה לאימון היא כרטיס מיוחד בציאן בתוך הצ'אט — Action-driven.</span>
+        </div>
+      </div>
+
+      <!-- SCREEN 5: CHECK-IN SUCCESS -->
+      <div class="screen-item">
+        <div class="phone">
+          <div class="screen" style="justify-content:center;align-items:center;padding:32px;text-align:center;background:radial-gradient(ellipse at center, rgba(0,229,255,0.15) 0%, transparent 60%), #050505;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:16px;">
+              // CHECK-IN CONFIRMED ✓
+            </div>
+            <div style="font-family:'Anton',sans-serif;font-size:180px;color:var(--cyan);line-height:0.85;letter-spacing:-0.04em;">28</div>
+            <div style="font-family:'Anton',sans-serif;font-size:20px;color:var(--ink);text-transform:uppercase;margin-top:12px;">שבועות רצופים</div>
+            <div style="font-size:13px;color:var(--mute);margin-top:8px;max-width:200px;line-height:1.5;">כל הכבוד! את/ה וניתאי סיימתם עוד אימון יחד.</div>
+            <div style="display:flex;gap:8px;margin-top:24px;align-items:center;">
+              <div class="avatar mag" style="width:44px;height:44px;">ט</div>
+              <div style="font-family:'Anton',sans-serif;font-size:16px;color:var(--cyan);">+</div>
+              <div class="avatar cyan" style="width:44px;height:44px;">נ</div>
+            </div>
+            <div class="cyan-btn" style="margin-top:32px;width:80%;">חזרה לגילוי</div>
+          </div>
+        </div>
+        <div class="screen-label">
+          <span class="tag">05 / CHECK-IN</span>
+          <span class="name">אישור אימון משותף</span>
+          <span class="desc">הרגע הכי חשוב באפליקציה. שני הצדדים לחצו — Streak התעדכן ל-28.</span>
+        </div>
+      </div>
+
+      <!-- SCREEN 6: MY PROFILE -->
+      <div class="screen-item">
+        <div class="phone">
+          <div class="screen">
+            <div class="status-bar">
+              <span>9:41</span>
+              <div class="dots"><span></span><span></span><span></span></div>
+            </div>
+            <div class="screen-body">
+              <div class="row">
+                <div class="avatar mag" style="width:48px;height:48px;font-size:20px;">ט</div>
+                <div class="col">
+                  <div style="font-family:'Anton',sans-serif;font-size:18px;">טל כהן</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);">// 22 · CALISTHENICS · TLV</div>
+                </div>
+              </div>
+              <div style="border:1px solid var(--cyan);padding:14px;margin-top:4px;background:linear-gradient(180deg, rgba(0,229,255,0.08), transparent);">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.15em;text-transform:uppercase;">// STREAK</div>
+                <div style="font-family:'Anton',sans-serif;font-size:64px;color:var(--cyan);line-height:0.9;letter-spacing:-0.03em;">28</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--mute);letter-spacing:0.1em;">WEEKS · NO GAPS</div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);">
+                <div style="background:var(--card);padding:10px;text-align:center;">
+                  <div style="font-family:'Anton',sans-serif;font-size:20px;color:var(--magenta);">12</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--mute);letter-spacing:0.1em;">MONTH</div>
+                </div>
+                <div style="background:var(--card);padding:10px;text-align:center;">
+                  <div style="font-family:'Anton',sans-serif;font-size:20px;color:var(--magenta);">5</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--mute);letter-spacing:0.1em;">SQUAD</div>
+                </div>
+                <div style="background:var(--card);padding:10px;text-align:center;">
+                  <div style="font-family:'Anton',sans-serif;font-size:20px;color:var(--magenta);">89</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--mute);letter-spacing:0.1em;">TOTAL</div>
+                </div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--mute);letter-spacing:0.15em;text-transform:uppercase;margin-top:8px;">// SQUAD_LOG</div>
+              <div class="row" style="padding:8px 0;border-bottom:1px solid var(--line);">
+                <div class="avatar" style="width:32px;height:32px;font-size:14px;">נ</div>
+                <div class="col" style="flex:1;">
+                  <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;">ניתאי</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--mute);">×14</div>
+                </div>
+              </div>
+              <div class="row" style="padding:8px 0;">
+                <div class="avatar" style="width:32px;height:32px;font-size:14px;">ר</div>
+                <div class="col" style="flex:1;">
+                  <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;">רועי</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--mute);">×08</div>
+                </div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab">גילוי</div>
+              <div class="tab">צ'אט</div>
+              <div class="tab active">אני</div>
+            </div>
+          </div>
+        </div>
+        <div class="screen-label">
+          <span class="tag">06 / PROFILE</span>
+          <span class="name">הפרופיל שלי</span>
+          <span class="desc">Streak קופץ בציאן, שאר המספרים במגנטה. SQUAD_LOG מציג פרטנרים.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 05 COLORS ============ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <h2>מערכת צבעים</h2>
+    </div>
+    <p class="section-desc">רק 5 צבעים. שחור הוא הרקע ברירת המחדל. מגנטה — Primary לכל פעולה. ציאן — Accent שמור לרגעי Streak ו-Check-in בלבד.</p>
+
+    <div class="color-grid">
+      <div class="color-chip" style="background:#050505;">
+        <span class="role">Base · Background</span>
+        <span class="hex">#050505</span>
+        <span class="label">Void Black</span>
+      </div>
+      <div class="color-chip dark-ink" style="background:#FF00A8;">
+        <span class="role">Primary · Actions</span>
+        <span class="hex">#FF00A8</span>
+        <span class="label">Signal Magenta</span>
+      </div>
+      <div class="color-chip dark-ink" style="background:#00E5FF;">
+        <span class="role">Accent · Streak/Win</span>
+        <span class="hex">#00E5FF</span>
+        <span class="label">Volt Cyan</span>
+      </div>
+      <div class="color-chip dark-ink" style="background:#F5F5F5;">
+        <span class="role">Text · Content</span>
+        <span class="hex">#F5F5F5</span>
+        <span class="label">Off-White</span>
+      </div>
+      <div class="color-chip" style="background:#7a7a7a;">
+        <span class="role">Muted · Secondary</span>
+        <span class="hex">#7A7A7A</span>
+        <span class="label">Concrete</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 06 TYPOGRAPHY ============ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <h2>טיפוגרפיה</h2>
+    </div>
+    <p class="section-desc">שלושה פונטים בלבד. Anton לכותרות, מספרים ולוגו. Space Grotesk לטקסט גוף. JetBrains Mono ל-Metadata וספרות טכניות.</p>
+
+    <div class="type-row">
+      <span class="type-tag">Display</span>
+      <div class="type-sample display">DUOFIT · אימון משותף</div>
+      <span class="type-meta">Anton · 48px</span>
+    </div>
+    <div class="type-row">
+      <span class="type-tag">Body</span>
+      <div class="type-sample body">אימון עם פרטנר משפר טכניקה ומוטיבציה. מצא מישהו באזור שלך.</div>
+      <span class="type-meta">Space Grotesk · 16px</span>
+    </div>
+    <div class="type-row">
+      <span class="type-tag">Mono</span>
+      <div class="type-sample mono">// STREAK · 28 WEEKS · CONSECUTIVE</div>
+      <span class="type-meta">JetBrains Mono · 13px</span>
+    </div>
+    <div class="type-row">
+      <span class="type-tag">Numbers</span>
+      <div class="type-sample display" style="color:var(--cyan);">28 · 12 · 89</div>
+      <span class="type-meta">Anton · tabular</span>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 110" role="img" aria-label="DuoFit" direction="ltr">
+  <defs>
+    <linearGradient id="splitO" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="50%" stop-color="#FF00A8"/>
+      <stop offset="50%" stop-color="#00E5FF"/>
+    </linearGradient>
+  </defs>
+  <style>
+    text {
+      font-family: 'Anton', 'Impact', 'Oswald', 'Arial Narrow', sans-serif;
+      font-size: 96px;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+    }
+  </style>
+  <text x="200" y="88" text-anchor="middle" fill="currentColor">
+    <tspan>DU</tspan><tspan fill="url(#splitO)">O</tspan><tspan>FIT</tspan>
+  </text>
+</svg>

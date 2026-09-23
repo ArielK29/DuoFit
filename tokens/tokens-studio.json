@@ -1,0 +1,230 @@
+{
+  "$description": "DuoFit tokens — Figma Tokens Studio format. Import via Tokens Studio plugin in Figma.",
+
+  "global": {
+    "color": {
+      "base": {
+        "black":     { "value": "#050505", "type": "color", "description": "Void Black — primary background" },
+        "off-white": { "value": "#F5F5F5", "type": "color", "description": "Off-White — primary text" }
+      },
+      "brand": {
+        "magenta": { "value": "#FF00A8", "type": "color", "description": "Signal Magenta — actions" },
+        "cyan":    { "value": "#00E5FF", "type": "color", "description": "Volt Cyan — Streak/Success only" }
+      },
+      "neutral": {
+        "surface":  { "value": "#0D0D0D", "type": "color" },
+        "line":     { "value": "#1A1A1A", "type": "color" },
+        "concrete": { "value": "#3A3A3A", "type": "color" },
+        "muted":    { "value": "#7A7A7A", "type": "color" }
+      }
+    },
+
+    "fontFamilies": {
+      "display": { "value": "Anton", "type": "fontFamilies" },
+      "displayHebrew": { "value": "Heebo", "type": "fontFamilies" },
+      "body":    { "value": "Space Grotesk", "type": "fontFamilies" },
+      "mono":    { "value": "JetBrains Mono", "type": "fontFamilies" }
+    },
+
+    "fontWeights": {
+      "regular": { "value": "400", "type": "fontWeights" },
+      "medium":  { "value": "500", "type": "fontWeights" },
+      "bold":    { "value": "700", "type": "fontWeights" }
+    },
+
+    "fontSizes": {
+      "xs":   { "value": "10", "type": "fontSizes" },
+      "sm":   { "value": "12", "type": "fontSizes" },
+      "base": { "value": "14", "type": "fontSizes" },
+      "lg":   { "value": "16", "type": "fontSizes" },
+      "xl":   { "value": "20", "type": "fontSizes" },
+      "2xl":  { "value": "28", "type": "fontSizes" },
+      "3xl":  { "value": "44", "type": "fontSizes" },
+      "hero": { "value": "108", "type": "fontSizes" }
+    },
+
+    "lineHeights": {
+      "tight":   { "value": "110%", "type": "lineHeights" },
+      "normal":  { "value": "150%", "type": "lineHeights" },
+      "relaxed": { "value": "160%", "type": "lineHeights" }
+    },
+
+    "letterSpacing": {
+      "tight":   { "value": "-0.02em", "type": "letterSpacing" },
+      "normal":  { "value": "0",       "type": "letterSpacing" },
+      "wide":    { "value": "0.05em",  "type": "letterSpacing" },
+      "wider":   { "value": "0.15em",  "type": "letterSpacing" },
+      "widest":  { "value": "0.28em",  "type": "letterSpacing" }
+    },
+
+    "spacing": {
+      "0": { "value": "0", "type": "spacing" },
+      "1": { "value": "4", "type": "spacing" },
+      "2": { "value": "8", "type": "spacing" },
+      "3": { "value": "12", "type": "spacing" },
+      "4": { "value": "16", "type": "spacing" },
+      "5": { "value": "24", "type": "spacing" },
+      "6": { "value": "32", "type": "spacing" },
+      "7": { "value": "48", "type": "spacing" },
+      "8": { "value": "64", "type": "spacing" }
+    },
+
+    "borderRadius": {
+      "none": { "value": "0", "type": "borderRadius" },
+      "sm":   { "value": "4", "type": "borderRadius" },
+      "md":   { "value": "8", "type": "borderRadius" },
+      "full": { "value": "9999", "type": "borderRadius" }
+    },
+
+    "borderWidth": {
+      "0":     { "value": "0", "type": "borderWidth" },
+      "hairline": { "value": "1", "type": "borderWidth" },
+      "focus":    { "value": "2", "type": "borderWidth" }
+    },
+
+    "boxShadow": {
+      "streak-glow": {
+        "value": {
+          "x": "0",
+          "y": "0",
+          "blur": "24",
+          "spread": "-4",
+          "color": "rgba(0, 229, 255, 0.4)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow"
+      },
+      "magenta-glow": {
+        "value": {
+          "x": "0",
+          "y": "8",
+          "blur": "24",
+          "spread": "-8",
+          "color": "rgba(255, 0, 168, 0.4)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow"
+      }
+    },
+
+    "opacity": {
+      "0":        { "value": "0%",   "type": "opacity" },
+      "40":       { "value": "40%",  "type": "opacity" },
+      "60":       { "value": "60%",  "type": "opacity" },
+      "80":       { "value": "80%",  "type": "opacity" },
+      "100":      { "value": "100%", "type": "opacity" },
+      "disabled": { "value": "40%",  "type": "opacity" }
+    }
+  },
+
+  "semantic": {
+    "color": {
+      "bg":       { "value": "{color.base.black}",     "type": "color" },
+      "surface":  { "value": "{color.neutral.surface}", "type": "color" },
+      "border":   { "value": "{color.neutral.line}",    "type": "color" },
+      "ink":      { "value": "{color.base.off-white}",  "type": "color" },
+      "muted":    { "value": "{color.neutral.muted}",   "type": "color" },
+      "primary":  { "value": "{color.brand.magenta}",   "type": "color" },
+      "accent":   { "value": "{color.brand.cyan}",      "type": "color" },
+      "streak":   { "value": "{color.brand.cyan}",      "type": "color" },
+      "success":  { "value": "{color.brand.cyan}",      "type": "color" },
+      "error":    { "value": "{color.brand.magenta}",   "type": "color" }
+    }
+  },
+
+  "typography": {
+    "hero": {
+      "value": {
+        "fontFamily": "{fontFamilies.display}",
+        "fontWeight": "{fontWeights.regular}",
+        "fontSize":   "{fontSizes.hero}",
+        "lineHeight": "{lineHeights.tight}",
+        "letterSpacing": "{letterSpacing.tight}"
+      },
+      "type": "typography"
+    },
+    "h1": {
+      "value": {
+        "fontFamily": "{fontFamilies.displayHebrew}",
+        "fontWeight": "900",
+        "fontSize":   "{fontSizes.3xl}",
+        "lineHeight": "{lineHeights.tight}"
+      },
+      "type": "typography",
+      "description": "Hebrew-first heading. Anton has no Hebrew glyphs — use fontFamilies.display only for guaranteed Latin-only headings."
+    },
+    "h2": {
+      "value": {
+        "fontFamily": "{fontFamilies.displayHebrew}",
+        "fontWeight": "800",
+        "fontSize":   "{fontSizes.2xl}",
+        "lineHeight": "{lineHeights.tight}"
+      },
+      "type": "typography"
+    },
+    "body": {
+      "value": {
+        "fontFamily": "{fontFamilies.body}",
+        "fontWeight": "{fontWeights.regular}",
+        "fontSize":   "{fontSizes.base}",
+        "lineHeight": "{lineHeights.normal}"
+      },
+      "type": "typography"
+    },
+    "body-emphasis": {
+      "value": {
+        "fontFamily": "{fontFamilies.body}",
+        "fontWeight": "{fontWeights.bold}",
+        "fontSize":   "{fontSizes.lg}",
+        "lineHeight": "{lineHeights.normal}"
+      },
+      "type": "typography"
+    },
+    "caption": {
+      "value": {
+        "fontFamily": "{fontFamilies.body}",
+        "fontWeight": "{fontWeights.regular}",
+        "fontSize":   "{fontSizes.sm}",
+        "lineHeight": "{lineHeights.normal}"
+      },
+      "type": "typography"
+    },
+    "eyebrow": {
+      "value": {
+        "fontFamily": "{fontFamilies.mono}",
+        "fontWeight": "{fontWeights.bold}",
+        "fontSize":   "{fontSizes.xs}",
+        "lineHeight": "{lineHeights.normal}",
+        "letterSpacing": "{letterSpacing.wider}",
+        "textCase": "uppercase"
+      },
+      "type": "typography"
+    },
+    "mono": {
+      "value": {
+        "fontFamily": "{fontFamilies.mono}",
+        "fontWeight": "{fontWeights.regular}",
+        "fontSize":   "{fontSizes.sm}",
+        "lineHeight": "{lineHeights.normal}",
+        "letterSpacing": "{letterSpacing.wide}"
+      },
+      "type": "typography"
+    }
+  },
+
+  "$themes": [
+    {
+      "id": "dark",
+      "name": "Dark (Default)",
+      "selectedTokenSets": {
+        "global": "enabled",
+        "semantic": "enabled",
+        "typography": "enabled"
+      }
+    }
+  ],
+
+  "$metadata": {
+    "tokenSetOrder": ["global", "semantic", "typography"]
+  }
+}

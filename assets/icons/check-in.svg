@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Check-in">
+  <!-- two overlapping avatar squares = the two partners -->
+  <rect x="3" y="3" width="12" height="12" rx="2.5"/>
+  <rect x="9" y="9" width="12" height="12" rx="2.5"/>
+  <!-- confirmation check, sitting in the foreground (shared) square -->
+  <path d="M12 15l2 2 4-4.5"/>
+</svg>

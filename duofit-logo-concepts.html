@@ -1,0 +1,657 @@
+<title>DuoFit Logo Concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&family=Bebas+Neue&display=swap">
+<style>
+  :root {
+    --bg: #050505;
+    --ink: #f5f5f5;
+    --mute: #8a8a8a;
+    --magenta: #FF00A8;
+    --cyan: #00E5FF;
+    --card: #101010;
+    --border: #1e1e1e;
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    min-height: 100vh;
+    direction: rtl;
+  }
+  .page {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding-block: 56px;
+    padding-inline: 16px;
+  }
+  @media (min-width: 640px) {
+    .page { padding-inline: 24px; }
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+  .page-header h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(32px, 8vw, 72px);
+    margin: 0;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .page-header p {
+    font-size: 14px;
+    color: var(--mute);
+    max-width: 620px;
+    margin: 0;
+    line-height: 1.6;
+    text-wrap: balance;
+  }
+
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 900px) {
+    .concept-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+  }
+  .concept {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+  }
+  @media (min-width: 640px) {
+    .concept { padding: 32px; gap: 24px; }
+  }
+  .concept-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+  }
+  .concept-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--mute);
+  }
+  .concept h2 {
+    font-family: 'Anton', sans-serif;
+    font-size: 22px;
+    margin: 0;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .concept-note {
+    font-size: 13px;
+    color: var(--mute);
+    line-height: 1.6;
+    margin: -8px 0 0;
+  }
+
+  .hero-canvas {
+    background: #000;
+    padding: 32px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 640px) {
+    .hero-canvas { padding: 48px 32px; min-height: 220px; }
+  }
+  .hero-canvas svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .hero-canvas.light {
+    background: #f5f5f5;
+    color: #050505;
+  }
+
+  .variations {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .var-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    overflow: hidden;
+  }
+  .var-cell svg {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+  }
+  .var-cell.dark { background: #000; }
+  .var-cell.light { background: #f5f5f5; }
+  .var-cell.mag { background: var(--magenta); }
+  .var-cell.cyan { background: var(--cyan); }
+
+  .app-icon-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    justify-content: center;
+    padding: 20px 12px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #000 100%);
+    border-top: 1px solid var(--border);
+  }
+  @media (min-width: 640px) {
+    .app-icon-row { gap: 16px; padding: 24px; }
+  }
+  .app-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .app-icon .frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    overflow: hidden;
+  }
+  .app-icon .frame.ios16 { width: 16px; height: 16px; }
+  .app-icon .frame.ios32 { width: 32px; height: 32px; border-radius: 6px; }
+  .app-icon .frame.ios64 { width: 64px; height: 64px; border-radius: 12px; }
+  .app-icon .frame.ios120 { width: 96px; height: 96px; border-radius: 20px; }
+  .app-icon .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--mute);
+    letter-spacing: 0.05em;
+  }
+
+  /* ====== SVG ICONS BASE ====== */
+  svg { display: block; }
+
+  /* ====== WORDMARK STYLE ====== */
+  .wordmark {
+    font-family: 'Anton', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0;
+    font-size: clamp(14px, 4vw, 32px);
+  }
+  .wordmark .duo { color: var(--ink); }
+  .wordmark .fit-mag { color: var(--magenta); }
+  .wordmark .fit-cyan { color: var(--cyan); }
+  .wordmark .slash { color: var(--cyan); margin: 0 4px; font-weight: 400; }
+
+  .light .wordmark .duo { color: #050505; }
+
+  /* ====== FINAL PICK CTA ====== */
+  .cta-section {
+    margin-top: 48px;
+    padding: 28px 20px 40px;
+    background: var(--magenta);
+    color: #050505;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+    clip-path: polygon(0 0, 100% 0, 100% 94%, 96% 100%, 0 100%);
+  }
+  @media (min-width: 640px) {
+    .cta-section { padding: 40px; }
+  }
+  .cta-section h3 {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(22px, 5vw, 32px);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+  .cta-section p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    margin: 0;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+</style>
+
+<div class="page">
+  <div class="page-header">
+    <span class="eyebrow">// DUOFIT · LOGO EXPLORATIONS · V1</span>
+    <h1>ארבעה קונספטים ללוגו</h1>
+    <p>כל קונספט מוצג ב-3 גרסאות: לוגו מלא (Hero), התנהגות על 4 רקעים שונים, ותצוגה כ-App Icon בגדלים שונים.</p>
+  </div>
+
+  <div class="concept-grid">
+
+    <!-- ================= CONCEPT 1 — DUOMARK ================= -->
+    <div class="concept">
+      <div class="concept-head">
+        <span class="concept-num">01 / DUOMARK</span>
+        <h2>שני D מקבילים</h2>
+      </div>
+      <p class="concept-note">שני D חסונים, אחד רגיל ואחד משוקף — משדרים שיתוף פעולה. פיצול צבע חד באמצע = שני אנשים שנפגשים. עובד מצוין גם כ-1-color.</p>
+
+      <div class="hero-canvas">
+        <svg viewBox="0 0 340 100" width="300" height="88">
+          <!-- Left D (magenta) -->
+          <path d="M8 8 L58 8 L88 38 L88 72 L58 100 L8 100 Z"
+                fill="#FF00A8" transform="translate(0,-4)"/>
+          <rect x="24" y="20" width="42" height="60" fill="#000"/>
+          <!-- Right D mirrored (cyan) -->
+          <path d="M172 8 L122 8 L92 38 L92 72 L122 100 L172 100 Z"
+                fill="#00E5FF" transform="translate(0,-4)"/>
+          <rect x="114" y="20" width="42" height="60" fill="#000"/>
+          <!-- Wordmark -->
+          <text x="200" y="70" font-family="Anton" font-size="64" fill="#f5f5f5" letter-spacing="1">DUOFIT</text>
+        </svg>
+      </div>
+
+      <div class="variations">
+        <div class="var-cell dark">
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <path d="M8 8 L44 8 L60 24 L60 52 L44 68 L8 68 Z" fill="#FF00A8"/>
+            <rect x="20" y="18" width="30" height="40" fill="#000"/>
+            <path d="M92 8 L56 8 L40 24 L40 52 L56 68 L92 68 Z" fill="#00E5FF" transform="translate(0,32)"/>
+            <rect x="50" y="50" width="30" height="40" fill="#000"/>
+          </svg>
+        </div>
+        <div class="var-cell light">
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <path d="M8 8 L44 8 L60 24 L60 52 L44 68 L8 68 Z" fill="#FF00A8"/>
+            <rect x="20" y="18" width="30" height="40" fill="#f5f5f5"/>
+            <path d="M92 8 L56 8 L40 24 L40 52 L56 68 L92 68 Z" fill="#00E5FF" transform="translate(0,32)"/>
+            <rect x="50" y="50" width="30" height="40" fill="#f5f5f5"/>
+          </svg>
+        </div>
+        <div class="var-cell mag">
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <path d="M8 8 L44 8 L60 24 L60 52 L44 68 L8 68 Z" fill="#050505"/>
+            <rect x="20" y="18" width="30" height="40" fill="#FF00A8"/>
+            <path d="M92 8 L56 8 L40 24 L40 52 L56 68 L92 68 Z" fill="#050505" transform="translate(0,32)"/>
+            <rect x="50" y="50" width="30" height="40" fill="#FF00A8"/>
+          </svg>
+        </div>
+        <div class="var-cell cyan">
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <path d="M8 8 L44 8 L60 24 L60 52 L44 68 L8 68 Z" fill="#050505"/>
+            <rect x="20" y="18" width="30" height="40" fill="#00E5FF"/>
+            <path d="M92 8 L56 8 L40 24 L40 52 L56 68 L92 68 Z" fill="#050505" transform="translate(0,32)"/>
+            <rect x="50" y="50" width="30" height="40" fill="#00E5FF"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="app-icon-row">
+        <div class="app-icon">
+          <div class="frame ios16">
+            <svg viewBox="0 0 100 100" width="14" height="14">
+              <path d="M8 8 L44 8 L60 24 L60 52 L44 68 L8 68 Z" fill="#FF00A8"/>
+              <path d="M92 8 L56 8 L40 24 L40 52 L56 68 L92 68 Z" fill="#00E5FF" transform="translate(0,32)"/>
+            </svg>
+          </div>
+          <span class="label">16</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios32">
+            <svg viewBox="0 0 100 100" width="28" height="28">
+              <path d="M8 8 L44 8 L60 24 L60 52 L44 68 L8 68 Z" fill="#FF00A8"/>
+              <rect x="20" y="18" width="30" height="40" fill="#000"/>
+              <path d="M92 8 L56 8 L40 24 L40 52 L56 68 L92 68 Z" fill="#00E5FF" transform="translate(0,32)"/>
+              <rect x="50" y="50" width="30" height="40" fill="#000"/>
+            </svg>
+          </div>
+          <span class="label">32</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios64">
+            <svg viewBox="0 0 100 100" width="56" height="56">
+              <path d="M8 8 L44 8 L60 24 L60 52 L44 68 L8 68 Z" fill="#FF00A8"/>
+              <rect x="20" y="18" width="30" height="40" fill="#000"/>
+              <path d="M92 8 L56 8 L40 24 L40 52 L56 68 L92 68 Z" fill="#00E5FF" transform="translate(0,32)"/>
+              <rect x="50" y="50" width="30" height="40" fill="#000"/>
+            </svg>
+          </div>
+          <span class="label">64</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios120">
+            <svg viewBox="0 0 100 100" width="86" height="86">
+              <path d="M8 8 L44 8 L60 24 L60 52 L44 68 L8 68 Z" fill="#FF00A8"/>
+              <rect x="20" y="18" width="30" height="40" fill="#000"/>
+              <path d="M92 8 L56 8 L40 24 L40 52 L56 68 L92 68 Z" fill="#00E5FF" transform="translate(0,32)"/>
+              <rect x="50" y="50" width="30" height="40" fill="#000"/>
+            </svg>
+          </div>
+          <span class="label">App</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= CONCEPT 2 — THE BAR ================= -->
+    <div class="concept">
+      <div class="concept-head">
+        <span class="concept-num">02 / THE BAR</span>
+        <h2>מוט משקולות ספליט</h2>
+      </div>
+      <p class="concept-note">מוט מרכזי + שתי צלחות בקצוות. הצלחת השמאלית מגנטה, הימנית ציאן — "שני מתאמנים על אותו מוט". הכי ספציפי לכושר, בלי להיות קלישאה של דמויות.</p>
+
+      <div class="hero-canvas">
+        <svg viewBox="0 0 380 100" width="340" height="88">
+          <!-- Left plate -->
+          <rect x="4" y="14" width="28" height="72" fill="#FF00A8"/>
+          <rect x="32" y="30" width="10" height="40" fill="#FF00A8"/>
+          <!-- Bar -->
+          <rect x="42" y="44" width="86" height="12" fill="#f5f5f5"/>
+          <!-- Right plate -->
+          <rect x="128" y="30" width="10" height="40" fill="#00E5FF"/>
+          <rect x="138" y="14" width="28" height="72" fill="#00E5FF"/>
+          <!-- Wordmark -->
+          <text x="192" y="72" font-family="Anton" font-size="64" fill="#f5f5f5" letter-spacing="1">DUOFIT</text>
+        </svg>
+      </div>
+
+      <div class="variations">
+        <div class="var-cell dark">
+          <svg viewBox="0 0 100 100" width="80" height="60">
+            <rect x="4" y="30" width="20" height="40" fill="#FF00A8"/>
+            <rect x="24" y="42" width="8" height="16" fill="#FF00A8"/>
+            <rect x="32" y="46" width="36" height="8" fill="#f5f5f5"/>
+            <rect x="68" y="42" width="8" height="16" fill="#00E5FF"/>
+            <rect x="76" y="30" width="20" height="40" fill="#00E5FF"/>
+          </svg>
+        </div>
+        <div class="var-cell light">
+          <svg viewBox="0 0 100 100" width="80" height="60">
+            <rect x="4" y="30" width="20" height="40" fill="#FF00A8"/>
+            <rect x="24" y="42" width="8" height="16" fill="#FF00A8"/>
+            <rect x="32" y="46" width="36" height="8" fill="#050505"/>
+            <rect x="68" y="42" width="8" height="16" fill="#00E5FF"/>
+            <rect x="76" y="30" width="20" height="40" fill="#00E5FF"/>
+          </svg>
+        </div>
+        <div class="var-cell mag">
+          <svg viewBox="0 0 100 100" width="80" height="60">
+            <rect x="4" y="30" width="20" height="40" fill="#050505"/>
+            <rect x="24" y="42" width="8" height="16" fill="#050505"/>
+            <rect x="32" y="46" width="36" height="8" fill="#f5f5f5"/>
+            <rect x="68" y="42" width="8" height="16" fill="#050505"/>
+            <rect x="76" y="30" width="20" height="40" fill="#050505"/>
+          </svg>
+        </div>
+        <div class="var-cell cyan">
+          <svg viewBox="0 0 100 100" width="80" height="60">
+            <rect x="4" y="30" width="20" height="40" fill="#050505"/>
+            <rect x="24" y="42" width="8" height="16" fill="#050505"/>
+            <rect x="32" y="46" width="36" height="8" fill="#050505"/>
+            <rect x="68" y="42" width="8" height="16" fill="#050505"/>
+            <rect x="76" y="30" width="20" height="40" fill="#050505"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="app-icon-row">
+        <div class="app-icon">
+          <div class="frame ios16">
+            <svg viewBox="0 0 100 100" width="14" height="14">
+              <rect x="10" y="35" width="16" height="30" fill="#FF00A8"/>
+              <rect x="30" y="47" width="40" height="6" fill="#f5f5f5"/>
+              <rect x="74" y="35" width="16" height="30" fill="#00E5FF"/>
+            </svg>
+          </div>
+          <span class="label">16</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios32">
+            <svg viewBox="0 0 100 100" width="28" height="28">
+              <rect x="10" y="35" width="16" height="30" fill="#FF00A8"/>
+              <rect x="26" y="43" width="6" height="14" fill="#FF00A8"/>
+              <rect x="32" y="46" width="36" height="8" fill="#f5f5f5"/>
+              <rect x="68" y="43" width="6" height="14" fill="#00E5FF"/>
+              <rect x="74" y="35" width="16" height="30" fill="#00E5FF"/>
+            </svg>
+          </div>
+          <span class="label">32</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios64">
+            <svg viewBox="0 0 100 100" width="56" height="56">
+              <rect x="10" y="35" width="16" height="30" fill="#FF00A8"/>
+              <rect x="26" y="43" width="6" height="14" fill="#FF00A8"/>
+              <rect x="32" y="46" width="36" height="8" fill="#f5f5f5"/>
+              <rect x="68" y="43" width="6" height="14" fill="#00E5FF"/>
+              <rect x="74" y="35" width="16" height="30" fill="#00E5FF"/>
+            </svg>
+          </div>
+          <span class="label">64</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios120">
+            <svg viewBox="0 0 100 100" width="86" height="86">
+              <rect x="10" y="35" width="16" height="30" fill="#FF00A8"/>
+              <rect x="26" y="43" width="6" height="14" fill="#FF00A8"/>
+              <rect x="32" y="46" width="36" height="8" fill="#f5f5f5"/>
+              <rect x="68" y="43" width="6" height="14" fill="#00E5FF"/>
+              <rect x="74" y="35" width="16" height="30" fill="#00E5FF"/>
+            </svg>
+          </div>
+          <span class="label">App</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= CONCEPT 3 — WORDMARK ONLY ================= -->
+    <div class="concept">
+      <div class="concept-head">
+        <span class="concept-num">03 / PURE TYPE</span>
+        <h2>ללא סמל — טיפוגרפיה בלבד</h2>
+      </div>
+      <p class="concept-note">בלי אייקון בכלל. הטיפוגרפיה עצמה היא הזהות. חתך אלכסוני חד ב-"O" המרכזית שיוצר "שני חצאים" — subtle אבל חכם. הכי בטוח, הכי נקי, הכי אלגנטי לגרסה 1.</p>
+
+      <div class="hero-canvas">
+        <svg viewBox="0 0 400 100" width="360" height="90">
+          <!-- D -->
+          <text x="10" y="80" font-family="Anton" font-size="90" fill="#f5f5f5">D</text>
+          <!-- U -->
+          <text x="70" y="80" font-family="Anton" font-size="90" fill="#f5f5f5">U</text>
+          <!-- Split O -->
+          <g>
+            <clipPath id="leftO"><rect x="0" y="0" width="180" height="100"/></clipPath>
+            <clipPath id="rightO"><rect x="180" y="0" width="200" height="100"/></clipPath>
+            <text x="130" y="80" font-family="Anton" font-size="90" fill="#FF00A8" clip-path="url(#leftO)">O</text>
+            <text x="130" y="80" font-family="Anton" font-size="90" fill="#00E5FF" clip-path="url(#rightO)">O</text>
+          </g>
+          <!-- FIT -->
+          <text x="200" y="80" font-family="Anton" font-size="90" fill="#f5f5f5">F</text>
+          <text x="252" y="80" font-family="Anton" font-size="90" fill="#f5f5f5">I</text>
+          <text x="282" y="80" font-family="Anton" font-size="90" fill="#f5f5f5">T</text>
+        </svg>
+      </div>
+
+      <div class="variations">
+        <div class="var-cell dark">
+          <span class="wordmark">
+            <span class="duo">DUO</span><span class="fit-mag">FIT</span>
+          </span>
+        </div>
+        <div class="var-cell light">
+          <span class="wordmark">
+            <span class="duo" style="color:#050505;">DUO</span><span class="fit-mag">FIT</span>
+          </span>
+        </div>
+        <div class="var-cell mag">
+          <span class="wordmark" style="color: #050505;">
+            <span style="color:#050505;">DUOFIT</span>
+          </span>
+        </div>
+        <div class="var-cell cyan">
+          <span class="wordmark" style="color: #050505;">
+            <span style="color:#050505;">DUOFIT</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="app-icon-row">
+        <div class="app-icon">
+          <div class="frame ios16" style="font-family:'Anton',sans-serif;font-size:14px;color:#f5f5f5;">D</div>
+          <span class="label">16</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios32" style="font-family:'Anton',sans-serif;font-size:24px;color:#f5f5f5;">DF</div>
+          <span class="label">32</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios64" style="font-family:'Anton',sans-serif;">
+            <svg viewBox="0 0 100 100" width="56" height="56">
+              <text x="50" y="72" font-family="Anton" font-size="80" fill="#f5f5f5" text-anchor="middle">D</text>
+            </svg>
+          </div>
+          <span class="label">64</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios120" style="background:linear-gradient(135deg,#FF00A8 0%,#050505 50%,#00E5FF 100%);">
+            <svg viewBox="0 0 100 100" width="86" height="86">
+              <text x="50" y="72" font-family="Anton" font-size="60" fill="#f5f5f5" text-anchor="middle">DF</text>
+            </svg>
+          </div>
+          <span class="label">App</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= CONCEPT 4 — FUSION SQUARE ================= -->
+    <div class="concept">
+      <div class="concept-head">
+        <span class="concept-num">04 / FUSION</span>
+        <h2>שני ריבועים חופפים</h2>
+      </div>
+      <p class="concept-note">ריבוע מגנטה + ריבוע ציאן שחופפים באלכסון. החפיפה = "המפגש". הכי מודרני, הכי נקי, מזכיר לוגואים של Notion / Linear. חלש בהיררכיה — נראה יותר קונספטואלי מקונקרטי לכושר.</p>
+
+      <div class="hero-canvas">
+        <svg viewBox="0 0 380 100" width="340" height="88">
+          <!-- Magenta square -->
+          <rect x="10" y="16" width="56" height="56" fill="#FF00A8"/>
+          <!-- Cyan square offset -->
+          <rect x="42" y="40" width="56" height="56" fill="#00E5FF"/>
+          <!-- Overlap area (white/blend) -->
+          <rect x="42" y="40" width="24" height="32" fill="#f5f5f5"/>
+          <!-- Wordmark -->
+          <text x="130" y="72" font-family="Anton" font-size="64" fill="#f5f5f5" letter-spacing="1">DUOFIT</text>
+        </svg>
+      </div>
+
+      <div class="variations">
+        <div class="var-cell dark">
+          <svg viewBox="0 0 100 100" width="72" height="72">
+            <rect x="6" y="10" width="52" height="52" fill="#FF00A8"/>
+            <rect x="42" y="38" width="52" height="52" fill="#00E5FF"/>
+            <rect x="42" y="38" width="16" height="24" fill="#f5f5f5"/>
+          </svg>
+        </div>
+        <div class="var-cell light">
+          <svg viewBox="0 0 100 100" width="72" height="72">
+            <rect x="6" y="10" width="52" height="52" fill="#FF00A8"/>
+            <rect x="42" y="38" width="52" height="52" fill="#00E5FF"/>
+            <rect x="42" y="38" width="16" height="24" fill="#050505"/>
+          </svg>
+        </div>
+        <div class="var-cell mag">
+          <svg viewBox="0 0 100 100" width="72" height="72">
+            <rect x="6" y="10" width="52" height="52" fill="#050505"/>
+            <rect x="42" y="38" width="52" height="52" fill="#f5f5f5"/>
+            <rect x="42" y="38" width="16" height="24" fill="#FF00A8"/>
+          </svg>
+        </div>
+        <div class="var-cell cyan">
+          <svg viewBox="0 0 100 100" width="72" height="72">
+            <rect x="6" y="10" width="52" height="52" fill="#050505"/>
+            <rect x="42" y="38" width="52" height="52" fill="#f5f5f5"/>
+            <rect x="42" y="38" width="16" height="24" fill="#00E5FF"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="app-icon-row">
+        <div class="app-icon">
+          <div class="frame ios16">
+            <svg viewBox="0 0 100 100" width="14" height="14">
+              <rect x="6" y="10" width="52" height="52" fill="#FF00A8"/>
+              <rect x="42" y="38" width="52" height="52" fill="#00E5FF"/>
+            </svg>
+          </div>
+          <span class="label">16</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios32">
+            <svg viewBox="0 0 100 100" width="28" height="28">
+              <rect x="6" y="10" width="52" height="52" fill="#FF00A8"/>
+              <rect x="42" y="38" width="52" height="52" fill="#00E5FF"/>
+              <rect x="42" y="38" width="16" height="24" fill="#000"/>
+            </svg>
+          </div>
+          <span class="label">32</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios64">
+            <svg viewBox="0 0 100 100" width="56" height="56">
+              <rect x="6" y="10" width="52" height="52" fill="#FF00A8"/>
+              <rect x="42" y="38" width="52" height="52" fill="#00E5FF"/>
+              <rect x="42" y="38" width="16" height="24" fill="#000"/>
+            </svg>
+          </div>
+          <span class="label">64</span>
+        </div>
+        <div class="app-icon">
+          <div class="frame ios120">
+            <svg viewBox="0 0 100 100" width="86" height="86">
+              <rect x="6" y="10" width="52" height="52" fill="#FF00A8"/>
+              <rect x="42" y="38" width="52" height="52" fill="#00E5FF"/>
+              <rect x="42" y="38" width="16" height="24" fill="#000"/>
+            </svg>
+          </div>
+          <span class="label">App</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cta-section">
+    <h3>איזה קונספט מדבר אליך?</h3>
+    <p>ההמלצה שלי — <strong>01 / DUOMARK</strong> — הכי חזק ויזואלית, הכי מספר את סיפור המוצר (שני אנשים שנפגשים), ועובד מצוין גם כ-App Icon קטן. אבל אתה החלטה סופית.</p>
+  </div>
+</div>
