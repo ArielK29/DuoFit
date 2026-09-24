@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "DuoFit",
+    "slug": "duofit",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "duofit",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#050505",
+    "description": "Fitness Buddy Matching App · Hebrew-First · React Native + Expo",
+    "languages": ["he", "en"],
+    "ios": {
+      "supportsTabletMode": false,
+      "supportsPadMultitasking": false,
+      "userInterfaceStyle": "dark"
+    },
+    "android": {
+      "userInterfaceStyle": "dark",
+      "adaptiveIcon": {
+        "backgroundColor": "#050505",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      }
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#050505",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ]
+    ],
+    "experiments": {}
+  }
+}
