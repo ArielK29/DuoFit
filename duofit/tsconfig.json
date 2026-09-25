@@ -25,6 +25,9 @@
       "@hooks/*": [
         "./hooks/*"
       ],
+      "@lib/*": [
+        "./lib/*"
+      ],
       "@constants/*": [
         "./constants/*"
       ],

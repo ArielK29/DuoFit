@@ -12,6 +12,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
+import { trackEvent } from '@lib/analytics';
 import { theme } from '@styles/theme';
 import { useAuth, User } from '@hooks/useAuth';
 
@@ -133,6 +134,7 @@ export const ProfileSetupScreen: React.FC = () => {
       };
 
       setUser(user);
+      trackEvent('profile_completed');
 
       router.replace('/discover');
     }, 1000);

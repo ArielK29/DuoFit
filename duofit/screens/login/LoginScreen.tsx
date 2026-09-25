@@ -10,6 +10,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
+import { trackEvent } from '@lib/analytics';
 import { theme } from '@styles/theme';
 
 // Ensure RTL layout
@@ -72,6 +73,9 @@ export const LoginScreen: React.FC = () => {
         );
         return;
       }
+
+      trackEvent('signup_started');
+      trackEvent('otp_sent');
 
       Alert.alert('הצלחה', `קוד OTP נשלח ל-${phoneNumber}`);
       router.push({ pathname: '/verify-otp', params: { phoneNumber } });
