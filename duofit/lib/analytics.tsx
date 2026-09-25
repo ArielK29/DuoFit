@@ -22,7 +22,15 @@ if (!POSTHOG_API_KEY) {
 // handling/autocapture) and by trackEvent() below, so screens never need to
 // import `posthog-react-native` directly.
 export const posthogClient = POSTHOG_API_KEY
-  ? new PostHog(POSTHOG_API_KEY, { host: POSTHOG_HOST })
+  ? new PostHog(POSTHOG_API_KEY, {
+      host: POSTHOG_HOST,
+      // Automatically capture unhandled JS exceptions and send them to
+      // PostHog's Error Tracking product. This is a pure-JS feature of the
+      // base posthog-react-native package — no native module required, safe
+      // in Expo Go. (Native crash capture, which DOES require the
+      // @posthog/react-native-plugin add-on, is not enabled here.)
+      errorTracking: { autocapture: true },
+    })
   : null;
 
 /**
@@ -38,6 +46,28 @@ export const posthogClient = POSTHOG_API_KEY
 export function trackEvent(name: string, properties?: Record<string, unknown>): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   posthogClient?.capture(name, properties as any);
+}
+
+/**
+ * Log a non-fatal warning to PostHog's Logs product. Safe to call even if
+ * PostHog failed to initialize — no-op in that case, same pattern as
+ * `trackEvent`.
+ */
+export function logWarn(message: string, properties?: Record<string, unknown>): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  posthogClient?.logger.warn(message, properties as any);
+}
+
+/**
+ * Log a handled error (something failed, but the app recovered — e.g. a
+ * caught exception in a try/catch) to PostHog's Logs product. For
+ * *unhandled* exceptions, rely on the automatic `errorTracking.autocapture`
+ * configured above instead — this function is for failures the app already
+ * caught and is deliberately continuing past.
+ */
+export function logError(message: string, properties?: Record<string, unknown>): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  posthogClient?.logger.error(message, properties as any);
 }
 
 /**
