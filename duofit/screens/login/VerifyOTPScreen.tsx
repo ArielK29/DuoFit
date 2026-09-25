@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button } from '@components/Button';
+import { trackEvent } from '@lib/analytics';
 import { theme } from '@styles/theme';
 
 I18nManager.forceRTL(true);
@@ -112,9 +113,11 @@ export const VerifyOTPScreen: React.FC = () => {
       }
 
       if (otp === DEMO_SUCCESS_OTP) {
+        trackEvent('otp_verified');
         Alert.alert('הצלחה', 'אתה התחברת בהצלחה!');
         router.push({ pathname: '/profile-setup', params: { phoneNumber } });
       } else {
+        trackEvent('otp_failed');
         setError('קוד שגוי. נסה שוב'); // Wrong code. Try again (wording per 03-EDGE-CASES.md)
         triggerShake();
       }

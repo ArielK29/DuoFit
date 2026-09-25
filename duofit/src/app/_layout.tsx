@@ -8,6 +8,7 @@ import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk';
 import { JetBrainsMono_400Regular, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono';
 import { Stack } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
+import { AnalyticsProvider } from '@lib/analytics';
 import { theme } from '@styles/theme';
 
 // Force RTL layout for Hebrew
@@ -74,20 +75,24 @@ export default function RootLayout() {
   // Don't render the app until both zustand hydration and font loading have
   // settled — otherwise UI could briefly commit with the OS default font
   // before swapping to the custom typefaces once they finish loading.
-  if (!hasHydrated || !fontsReady) {
-    return <LoadingScreen />;
-  }
-
+  // AnalyticsProvider wraps both the loading state and the real navigator so
+  // PostHog is initialized as early as possible, without changing this gate.
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg } }}>
-      <Stack.Protected guard={!isAuthenticated}>
-        <Stack.Screen name="login" />
-        <Stack.Screen name="verify-otp" />
-        <Stack.Screen name="profile-setup" />
-      </Stack.Protected>
-      <Stack.Protected guard={isAuthenticated}>
-        <Stack.Screen name="discover" />
-      </Stack.Protected>
-    </Stack>
+    <AnalyticsProvider>
+      {!hasHydrated || !fontsReady ? (
+        <LoadingScreen />
+      ) : (
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg } }}>
+          <Stack.Protected guard={!isAuthenticated}>
+            <Stack.Screen name="login" />
+            <Stack.Screen name="verify-otp" />
+            <Stack.Screen name="profile-setup" />
+          </Stack.Protected>
+          <Stack.Protected guard={isAuthenticated}>
+            <Stack.Screen name="discover" />
+          </Stack.Protected>
+        </Stack>
+      )}
+    </AnalyticsProvider>
   );
 }
