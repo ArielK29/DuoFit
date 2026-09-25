@@ -34,6 +34,12 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "כדי לבחור תמונת פרופיל, DuoFit זקוק לגישה לתמונות שלך."
+        }
       ]
     ],
     "experiments": {}

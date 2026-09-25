@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,25 @@ import {
   Alert,
   I18nManager,
   TextInput,
+  Animated,
 } from 'react-native';
 import { Button } from '@components/Button';
 import { theme } from '@styles/theme';
+import type { OnNavigate } from '@/types/navigation';
 
 I18nManager.forceRTL(true);
 
-export const VerifyOTPScreen: React.FC<{ onNavigate?: (screen: string) => void; phoneNumber?: string }> = ({
+// Demo code that simulates a successful verification (no real SMS/OTP backend yet — see issue #15).
+const DEMO_SUCCESS_OTP = '123456';
+
+// Demo/testing hook: entering this code simulates a network failure so the
+// connection-error state (03-EDGE-CASES.md) can be exercised without a real backend.
+const SIMULATED_NETWORK_FAILURE_OTP = '000000';
+
+// Per 03-EDGE-CASES.md "OTP Code Expired": code is considered expired after 10 minutes.
+const OTP_EXPIRY_MS = 10 * 60 * 1000;
+
+export const VerifyOTPScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: string }> = ({
   onNavigate,
   phoneNumber = '054-XXX-XXXX',
 }) => {
@@ -22,8 +34,16 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: (screen: string) => void; 
   const [error, setError] = useState<string | null>(null);
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const [resendCycle, setResendCycle] = useState(0);
+  const [sentAt, setSentAt] = useState(() => Date.now());
+  const shakeAnim = useRef(new Animated.Value(0)).current;
 
+  // Resend cooldown. Re-arms whenever resendCycle changes (i.e. after each resend),
+  // since the previous interval clears itself once it reaches zero.
   useEffect(() => {
+    setTimer(60);
+    setCanResend(false);
+
     const interval = setInterval(() => {
       setTimer((t) => {
         if (t <= 1) {
@@ -36,13 +56,32 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: (screen: string) => void; 
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [resendCycle]);
 
-  const handleVerify = async () => {
+  const triggerShake = () => {
+    // Shake animation per 03-EDGE-CASES.md: -3px to +3px horizontal, 100ms total.
+    shakeAnim.setValue(0);
+    Animated.sequence([
+      Animated.timing(shakeAnim, { toValue: -3, duration: 25, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 3, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0, duration: 25, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const handleOtpChange = (text: string) => {
+    setOtp(text);
+    // Clear error on next keystroke, per 03-EDGE-CASES.md.
+    if (error) {
+      setError(null);
+    }
+  };
+
+  const handleVerify = () => {
     setError(null);
 
     if (!otp || otp.length !== 6) {
       setError('הזן קוד 6 ספרות'); // Enter 6-digit code
+      triggerShake();
       return;
     }
 
@@ -51,22 +90,42 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: (screen: string) => void; 
     // Simulate API verification
     setTimeout(() => {
       setLoading(false);
-      if (otp === '123456') {
-        // Demo code
+
+      if (otp === SIMULATED_NETWORK_FAILURE_OTP) {
+        Alert.alert(
+          'בעיה בחיבור',
+          'לא הצלחנו להתחבר לשרת. בדוק את ה-Wi-Fi שלך',
+          [
+            { text: 'צא', style: 'cancel' },
+            { text: 'נסה שוב', onPress: handleVerify },
+          ]
+        );
+        return;
+      }
+
+      if (Date.now() - sentAt > OTP_EXPIRY_MS) {
+        setError('הקוד שלך פקע'); // Your code expired
+        triggerShake();
+        return;
+      }
+
+      if (otp === DEMO_SUCCESS_OTP) {
         Alert.alert('הצלחה', 'אתה התחברת בהצלחה!');
         if (onNavigate) {
-          onNavigate('Profile');
+          onNavigate({ screen: 'Profile', phoneNumber });
         }
       } else {
-        setError('קוד OTP שגוי'); // Invalid OTP
+        setError('קוד שגוי. נסה שוב'); // Wrong code. Try again (wording per 03-EDGE-CASES.md)
+        triggerShake();
       }
     }, 1500);
   };
 
   const handleResend = () => {
-    setTimer(60);
-    setCanResend(false);
     setOtp('');
+    setError(null);
+    setSentAt(Date.now());
+    setResendCycle((c) => c + 1);
     Alert.alert('הצלחה', 'קוד OTP חדש נשלח');
   };
 
@@ -129,6 +188,9 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: (screen: string) => void; 
       letterSpacing: 8,
       minHeight: 60,
     },
+    otpInputError: {
+      borderColor: theme.colors.error,
+    },
     timer: {
       textAlign: 'center',
       marginTop: theme.spacing.md,
@@ -172,17 +234,19 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: (screen: string) => void; 
         <View style={styles.form}>
           <View style={styles.otpContainer}>
             <Text style={styles.otpLabel}>קוד OTP (6 ספרות)</Text>
-            <TextInput
-              style={styles.otpInput}
-              placeholder="000000"
-              placeholderTextColor={theme.colors.textTertiary}
-              value={otp}
-              onChangeText={setOtp}
-              keyboardType="number-pad"
-              maxLength={6}
-              editable={!loading}
-              selectTextOnFocus
-            />
+            <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
+              <TextInput
+                style={[styles.otpInput, error && styles.otpInputError]}
+                placeholder="000000"
+                placeholderTextColor={theme.colors.textTertiary}
+                value={otp}
+                onChangeText={handleOtpChange}
+                keyboardType="number-pad"
+                maxLength={6}
+                editable={!loading}
+                selectTextOnFocus
+              />
+            </Animated.View>
             <Text style={[styles.timer, !canResend && styles.timerActive]}>
               {!canResend ? `שלח מחדש בעוד ${timer}s` : 'לחץ כדי לשלוח מחדש'}
             </Text>
