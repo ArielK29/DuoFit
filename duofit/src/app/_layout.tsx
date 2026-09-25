@@ -1,17 +1,14 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, I18nManager, View, Text, Pressable } from 'react-native';
+import { ActivityIndicator, I18nManager, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Anton_400Regular } from '@expo-google-fonts/anton';
 import { Heebo_400Regular, Heebo_500Medium, Heebo_700Bold, Heebo_800ExtraBold } from '@expo-google-fonts/heebo';
 import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk';
 import { JetBrainsMono_400Regular, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono';
-import { LoginScreen } from './screens/login/LoginScreen';
-import { VerifyOTPScreen } from './screens/login/VerifyOTPScreen';
-import { ProfileSetupScreen } from './screens/login/ProfileSetupScreen';
-import { useAuth } from './hooks/useAuth';
-import { theme } from './styles/theme';
-import type { NavigateAction, OnNavigate } from './types/navigation';
+import { Stack } from 'expo-router';
+import { useAuth } from '@hooks/useAuth';
+import { theme } from '@styles/theme';
 
 // Force RTL layout for Hebrew
 I18nManager.forceRTL(true);
@@ -21,8 +18,6 @@ I18nManager.forceRTL(true);
 // renders with the OS default font. Must be called at module scope,
 // unawaited, before the splash screen would otherwise auto-hide.
 SplashScreen.preventAutoHideAsync();
-
-type Screen = NavigateAction['screen'];
 
 // Shared loading view for both the zustand-hydration gate and the
 // font-loading gate below, so the spinner isn't duplicated in two places.
@@ -34,15 +29,13 @@ function LoadingScreen() {
   );
 }
 
-export default function App() {
+export default function RootLayout() {
   // zustand's `persist` middleware rehydrates from AsyncStorage asynchronously,
   // after the first render, so we wait for it to finish before picking a screen —
   // otherwise every launch would briefly flash the Login screen even for an
   // already-authenticated user.
   const [hasHydrated, setHasHydrated] = useState(() => useAuth.persist.hasHydrated());
   const isAuthenticated = useAuth((state) => state.isAuthenticated);
-  const [screen, setScreen] = useState<Screen>('Login');
-  const [phoneNumber, setPhoneNumber] = useState('');
 
   // Custom fonts referenced throughout constants/typography.ts (Anton, Heebo,
   // Space Grotesk, JetBrains Mono). Weight-specific constants are loaded
@@ -78,20 +71,6 @@ export default function App() {
     }
   }, [hasHydrated, fontsReady]);
 
-  const handleNavigate: OnNavigate = (action) => {
-    switch (action.screen) {
-      case 'VerifyOTP':
-      case 'Profile':
-        setPhoneNumber(action.phoneNumber);
-        setScreen(action.screen);
-        break;
-      case 'Login':
-      case 'Discover':
-        setScreen(action.screen);
-        break;
-    }
-  };
-
   // Don't render the app until both zustand hydration and font loading have
   // settled — otherwise UI could briefly commit with the OS default font
   // before swapping to the custom typefaces once they finish loading.
@@ -99,39 +78,16 @@ export default function App() {
     return <LoadingScreen />;
   }
 
-  // Session restore: decided directly at render time (not mirrored into `screen`
-  // via a separate effect) so there's no extra render cycle where a stale
-  // screen==='Login' could commit before flipping to Discover.
-  const showDiscover = screen === 'Discover' || (screen === 'Login' && isAuthenticated);
-
-  if (screen === 'VerifyOTP') {
-    return <VerifyOTPScreen onNavigate={handleNavigate} phoneNumber={phoneNumber} />;
-  }
-
-  if (screen === 'Profile') {
-    return <ProfileSetupScreen onNavigate={handleNavigate} phoneNumber={phoneNumber} />;
-  }
-
-  if (showDiscover) {
-    return (
-      <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: theme.colors.text, fontSize: 20, fontFamily: theme.typography.h2.fontFamily }}>🎉 ברוך הבא ל-DuoFit!</Text>
-        <Text style={{ color: theme.colors.textSecondary, fontSize: 14, marginTop: 8, fontFamily: theme.typography.bodySmall.fontFamily }}>מסך Discover בבנייה...</Text>
-        {/* Dev-only: lets QA get back to the login flow without clearing app storage manually. */}
-        <Pressable
-          onPress={() => {
-            useAuth.getState().logout();
-            setScreen('Login');
-          }}
-          style={{ marginTop: 24, padding: 12 }}
-        >
-          <Text style={{ color: theme.colors.magenta, fontSize: 14, fontFamily: theme.typography.label.fontFamily }}>
-            התנתק (לבדיקות)
-          </Text>
-        </Pressable>
-      </View>
-    );
-  }
-
-  return <LoginScreen onNavigate={handleNavigate} />;
+  return (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg } }}>
+      <Stack.Protected guard={!isAuthenticated}>
+        <Stack.Screen name="login" />
+        <Stack.Screen name="verify-otp" />
+        <Stack.Screen name="profile-setup" />
+      </Stack.Protected>
+      <Stack.Protected guard={isAuthenticated}>
+        <Stack.Screen name="discover" />
+      </Stack.Protected>
+    </Stack>
+  );
 }

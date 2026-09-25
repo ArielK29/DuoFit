@@ -9,9 +9,9 @@ import {
   TextInput,
   Animated,
 } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button } from '@components/Button';
 import { theme } from '@styles/theme';
-import type { OnNavigate } from '@/types/navigation';
 
 I18nManager.forceRTL(true);
 
@@ -25,10 +25,12 @@ const SIMULATED_NETWORK_FAILURE_OTP = '000000';
 // Per 03-EDGE-CASES.md "OTP Code Expired": code is considered expired after 10 minutes.
 const OTP_EXPIRY_MS = 10 * 60 * 1000;
 
-export const VerifyOTPScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: string }> = ({
-  onNavigate,
-  phoneNumber = '054-XXX-XXXX',
-}) => {
+export const VerifyOTPScreen: React.FC = () => {
+  const router = useRouter();
+  // No fallback placeholder here on purpose: an empty phoneNumber must stay falsy
+  // so ProfileSetupScreen's "missing identity" guard can actually catch a
+  // malformed deep link that skips straight to this screen without a real phone.
+  const { phoneNumber = '' } = useLocalSearchParams<'/verify-otp', { phoneNumber: string }>();
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,9 +113,7 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: 
 
       if (otp === DEMO_SUCCESS_OTP) {
         Alert.alert('הצלחה', 'אתה התחברת בהצלחה!');
-        if (onNavigate) {
-          onNavigate({ screen: 'Profile', phoneNumber });
-        }
+        router.push({ pathname: '/profile-setup', params: { phoneNumber } });
       } else {
         setError('קוד שגוי. נסה שוב'); // Wrong code. Try again (wording per 03-EDGE-CASES.md)
         triggerShake();

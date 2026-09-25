@@ -7,10 +7,10 @@ import {
   Alert,
   I18nManager,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { theme } from '@styles/theme';
-import type { OnNavigate } from '@/types/navigation';
 
 // Ensure RTL layout
 I18nManager.forceRTL(true);
@@ -20,9 +20,8 @@ I18nManager.forceRTL(true);
 // backend — SMS/OTP sending is simulated and tracked separately in issue #15.
 const SIMULATED_NETWORK_FAILURE_PHONE = '0500000000';
 
-export const LoginScreen: React.FC<{ onNavigate?: OnNavigate }> = ({
-  onNavigate,
-}) => {
+export const LoginScreen: React.FC = () => {
+  const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,9 +74,7 @@ export const LoginScreen: React.FC<{ onNavigate?: OnNavigate }> = ({
       }
 
       Alert.alert('הצלחה', `קוד OTP נשלח ל-${phoneNumber}`);
-      if (onNavigate) {
-        onNavigate({ screen: 'VerifyOTP', phoneNumber });
-      }
+      router.push({ pathname: '/verify-otp', params: { phoneNumber } });
     }, 1500);
   };
 
