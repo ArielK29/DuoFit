@@ -9,11 +9,11 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { theme } from '@styles/theme';
 import { useAuth, User } from '@hooks/useAuth';
-import type { OnNavigate } from '@/types/navigation';
 
 I18nManager.forceRTL(true);
 
@@ -36,10 +36,9 @@ const ACTIVITIES = [
   'ריצה', 'כושר גופני', 'יוגה', 'רכיבה על אופניים', 'שחייה', 'כדורגל',
 ];
 
-export const ProfileSetupScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: string }> = ({
-  onNavigate,
-  phoneNumber = '',
-}) => {
+export const ProfileSetupScreen: React.FC = () => {
+  const router = useRouter();
+  const { phoneNumber = '' } = useLocalSearchParams<'/profile-setup', { phoneNumber: string }>();
   const setUser = useAuth((state) => state.setUser);
 
   const [name, setName] = useState('');
@@ -90,10 +89,10 @@ export const ProfileSetupScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber
     if (!phoneNumber) {
       // Defensive guard, not a user-facing validation: the user never types a
       // phone number on this screen, so this should never happen now that
-      // NavigateAction (types/navigation.ts) forces callers to supply it
-      // when routing to this screen. If it's ever missing, don't persist a
-      // User with no identity — bounce back to Login instead.
-      onNavigate?.({ screen: 'Login' });
+      // this route always receives it as a param from the OTP-verification
+      // step. If it's ever missing, don't persist a User with no identity —
+      // bounce back to Login instead.
+      router.replace('/login');
       return;
     }
 
@@ -135,9 +134,7 @@ export const ProfileSetupScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber
 
       setUser(user);
 
-      if (onNavigate) {
-        onNavigate({ screen: 'Discover' });
-      }
+      router.replace('/discover');
     }, 1000);
   };
 

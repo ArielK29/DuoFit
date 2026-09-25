@@ -44,8 +44,11 @@
           "photosPermission": "כדי לבחור תמונת פרופיל, DuoFit זקוק לגישה לתמונות שלך."
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-router"
     ],
-    "experiments": {}
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

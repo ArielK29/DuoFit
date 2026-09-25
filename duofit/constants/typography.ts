@@ -3,7 +3,7 @@
 // Fonts: Anton, Heebo (Hebrew), Space Grotesk, JetBrains Mono
 //
 // `fontFamily` values below must match the exact constant names loaded via
-// useFonts() in App.tsx (from the @expo-google-fonts/* packages). Each family
+// useFonts() in src/app/_layout.tsx (from the @expo-google-fonts/* packages). Each family
 // name already encodes its weight (e.g. Heebo_600SemiBold), so `fontWeight`
 // is kept at 'normal' alongside it — setting a numeric fontWeight next to a
 // weight-specific custom font can make iOS/Android substitute a synthetic or
