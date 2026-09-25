@@ -63,7 +63,7 @@
 ### Authentication Error
 
 **Case 1: Wrong OTP Code**
-- Error message below input: "קוד שגוי. נסה שוני" (Wrong code. Try again)
+- Error message below input: "קוד שגוי. נסה שוב" (Wrong code. Try again)
 - Input border: `2px solid #FF00A8` (magenta error)
 - Shake animation: -3px to +3px horizontal, 100ms
 - Clear on next keystroke
