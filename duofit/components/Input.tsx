@@ -37,7 +37,8 @@ export const Input: React.FC<InputProps> = ({
     label: {
       color: theme.colors.text,
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.label.fontFamily,
       marginBottom: theme.spacing.sm,
       textAlign: 'right', // RTL
     },
@@ -57,17 +58,19 @@ export const Input: React.FC<InputProps> = ({
       fontSize: 16,
       paddingVertical: theme.spacing.sm,
       textAlign: 'right', // RTL
-      fontFamily: 'Heebo',
+      fontFamily: theme.typography.body.fontFamily,
     },
     error: {
       color: theme.colors.error,
       fontSize: 12,
+      fontFamily: theme.typography.bodySmall.fontFamily,
       marginTop: theme.spacing.xs,
       textAlign: 'right', // RTL
     },
     helperText: {
       color: theme.colors.textSecondary,
       fontSize: 12,
+      fontFamily: theme.typography.bodySmall.fontFamily,
       marginTop: theme.spacing.xs,
       textAlign: 'right', // RTL
     },

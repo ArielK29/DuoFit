@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, I18nManager, View, Text } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+import { Anton_400Regular } from '@expo-google-fonts/anton';
+import { Heebo_400Regular, Heebo_500Medium, Heebo_700Bold, Heebo_800ExtraBold } from '@expo-google-fonts/heebo';
+import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk';
+import { JetBrainsMono_400Regular, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono';
 import { LoginScreen } from './screens/login/LoginScreen';
 import { VerifyOTPScreen } from './screens/login/VerifyOTPScreen';
 import { ProfileSetupScreen } from './screens/login/ProfileSetupScreen';
@@ -10,7 +16,23 @@ import type { NavigateAction, OnNavigate } from './types/navigation';
 // Force RTL layout for Hebrew
 I18nManager.forceRTL(true);
 
+// Keep the native splash screen up until fonts have finished loading (or
+// failed), so there's no flash-of-unstyled-content moment where UI briefly
+// renders with the OS default font. Must be called at module scope,
+// unawaited, before the splash screen would otherwise auto-hide.
+SplashScreen.preventAutoHideAsync();
+
 type Screen = NavigateAction['screen'];
+
+// Shared loading view for both the zustand-hydration gate and the
+// font-loading gate below, so the spinner isn't duplicated in two places.
+function LoadingScreen() {
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator color={theme.colors.cyan} size="large" />
+    </View>
+  );
+}
 
 export default function App() {
   // zustand's `persist` middleware rehydrates from AsyncStorage asynchronously,
@@ -21,6 +43,21 @@ export default function App() {
   const isAuthenticated = useAuth((state) => state.isAuthenticated);
   const [screen, setScreen] = useState<Screen>('Login');
   const [phoneNumber, setPhoneNumber] = useState('');
+
+  // Custom fonts referenced throughout constants/typography.ts (Anton, Heebo,
+  // Space Grotesk, JetBrains Mono). Weight-specific constants are loaded
+  // individually since each Google Fonts weight ships as its own family name.
+  const [fontsLoaded, fontError] = useFonts({
+    Anton_400Regular,
+    Heebo_400Regular,
+    Heebo_500Medium,
+    Heebo_700Bold,
+    Heebo_800ExtraBold,
+    SpaceGrotesk_600SemiBold,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_700Bold,
+  });
+  const fontsReady = fontsLoaded || !!fontError;
 
   useEffect(() => {
     if (useAuth.persist.hasHydrated()) {
@@ -34,6 +71,12 @@ export default function App() {
 
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (hasHydrated && fontsReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [hasHydrated, fontsReady]);
 
   const handleNavigate: OnNavigate = (action) => {
     switch (action.screen) {
@@ -49,12 +92,11 @@ export default function App() {
     }
   };
 
-  if (!hasHydrated) {
-    return (
-      <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator color={theme.colors.cyan} size="large" />
-      </View>
-    );
+  // Don't render the app until both zustand hydration and font loading have
+  // settled — otherwise UI could briefly commit with the OS default font
+  // before swapping to the custom typefaces once they finish loading.
+  if (!hasHydrated || !fontsReady) {
+    return <LoadingScreen />;
   }
 
   // Session restore: decided directly at render time (not mirrored into `screen`
@@ -73,8 +115,8 @@ export default function App() {
   if (showDiscover) {
     return (
       <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: theme.colors.text, fontSize: 20 }}>🎉 ברוך הבא ל-DuoFit!</Text>
-        <Text style={{ color: theme.colors.textSecondary, fontSize: 14, marginTop: 8 }}>מסך Discover בבנייה...</Text>
+        <Text style={{ color: theme.colors.text, fontSize: 20, fontFamily: theme.typography.h2.fontFamily }}>🎉 ברוך הבא ל-DuoFit!</Text>
+        <Text style={{ color: theme.colors.textSecondary, fontSize: 14, marginTop: 8, fontFamily: theme.typography.bodySmall.fontFamily }}>מסך Discover בבנייה...</Text>
       </View>
     );
   }

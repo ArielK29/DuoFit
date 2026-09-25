@@ -63,7 +63,8 @@ export const Button: React.FC<ButtonProps> = ({
     text: {
       color: getTextColor(),
       fontSize: 16,
-      fontWeight: '600',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.button.fontFamily,
       textAlign: 'center',
     },
   });

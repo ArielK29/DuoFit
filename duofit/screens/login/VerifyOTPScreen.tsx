@@ -146,13 +146,15 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: 
     },
     title: {
       fontSize: 28,
-      fontWeight: 'bold',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.h2.fontFamily,
       color: theme.colors.text,
       marginBottom: theme.spacing.md,
       textAlign: 'center',
     },
     subtitle: {
       fontSize: 14,
+      fontFamily: theme.typography.bodySmall.fontFamily,
       color: theme.colors.textSecondary,
       textAlign: 'center',
       marginBottom: theme.spacing.sm,
@@ -161,7 +163,8 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: 
       fontSize: 14,
       color: theme.colors.cyan,
       textAlign: 'center',
-      fontWeight: '600',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.bodySmallBold.fontFamily,
     },
     form: {
       marginVertical: theme.spacing.xl,
@@ -172,7 +175,8 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: 
     otpLabel: {
       color: theme.colors.text,
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.label.fontFamily,
       marginBottom: theme.spacing.sm,
       textAlign: 'right',
     },
@@ -182,7 +186,8 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: 
       borderRadius: theme.borderRadius.md,
       color: theme.colors.text,
       fontSize: 28,
-      fontWeight: 'bold',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.monoBold.fontFamily,
       textAlign: 'center',
       paddingVertical: theme.spacing.md,
       letterSpacing: 8,
@@ -196,6 +201,7 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: 
       marginTop: theme.spacing.md,
       color: theme.colors.textSecondary,
       fontSize: 14,
+      fontFamily: theme.typography.bodySmall.fontFamily,
     },
     timerActive: {
       color: theme.colors.error,
@@ -205,6 +211,7 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: 
       textAlign: 'center',
       marginVertical: theme.spacing.md,
       fontSize: 14,
+      fontFamily: theme.typography.bodySmall.fontFamily,
     },
     buttonContainer: {
       marginTop: theme.spacing.xl,
@@ -216,6 +223,7 @@ export const VerifyOTPScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber?: 
       textAlign: 'center',
       color: theme.colors.textTertiary,
       fontSize: 14,
+      fontFamily: theme.typography.bodySmall.fontFamily,
       marginBottom: theme.spacing.md,
     },
   });

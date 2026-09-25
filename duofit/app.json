@@ -9,7 +9,10 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#050505",
     "description": "Fitness Buddy Matching App · Hebrew-First · React Native + Expo",
-    "languages": ["he", "en"],
+    "languages": [
+      "he",
+      "en"
+    ],
     "ios": {
       "supportsTabletMode": false,
       "supportsPadMultitasking": false,
@@ -40,7 +43,8 @@
         {
           "photosPermission": "כדי לבחור תמונת פרופיל, DuoFit זקוק לגישה לתמונות שלך."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {}
   }
