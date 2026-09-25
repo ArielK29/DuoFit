@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, I18nManager, View, Text } from 'react-native';
+import { ActivityIndicator, I18nManager, View, Text, Pressable } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Anton_400Regular } from '@expo-google-fonts/anton';
@@ -117,6 +117,18 @@ export default function App() {
       <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }}>
         <Text style={{ color: theme.colors.text, fontSize: 20, fontFamily: theme.typography.h2.fontFamily }}>🎉 ברוך הבא ל-DuoFit!</Text>
         <Text style={{ color: theme.colors.textSecondary, fontSize: 14, marginTop: 8, fontFamily: theme.typography.bodySmall.fontFamily }}>מסך Discover בבנייה...</Text>
+        {/* Dev-only: lets QA get back to the login flow without clearing app storage manually. */}
+        <Pressable
+          onPress={() => {
+            useAuth.getState().logout();
+            setScreen('Login');
+          }}
+          style={{ marginTop: 24, padding: 12 }}
+        >
+          <Text style={{ color: theme.colors.magenta, fontSize: 14, fontFamily: theme.typography.label.fontFamily }}>
+            התנתק (לבדיקות)
+          </Text>
+        </Pressable>
       </View>
     );
   }
