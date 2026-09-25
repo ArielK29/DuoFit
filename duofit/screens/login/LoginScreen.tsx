@@ -98,19 +98,22 @@ export const LoginScreen: React.FC<{ onNavigate?: OnNavigate }> = ({
     },
     title: {
       fontSize: 32,
-      fontWeight: 'bold',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.h1.fontFamily,
       color: theme.colors.text,
       marginBottom: theme.spacing.sm,
       textAlign: 'center',
     },
     subtitle: {
       fontSize: 16,
+      fontFamily: theme.typography.body.fontFamily,
       color: theme.colors.textSecondary,
       textAlign: 'center',
       marginBottom: theme.spacing.md,
     },
     description: {
       fontSize: 14,
+      fontFamily: theme.typography.bodySmall.fontFamily,
       color: theme.colors.textTertiary,
       textAlign: 'center',
       lineHeight: 20,
@@ -129,6 +132,7 @@ export const LoginScreen: React.FC<{ onNavigate?: OnNavigate }> = ({
       textAlign: 'center',
       marginVertical: theme.spacing.md,
       fontSize: 14,
+      fontFamily: theme.typography.bodySmall.fontFamily,
     },
     divider: {
       height: 1,
@@ -143,6 +147,7 @@ export const LoginScreen: React.FC<{ onNavigate?: OnNavigate }> = ({
       color: theme.colors.textTertiary,
       fontSize: 12,
       lineHeight: 18,
+      fontFamily: theme.typography.label.fontFamily,
     },
   });
 

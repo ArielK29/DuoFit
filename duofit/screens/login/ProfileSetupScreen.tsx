@@ -155,19 +155,22 @@ export const ProfileSetupScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber
     },
     title: {
       fontSize: 28,
-      fontWeight: 'bold',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.h2.fontFamily,
       color: theme.colors.text,
       textAlign: 'right',
       marginBottom: theme.spacing.sm,
     },
     subtitle: {
       fontSize: 14,
+      fontFamily: theme.typography.bodySmall.fontFamily,
       color: theme.colors.textSecondary,
       textAlign: 'right',
     },
     sectionLabel: {
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.label.fontFamily,
       color: theme.colors.text,
       textAlign: 'right',
       marginBottom: theme.spacing.sm,
@@ -198,6 +201,7 @@ export const ProfileSetupScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber
     avatarHint: {
       color: theme.colors.textTertiary,
       fontSize: 12,
+      fontFamily: theme.typography.label.fontFamily,
       marginTop: theme.spacing.sm,
       textAlign: 'center',
     },
@@ -228,11 +232,13 @@ export const ProfileSetupScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber
     levelChipText: {
       color: theme.colors.text,
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.label.fontFamily,
     },
     levelChipTextActive: {
       color: theme.colors.black,
-      fontWeight: '700',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.labelBold.fontFamily,
     },
     activitiesGrid: {
       flexDirection: 'row',
@@ -256,16 +262,19 @@ export const ProfileSetupScreen: React.FC<{ onNavigate?: OnNavigate; phoneNumber
     activityChipText: {
       color: theme.colors.text,
       fontSize: 14,
+      fontFamily: theme.typography.label.fontFamily,
     },
     activityChipTextActive: {
       color: theme.colors.black,
-      fontWeight: '600',
+      fontWeight: 'normal',
+      fontFamily: theme.typography.labelBold.fontFamily,
     },
     errorText: {
       color: theme.colors.error,
       textAlign: 'center',
       marginVertical: theme.spacing.md,
       fontSize: 14,
+      fontFamily: theme.typography.bodySmall.fontFamily,
     },
     buttonContainer: {
       marginTop: theme.spacing.xl,
