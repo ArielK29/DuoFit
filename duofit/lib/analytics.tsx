@@ -29,7 +29,18 @@ export const posthogClient = POSTHOG_API_KEY
       // base posthog-react-native package — no native module required, safe
       // in Expo Go. (Native crash capture, which DOES require the
       // @posthog/react-native-plugin add-on, is not enabled here.)
-      errorTracking: { autocapture: true },
+      errorTracking: {
+        autocapture: {
+          uncaughtExceptions: true,
+          // Disabled in dev so React Native's own "Possible unhandled promise
+          // rejection" LogBox warning still shows during development — PostHog's
+          // autocapture and RN's dev-mode Hermes rejection tracker both register
+          // through the same underlying mechanism, and PostHog's registration
+          // silently replaces RN's rather than composing with it. Still captured
+          // in production builds, where LogBox isn't relevant anyway.
+          unhandledRejections: !__DEV__,
+        },
+      },
     })
   : null;
 
