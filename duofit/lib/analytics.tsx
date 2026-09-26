@@ -22,7 +22,26 @@ if (!POSTHOG_API_KEY) {
 // handling/autocapture) and by trackEvent() below, so screens never need to
 // import `posthog-react-native` directly.
 export const posthogClient = POSTHOG_API_KEY
-  ? new PostHog(POSTHOG_API_KEY, { host: POSTHOG_HOST })
+  ? new PostHog(POSTHOG_API_KEY, {
+      host: POSTHOG_HOST,
+      // Automatically capture unhandled JS exceptions and send them to
+      // PostHog's Error Tracking product. This is a pure-JS feature of the
+      // base posthog-react-native package — no native module required, safe
+      // in Expo Go. (Native crash capture, which DOES require the
+      // @posthog/react-native-plugin add-on, is not enabled here.)
+      errorTracking: {
+        autocapture: {
+          uncaughtExceptions: true,
+          // Disabled in dev so React Native's own "Possible unhandled promise
+          // rejection" LogBox warning still shows during development — PostHog's
+          // autocapture and RN's dev-mode Hermes rejection tracker both register
+          // through the same underlying mechanism, and PostHog's registration
+          // silently replaces RN's rather than composing with it. Still captured
+          // in production builds, where LogBox isn't relevant anyway.
+          unhandledRejections: !__DEV__,
+        },
+      },
+    })
   : null;
 
 /**
@@ -38,6 +57,28 @@ export const posthogClient = POSTHOG_API_KEY
 export function trackEvent(name: string, properties?: Record<string, unknown>): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   posthogClient?.capture(name, properties as any);
+}
+
+/**
+ * Log a non-fatal warning to PostHog's Logs product. Safe to call even if
+ * PostHog failed to initialize — no-op in that case, same pattern as
+ * `trackEvent`.
+ */
+export function logWarn(message: string, properties?: Record<string, unknown>): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  posthogClient?.logger.warn(message, properties as any);
+}
+
+/**
+ * Log a handled error (something failed, but the app recovered — e.g. a
+ * caught exception in a try/catch) to PostHog's Logs product. For
+ * *unhandled* exceptions, rely on the automatic `errorTracking.autocapture`
+ * configured above instead — this function is for failures the app already
+ * caught and is deliberately continuing past.
+ */
+export function logError(message: string, properties?: Record<string, unknown>): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  posthogClient?.logger.error(message, properties as any);
 }
 
 /**

@@ -12,7 +12,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
-import { trackEvent } from '@lib/analytics';
+import { trackEvent, logError } from '@lib/analytics';
 import { theme } from '@styles/theme';
 import { useAuth, User } from '@hooks/useAuth';
 
@@ -79,7 +79,8 @@ export const ProfileSetupScreen: React.FC = () => {
       if (!result.canceled && result.assets.length > 0) {
         setAvatar(result.assets[0].uri);
       }
-    } catch {
+    } catch (err) {
+      logError('avatar_picker_failed', { error: String(err) });
       setError('לא הצלחנו לפתוח את גלריית התמונות');
     }
   };

@@ -7,6 +7,8 @@ import { Heebo_400Regular, Heebo_500Medium, Heebo_700Bold, Heebo_800ExtraBold } 
 import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk';
 import { JetBrainsMono_400Regular, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono';
 import { Stack } from 'expo-router';
+import { PostHogErrorBoundary } from 'posthog-react-native';
+import { ErrorFallback } from '@components/ErrorFallback';
 import { useAuth } from '@hooks/useAuth';
 import { AnalyticsProvider } from '@lib/analytics';
 import { theme } from '@styles/theme';
@@ -82,16 +84,18 @@ export default function RootLayout() {
       {!hasHydrated || !fontsReady ? (
         <LoadingScreen />
       ) : (
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg } }}>
-          <Stack.Protected guard={!isAuthenticated}>
-            <Stack.Screen name="login" />
-            <Stack.Screen name="verify-otp" />
-            <Stack.Screen name="profile-setup" />
-          </Stack.Protected>
-          <Stack.Protected guard={isAuthenticated}>
-            <Stack.Screen name="discover" />
-          </Stack.Protected>
-        </Stack>
+        <PostHogErrorBoundary fallback={ErrorFallback}>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg } }}>
+            <Stack.Protected guard={!isAuthenticated}>
+              <Stack.Screen name="login" />
+              <Stack.Screen name="verify-otp" />
+              <Stack.Screen name="profile-setup" />
+            </Stack.Protected>
+            <Stack.Protected guard={isAuthenticated}>
+              <Stack.Screen name="discover" />
+            </Stack.Protected>
+          </Stack>
+        </PostHogErrorBoundary>
       )}
     </AnalyticsProvider>
   );
