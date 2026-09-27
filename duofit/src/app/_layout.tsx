@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { ActivityIndicator, I18nManager, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
@@ -36,8 +36,13 @@ export default function RootLayout() {
   // zustand's `persist` middleware rehydrates from AsyncStorage asynchronously,
   // after the first render, so we wait for it to finish before picking a screen —
   // otherwise every launch would briefly flash the Login screen even for an
-  // already-authenticated user.
-  const [hasHydrated, setHasHydrated] = useState(() => useAuth.persist.hasHydrated());
+  // already-authenticated user. useSyncExternalStore (rather than a
+  // useState+useEffect pair) reads this external, non-React-owned flag
+  // without ever needing to call setState from inside an effect body.
+  const hasHydrated = useSyncExternalStore(
+    useAuth.persist.onFinishHydration,
+    () => useAuth.persist.hasHydrated()
+  );
   const isAuthenticated = useAuth((state) => state.isAuthenticated);
 
   // Custom fonts referenced throughout constants/typography.ts (Anton, Heebo,
@@ -54,19 +59,6 @@ export default function RootLayout() {
     JetBrainsMono_700Bold,
   });
   const fontsReady = fontsLoaded || !!fontError;
-
-  useEffect(() => {
-    if (useAuth.persist.hasHydrated()) {
-      setHasHydrated(true);
-      return;
-    }
-
-    const unsubscribe = useAuth.persist.onFinishHydration(() => {
-      setHasHydrated(true);
-    });
-
-    return unsubscribe;
-  }, []);
 
   useEffect(() => {
     if (hasHydrated && fontsReady) {
