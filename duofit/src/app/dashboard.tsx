@@ -168,12 +168,12 @@ const styles = StyleSheet.create({
   },
   heroValue: {
     fontSize: 40,
-    fontFamily: theme.typography.h1.fontFamily,
+    fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },
   heroGoal: {
     fontSize: 18,
-    fontFamily: theme.typography.h3.fontFamily,
+    fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.textTertiary,
   },
   heroLabel: {
@@ -196,13 +196,13 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   statValue: {
-    fontSize: 20,
-    fontFamily: theme.typography.h3.fontFamily,
+    fontSize: 22,
+    fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },
   statGoal: {
     fontSize: 13,
-    fontFamily: theme.typography.body.fontFamily,
+    fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.textTertiary,
   },
   statLabel: {
