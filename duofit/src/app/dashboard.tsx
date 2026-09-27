@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Activity, ArrowLeft, Users, Zap } from 'lucide-react-native';
 import { ProgressRing } from '@components/ProgressRing';
@@ -22,6 +22,18 @@ const MOCK_HISTORY = [
   { id: '3', title: 'יוגה עם תומר', date: 'לפני שבוע' },
 ];
 
+// Elevation to lift cards off the background, matching the reference design's
+// floating-card look — Android reads `elevation`, iOS reads the shadow* trio.
+const cardElevation = Platform.select({
+  android: { elevation: 4 },
+  default: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
+});
+
 export default function Dashboard() {
   const router = useRouter();
 
@@ -34,53 +46,64 @@ export default function Dashboard() {
 
         <Text style={styles.title}>לוח הבקרה שלי</Text>
 
-        <View style={styles.heroCard}>
+        <View style={[styles.heroCard, cardElevation]}>
+          <View style={styles.heroTextBlock}>
+            <View style={styles.heroValueRow}>
+              <Text style={styles.heroValue}>{MOCK_STATS.streakDays}</Text>
+              <Text style={styles.heroGoal}>/{MOCK_STATS.streakGoal}</Text>
+            </View>
+            <Text style={styles.heroLabel}>ימים ברצף השבוע</Text>
+          </View>
           <ProgressRing
-            size={168}
-            strokeWidth={14}
+            size={88}
+            strokeWidth={10}
             progress={MOCK_STATS.streakDays / MOCK_STATS.streakGoal}
             color={theme.colors.cyan}
             trackColor={theme.colors.surfaceHover}
           >
-            <Zap color={theme.colors.cyan} size={22} strokeWidth={2} />
-            <Text style={styles.heroValue}>{MOCK_STATS.streakDays}</Text>
-            <Text style={styles.heroUnit}>ימים ברצף</Text>
+            <Zap color={theme.colors.cyan} size={28} strokeWidth={2} />
           </ProgressRing>
         </View>
 
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
+          <View style={[styles.statCard, cardElevation]}>
+            <View style={styles.statValueRow}>
+              <Text style={styles.statValue}>{MOCK_STATS.workouts}</Text>
+              <Text style={styles.statGoal}>/{MOCK_STATS.workoutsGoal}</Text>
+            </View>
+            <Text style={styles.statLabel}>אימונים החודש</Text>
             <ProgressRing
-              size={84}
-              strokeWidth={8}
+              size={52}
+              strokeWidth={6}
               progress={MOCK_STATS.workouts / MOCK_STATS.workoutsGoal}
               color={theme.colors.magenta}
               trackColor={theme.colors.surfaceHover}
             >
-              <Activity color={theme.colors.text} size={18} strokeWidth={2} />
-              <Text style={styles.statValue}>{MOCK_STATS.workouts}</Text>
+              <Activity color={theme.colors.magenta} size={18} strokeWidth={2} />
             </ProgressRing>
-            <Text style={styles.statLabel}>אימונים החודש</Text>
           </View>
 
-          <View style={styles.statCard}>
+          <View style={[styles.statCard, cardElevation]}>
+            <View style={styles.statValueRow}>
+              <Text style={styles.statValue}>{MOCK_STATS.partners}</Text>
+              <Text style={styles.statGoal}>/{MOCK_STATS.partnersGoal}</Text>
+            </View>
+            <Text style={styles.statLabel}>שותפים פעילים</Text>
             <ProgressRing
-              size={84}
-              strokeWidth={8}
+              size={52}
+              strokeWidth={6}
               progress={MOCK_STATS.partners / MOCK_STATS.partnersGoal}
               color={theme.colors.text}
               trackColor={theme.colors.surfaceHover}
             >
               <Users color={theme.colors.text} size={18} strokeWidth={2} />
-              <Text style={styles.statValue}>{MOCK_STATS.partners}</Text>
             </ProgressRing>
-            <Text style={styles.statLabel}>שותפים פעילים</Text>
           </View>
         </View>
 
         <Text style={styles.sectionLabel}>היסטוריית אימונים</Text>
         {MOCK_HISTORY.map((item) => (
-          <View key={item.id} style={styles.historyRow}>
+          <View key={item.id} style={[styles.historyRow, cardElevation]}>
             <View style={styles.historyIconWrap}>
               <Activity color={theme.colors.textSecondary} size={20} strokeWidth={2} />
             </View>
@@ -132,22 +155,37 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   heroCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.xl,
-    paddingVertical: theme.spacing.xxl,
-    alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+  },
+  heroTextBlock: {
+    alignItems: 'flex-end',
+  },
+  heroValueRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
   },
   heroValue: {
-    fontSize: 36,
+    fontSize: 40,
     fontFamily: theme.typography.h1.fontFamily,
     color: theme.colors.text,
-    marginTop: theme.spacing.xs,
   },
-  heroUnit: {
-    fontSize: 12,
+  heroGoal: {
+    fontSize: 18,
+    fontFamily: theme.typography.h3.fontFamily,
+    color: theme.colors.textTertiary,
+    marginBottom: 4,
+  },
+  heroLabel: {
+    fontSize: 13,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
+    marginTop: 2,
   },
   statsRow: {
     flexDirection: 'row',
@@ -158,20 +196,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.xl,
-    paddingVertical: theme.spacing.lg,
-    alignItems: 'center',
+    padding: theme.spacing.md,
+    alignItems: 'flex-end',
     gap: theme.spacing.sm,
   },
+  statValueRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
   statValue: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: theme.typography.h3.fontFamily,
     color: theme.colors.text,
-    marginTop: 2,
+  },
+  statGoal: {
+    fontSize: 13,
+    fontFamily: theme.typography.body.fontFamily,
+    color: theme.colors.textTertiary,
   },
   statLabel: {
     fontSize: 12,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
+    textAlign: 'right',
   },
   sectionLabel: {
     fontSize: 14,
@@ -184,7 +231,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
     marginBottom: theme.spacing.sm,
