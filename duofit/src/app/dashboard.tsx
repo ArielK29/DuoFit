@@ -48,10 +48,10 @@ export default function Dashboard() {
 
         <View style={[styles.heroCard, cardElevation]}>
           <View style={styles.heroTextBlock}>
-            <View style={styles.heroValueRow}>
-              <Text style={styles.heroValue}>{MOCK_STATS.streakDays}</Text>
+            <Text style={styles.heroValue}>
+              {MOCK_STATS.streakDays}
               <Text style={styles.heroGoal}>/{MOCK_STATS.streakGoal}</Text>
-            </View>
+            </Text>
             <Text style={styles.heroLabel}>ימים ברצף השבוע</Text>
           </View>
           <ProgressRing
@@ -67,10 +67,10 @@ export default function Dashboard() {
 
         <View style={styles.statsRow}>
           <View style={[styles.statCard, cardElevation]}>
-            <View style={styles.statValueRow}>
-              <Text style={styles.statValue}>{MOCK_STATS.workouts}</Text>
+            <Text style={styles.statValue}>
+              {MOCK_STATS.workouts}
               <Text style={styles.statGoal}>/{MOCK_STATS.workoutsGoal}</Text>
-            </View>
+            </Text>
             <Text style={styles.statLabel}>אימונים החודש</Text>
             <ProgressRing
               size={52}
@@ -84,10 +84,10 @@ export default function Dashboard() {
           </View>
 
           <View style={[styles.statCard, cardElevation]}>
-            <View style={styles.statValueRow}>
-              <Text style={styles.statValue}>{MOCK_STATS.partners}</Text>
+            <Text style={styles.statValue}>
+              {MOCK_STATS.partners}
               <Text style={styles.statGoal}>/{MOCK_STATS.partnersGoal}</Text>
-            </View>
+            </Text>
             <Text style={styles.statLabel}>שותפים פעילים</Text>
             <ProgressRing
               size={52}
@@ -166,10 +166,6 @@ const styles = StyleSheet.create({
   heroTextBlock: {
     alignItems: 'flex-end',
   },
-  heroValueRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-  },
   heroValue: {
     fontSize: 40,
     fontFamily: theme.typography.h1.fontFamily,
@@ -179,7 +175,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: theme.typography.h3.fontFamily,
     color: theme.colors.textTertiary,
-    marginBottom: 4,
   },
   heroLabel: {
     fontSize: 13,
@@ -199,10 +194,6 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     alignItems: 'flex-end',
     gap: theme.spacing.sm,
-  },
-  statValueRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
   },
   statValue: {
     fontSize: 20,
