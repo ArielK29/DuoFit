@@ -1,5 +1,6 @@
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Activity, ArrowLeft, Users, Zap } from 'lucide-react-native';
 import { theme } from '@styles/theme';
 
 // Static placeholder data. This screen is a visual mockup only (per issue #2)
@@ -31,14 +32,17 @@ export default function Dashboard() {
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
+            <Activity color={theme.colors.text} size={24} strokeWidth={2} />
             <Text style={styles.statValue}>{MOCK_STATS.totalWorkouts}</Text>
             <Text style={styles.statLabel}>אימונים</Text>
           </View>
           <View style={[styles.statCard, styles.streakCard]}>
-            <Text style={[styles.statValue, styles.streakValue]}>{MOCK_STATS.activeStreak} 🔥</Text>
+            <Zap color={theme.colors.cyan} size={24} strokeWidth={2} />
+            <Text style={[styles.statValue, styles.streakValue]}>{MOCK_STATS.activeStreak}</Text>
             <Text style={styles.statLabel}>רצף פעיל</Text>
           </View>
           <View style={styles.statCard}>
+            <Users color={theme.colors.text} size={24} strokeWidth={2} />
             <Text style={styles.statValue}>{MOCK_STATS.partnersMatched}</Text>
             <Text style={styles.statLabel}>שותפים</Text>
           </View>
@@ -47,12 +51,18 @@ export default function Dashboard() {
         <Text style={styles.sectionLabel}>היסטוריית אימונים</Text>
         {MOCK_HISTORY.map((item) => (
           <View key={item.id} style={styles.historyRow}>
-            <Text style={styles.historyTitle}>{item.title}</Text>
-            <Text style={styles.historyDate}>{item.date}</Text>
+            <View style={styles.historyIconWrap}>
+              <Activity color={theme.colors.textSecondary} size={20} strokeWidth={2} />
+            </View>
+            <View style={styles.historyTextWrap}>
+              <Text style={styles.historyTitle}>{item.title}</Text>
+              <Text style={styles.historyDate}>{item.date}</Text>
+            </View>
           </View>
         ))}
 
         <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <ArrowLeft color={theme.colors.magenta} size={20} strokeWidth={2} />
           <Text style={styles.backButtonText}>חזרה</Text>
         </Pressable>
       </ScrollView>
@@ -102,6 +112,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     paddingVertical: theme.spacing.lg,
     alignItems: 'center',
+    gap: theme.spacing.xs,
   },
   streakCard: {
     borderWidth: 1,
@@ -111,7 +122,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: theme.typography.h3.fontFamily,
     color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
   },
   streakValue: {
     color: theme.colors.cyan,
@@ -130,28 +140,45 @@ const styles = StyleSheet.create({
   },
   historyRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
     marginBottom: theme.spacing.sm,
+    gap: theme.spacing.md,
+  },
+  historyIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.surfaceHover,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  historyTextWrap: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
   historyTitle: {
     fontSize: 14,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.text,
+    textAlign: 'right',
   },
   historyDate: {
     fontSize: 12,
     fontFamily: theme.typography.bodySmall.fontFamily,
     color: theme.colors.textTertiary,
+    marginTop: 2,
   },
   backButton: {
+    flexDirection: 'row',
     marginTop: theme.spacing.xl,
     minHeight: 48,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: theme.spacing.xs,
   },
   backButtonText: {
     color: theme.colors.magenta,
