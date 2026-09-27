@@ -1,15 +1,19 @@
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Activity, ArrowLeft, Users, Zap } from 'lucide-react-native';
+import { ProgressRing } from '@components/ProgressRing';
 import { theme } from '@styles/theme';
 
 // Static placeholder data. This screen is a visual mockup only (per issue #2)
 // — there is no backend yet (#15) and no completed check-ins to show real
 // numbers for, so every value here is an example, not live data.
 const MOCK_STATS = {
-  totalWorkouts: 12,
-  activeStreak: 4,
-  partnersMatched: 3,
+  streakDays: 4,
+  streakGoal: 7,
+  workouts: 12,
+  workoutsGoal: 15,
+  partners: 3,
+  partnersGoal: 5,
 };
 
 const MOCK_HISTORY = [
@@ -30,21 +34,47 @@ export default function Dashboard() {
 
         <Text style={styles.title}>לוח הבקרה שלי</Text>
 
+        <View style={styles.heroCard}>
+          <ProgressRing
+            size={168}
+            strokeWidth={14}
+            progress={MOCK_STATS.streakDays / MOCK_STATS.streakGoal}
+            color={theme.colors.cyan}
+            trackColor={theme.colors.surfaceHover}
+          >
+            <Zap color={theme.colors.cyan} size={22} strokeWidth={2} />
+            <Text style={styles.heroValue}>{MOCK_STATS.streakDays}</Text>
+            <Text style={styles.heroUnit}>ימים ברצף</Text>
+          </ProgressRing>
+        </View>
+
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Activity color={theme.colors.text} size={24} strokeWidth={2} />
-            <Text style={styles.statValue}>{MOCK_STATS.totalWorkouts}</Text>
-            <Text style={styles.statLabel}>אימונים</Text>
+            <ProgressRing
+              size={84}
+              strokeWidth={8}
+              progress={MOCK_STATS.workouts / MOCK_STATS.workoutsGoal}
+              color={theme.colors.magenta}
+              trackColor={theme.colors.surfaceHover}
+            >
+              <Activity color={theme.colors.text} size={18} strokeWidth={2} />
+              <Text style={styles.statValue}>{MOCK_STATS.workouts}</Text>
+            </ProgressRing>
+            <Text style={styles.statLabel}>אימונים החודש</Text>
           </View>
-          <View style={[styles.statCard, styles.streakCard]}>
-            <Zap color={theme.colors.cyan} size={24} strokeWidth={2} />
-            <Text style={[styles.statValue, styles.streakValue]}>{MOCK_STATS.activeStreak}</Text>
-            <Text style={styles.statLabel}>רצף פעיל</Text>
-          </View>
+
           <View style={styles.statCard}>
-            <Users color={theme.colors.text} size={24} strokeWidth={2} />
-            <Text style={styles.statValue}>{MOCK_STATS.partnersMatched}</Text>
-            <Text style={styles.statLabel}>שותפים</Text>
+            <ProgressRing
+              size={84}
+              strokeWidth={8}
+              progress={MOCK_STATS.partners / MOCK_STATS.partnersGoal}
+              color={theme.colors.text}
+              trackColor={theme.colors.surfaceHover}
+            >
+              <Users color={theme.colors.text} size={18} strokeWidth={2} />
+              <Text style={styles.statValue}>{MOCK_STATS.partners}</Text>
+            </ProgressRing>
+            <Text style={styles.statLabel}>שותפים פעילים</Text>
           </View>
         </View>
 
@@ -101,6 +131,24 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginBottom: theme.spacing.lg,
   },
+  heroCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.xl,
+    paddingVertical: theme.spacing.xxl,
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  heroValue: {
+    fontSize: 36,
+    fontFamily: theme.typography.h1.fontFamily,
+    color: theme.colors.text,
+    marginTop: theme.spacing.xs,
+  },
+  heroUnit: {
+    fontSize: 12,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textSecondary,
+  },
   statsRow: {
     flexDirection: 'row',
     gap: theme.spacing.sm,
@@ -109,22 +157,16 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.xl,
     paddingVertical: theme.spacing.lg,
     alignItems: 'center',
-    gap: theme.spacing.xs,
-  },
-  streakCard: {
-    borderWidth: 1,
-    borderColor: theme.colors.cyan,
+    gap: theme.spacing.sm,
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 18,
     fontFamily: theme.typography.h3.fontFamily,
     color: theme.colors.text,
-  },
-  streakValue: {
-    color: theme.colors.cyan,
+    marginTop: 2,
   },
   statLabel: {
     fontSize: 12,
