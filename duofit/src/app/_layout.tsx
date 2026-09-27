@@ -85,6 +85,7 @@ export default function RootLayout() {
             </Stack.Protected>
             <Stack.Protected guard={isAuthenticated}>
               <Stack.Screen name="discover" />
+              <Stack.Screen name="dashboard" />
             </Stack.Protected>
           </Stack>
         </PostHogErrorBoundary>
