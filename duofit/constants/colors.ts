@@ -18,7 +18,7 @@ export const colors = {
 
     // Text
     text: '#F5F5F5',
-    textSecondary: '#A0A0A0',
+    textSecondary: '#A8A8A8',
     textTertiary: '#606060',
 
     // Semantic
