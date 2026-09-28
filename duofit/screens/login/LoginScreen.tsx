@@ -8,9 +8,9 @@ import {
   I18nManager,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Dumbbell } from 'lucide-react-native';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
+import { Logo } from '@components/Logo';
 import { trackEvent } from '@lib/analytics';
 import { theme } from '@styles/theme';
 
@@ -98,13 +98,7 @@ export const LoginScreen: React.FC = () => {
       alignItems: 'center',
       marginBottom: theme.spacing.xxl,
     },
-    logoBadge: {
-      width: 72,
-      height: 72,
-      borderRadius: theme.borderRadius.full,
-      backgroundColor: theme.colors.magenta,
-      justifyContent: 'center',
-      alignItems: 'center',
+    logoWrapper: {
       marginBottom: theme.spacing.lg,
     },
     title: {
@@ -167,8 +161,8 @@ export const LoginScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.logoBadge}>
-            <Dumbbell color={theme.colors.black} size={36} strokeWidth={2} />
+          <View style={styles.logoWrapper}>
+            <Logo size={88} />
           </View>
           <Text style={styles.title}>DuoFit</Text>
           <Text style={styles.subtitle}>למצוא את בן הזוג הבא שלך</Text>
