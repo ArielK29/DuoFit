@@ -8,6 +8,7 @@ import {
   I18nManager,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Dumbbell } from 'lucide-react-native';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { trackEvent } from '@lib/analytics';
@@ -94,13 +95,22 @@ export const LoginScreen: React.FC = () => {
       paddingVertical: theme.spacing.xl,
     },
     header: {
-      textAlign: 'center',
+      alignItems: 'center',
       marginBottom: theme.spacing.xxl,
     },
+    logoBadge: {
+      width: 72,
+      height: 72,
+      borderRadius: theme.borderRadius.full,
+      backgroundColor: theme.colors.magenta,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: theme.spacing.lg,
+    },
     title: {
-      fontSize: 32,
+      fontSize: 36,
       fontWeight: 'normal',
-      fontFamily: theme.typography.h1.fontFamily,
+      fontFamily: theme.typography.display.fontFamily,
       color: theme.colors.text,
       marginBottom: theme.spacing.sm,
       textAlign: 'center',
@@ -157,7 +167,10 @@ export const LoginScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>🏋️ DuoFit</Text>
+          <View style={styles.logoBadge}>
+            <Dumbbell color={theme.colors.black} size={36} strokeWidth={2} />
+          </View>
+          <Text style={styles.title}>DuoFit</Text>
           <Text style={styles.subtitle}>למצוא את בן הזוג הבא שלך</Text>
           <Text style={styles.description}>
             התחברות מדויקת כדי לקבל OTP קוד בטלפון שלך
