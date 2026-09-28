@@ -177,7 +177,7 @@ export const ProfileSetupScreen: React.FC = () => {
       fontWeight: 'normal',
       fontFamily: theme.typography.h2.fontFamily,
       color: theme.colors.text,
-      textAlign: 'right',
+      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
       marginBottom: theme.spacing.sm,
     },
     subtitle: {
@@ -185,7 +185,7 @@ export const ProfileSetupScreen: React.FC = () => {
       fontSize: 14,
       fontFamily: theme.typography.bodySmall.fontFamily,
       color: theme.colors.textSecondary,
-      textAlign: 'right',
+      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     },
     sectionLabel: {
       width: '100%',
@@ -193,7 +193,7 @@ export const ProfileSetupScreen: React.FC = () => {
       fontWeight: 'normal',
       fontFamily: theme.typography.label.fontFamily,
       color: theme.colors.text,
-      textAlign: 'right',
+      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
       marginBottom: theme.spacing.sm,
       marginTop: theme.spacing.md,
     },

@@ -41,7 +41,7 @@ export const Input: React.FC<InputProps> = ({
       fontWeight: 'normal',
       fontFamily: theme.typography.label.fontFamily,
       marginBottom: theme.spacing.sm,
-      textAlign: 'right', // RTL
+      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     },
     inputContainer: {
       flexDirection: 'row-reverse', // RTL
@@ -67,7 +67,7 @@ export const Input: React.FC<InputProps> = ({
       fontSize: 12,
       fontFamily: theme.typography.bodySmall.fontFamily,
       marginTop: theme.spacing.xs,
-      textAlign: 'right', // RTL
+      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     },
     helperText: {
       width: '100%',
@@ -75,7 +75,7 @@ export const Input: React.FC<InputProps> = ({
       fontSize: 12,
       fontFamily: theme.typography.bodySmall.fontFamily,
       marginTop: theme.spacing.xs,
-      textAlign: 'right', // RTL
+      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     },
   });
 

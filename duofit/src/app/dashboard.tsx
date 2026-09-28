@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
-    textAlign: 'right',
+    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     marginBottom: theme.spacing.lg,
   },
   heroCard: {
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.text,
-    textAlign: 'right',
+    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     marginBottom: theme.spacing.md,
   },
   historyRow: {
