@@ -10,6 +10,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
+import { Logo } from '@components/Logo';
 import { trackEvent } from '@lib/analytics';
 import { theme } from '@styles/theme';
 
@@ -94,16 +95,11 @@ export const LoginScreen: React.FC = () => {
       paddingVertical: theme.spacing.xl,
     },
     header: {
-      textAlign: 'center',
+      alignItems: 'center',
       marginBottom: theme.spacing.xxl,
     },
-    title: {
-      fontSize: 32,
-      fontWeight: 'normal',
-      fontFamily: theme.typography.h1.fontFamily,
-      color: theme.colors.text,
-      marginBottom: theme.spacing.sm,
-      textAlign: 'center',
+    logoWrapper: {
+      marginBottom: theme.spacing.md,
     },
     subtitle: {
       fontSize: 16,
@@ -157,7 +153,9 @@ export const LoginScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>🏋️ DuoFit</Text>
+          <View style={styles.logoWrapper}>
+            <Logo size={220} />
+          </View>
           <Text style={styles.subtitle}>למצוא את בן הזוג הבא שלך</Text>
           <Text style={styles.description}>
             התחברות מדויקת כדי לקבל OTP קוד בטלפון שלך

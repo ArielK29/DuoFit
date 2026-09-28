@@ -176,12 +176,13 @@ export const VerifyOTPScreen: React.FC = () => {
       marginBottom: theme.spacing.lg,
     },
     otpLabel: {
+      width: '100%',
       color: theme.colors.text,
       fontSize: 14,
       fontWeight: 'normal',
       fontFamily: theme.typography.label.fontFamily,
       marginBottom: theme.spacing.sm,
-      textAlign: 'right',
+      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     },
     otpInput: {
       borderWidth: 2,

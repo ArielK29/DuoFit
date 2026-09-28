@@ -35,12 +35,13 @@ export const Input: React.FC<InputProps> = ({
       marginBottom: theme.spacing.md,
     },
     label: {
+      width: '100%',
       color: theme.colors.text,
       fontSize: 14,
       fontWeight: 'normal',
       fontFamily: theme.typography.label.fontFamily,
       marginBottom: theme.spacing.sm,
-      textAlign: 'right', // RTL
+      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     },
     inputContainer: {
       flexDirection: 'row-reverse', // RTL
@@ -61,18 +62,20 @@ export const Input: React.FC<InputProps> = ({
       fontFamily: theme.typography.body.fontFamily,
     },
     error: {
+      width: '100%',
       color: theme.colors.error,
       fontSize: 12,
       fontFamily: theme.typography.bodySmall.fontFamily,
       marginTop: theme.spacing.xs,
-      textAlign: 'right', // RTL
+      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     },
     helperText: {
+      width: '100%',
       color: theme.colors.textSecondary,
       fontSize: 12,
       fontFamily: theme.typography.bodySmall.fontFamily,
       marginTop: theme.spacing.xs,
-      textAlign: 'right', // RTL
+      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     },
   });
 
