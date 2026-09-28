@@ -172,6 +172,7 @@ export const ProfileSetupScreen: React.FC = () => {
       marginBottom: theme.spacing.xl,
     },
     title: {
+      width: '100%',
       fontSize: 28,
       fontWeight: 'normal',
       fontFamily: theme.typography.h2.fontFamily,
@@ -180,12 +181,14 @@ export const ProfileSetupScreen: React.FC = () => {
       marginBottom: theme.spacing.sm,
     },
     subtitle: {
+      width: '100%',
       fontSize: 14,
       fontFamily: theme.typography.bodySmall.fontFamily,
       color: theme.colors.textSecondary,
       textAlign: 'right',
     },
     sectionLabel: {
+      width: '100%',
       fontSize: 14,
       fontWeight: 'normal',
       fontFamily: theme.typography.label.fontFamily,

@@ -176,6 +176,7 @@ export const VerifyOTPScreen: React.FC = () => {
       marginBottom: theme.spacing.lg,
     },
     otpLabel: {
+      width: '100%',
       color: theme.colors.text,
       fontSize: 14,
       fontWeight: 'normal',

@@ -148,6 +148,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.label.fontFamily,
   },
   title: {
+    width: '100%',
     fontSize: 28,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
@@ -212,6 +213,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   sectionLabel: {
+    width: '100%',
     fontSize: 14,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.text,

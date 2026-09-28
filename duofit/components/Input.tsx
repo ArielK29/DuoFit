@@ -35,6 +35,7 @@ export const Input: React.FC<InputProps> = ({
       marginBottom: theme.spacing.md,
     },
     label: {
+      width: '100%',
       color: theme.colors.text,
       fontSize: 14,
       fontWeight: 'normal',
@@ -61,6 +62,7 @@ export const Input: React.FC<InputProps> = ({
       fontFamily: theme.typography.body.fontFamily,
     },
     error: {
+      width: '100%',
       color: theme.colors.error,
       fontSize: 12,
       fontFamily: theme.typography.bodySmall.fontFamily,
@@ -68,6 +70,7 @@ export const Input: React.FC<InputProps> = ({
       textAlign: 'right', // RTL
     },
     helperText: {
+      width: '100%',
       color: theme.colors.textSecondary,
       fontSize: 12,
       fontFamily: theme.typography.bodySmall.fontFamily,
