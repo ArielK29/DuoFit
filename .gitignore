@@ -55,3 +55,6 @@ logs/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# nCode course rehearsal repos (own git history each, not part of DuoFit)
+/nCode-Exercises/
