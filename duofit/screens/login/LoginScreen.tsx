@@ -99,15 +99,7 @@ export const LoginScreen: React.FC = () => {
       marginBottom: theme.spacing.xxl,
     },
     logoWrapper: {
-      marginBottom: theme.spacing.lg,
-    },
-    title: {
-      fontSize: 36,
-      fontWeight: 'normal',
-      fontFamily: theme.typography.display.fontFamily,
-      color: theme.colors.text,
-      marginBottom: theme.spacing.sm,
-      textAlign: 'center',
+      marginBottom: theme.spacing.md,
     },
     subtitle: {
       fontSize: 16,
@@ -162,9 +154,8 @@ export const LoginScreen: React.FC = () => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoWrapper}>
-            <Logo size={88} />
+            <Logo size={220} />
           </View>
-          <Text style={styles.title}>DuoFit</Text>
           <Text style={styles.subtitle}>למצוא את בן הזוג הבא שלך</Text>
           <Text style={styles.description}>
             התחברות מדויקת כדי לקבל OTP קוד בטלפון שלך
