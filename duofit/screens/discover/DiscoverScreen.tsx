@@ -38,26 +38,31 @@ export function DiscoverScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.topRow}>
-        <View style={styles.topRowIcons}>
-          <Pressable onPress={() => router.push('/dashboard')} accessibilityLabel="לוח הבקרה שלי">
-            <LayoutDashboard color={theme.colors.textSecondary} size={22} strokeWidth={2} />
+      <View style={styles.topRowIcons}>
+        <Pressable
+          style={styles.navButton}
+          onPress={() => router.push('/dashboard')}
+          accessibilityLabel="לוח הבקרה שלי"
+        >
+          <LayoutDashboard color={theme.colors.cyan} size={20} strokeWidth={2} />
+          <Text style={styles.navButtonText}>לוח בקרה</Text>
+        </Pressable>
+        {__DEV__ && (
+          <Pressable
+            style={styles.navButton}
+            onPress={() => {
+              useAuth.getState().logout();
+              router.replace('/login');
+            }}
+            accessibilityLabel="התנתק (לבדיקות)"
+          >
+            <LogOut color={theme.colors.textTertiary} size={20} strokeWidth={2} />
+            <Text style={styles.navButtonText}>התנתק</Text>
           </Pressable>
-          {__DEV__ && (
-            <Pressable
-              onPress={() => {
-                useAuth.getState().logout();
-                router.replace('/login');
-              }}
-              accessibilityLabel="התנתק (לבדיקות)"
-            >
-              <LogOut color={theme.colors.textTertiary} size={22} strokeWidth={2} />
-            </Pressable>
-          )}
-        </View>
-        <View style={styles.previewBadge}>
-          <Text style={styles.previewBadgeText}>תצוגה מקדימה — נתוני דוגמה</Text>
-        </View>
+        )}
+      </View>
+      <View style={styles.previewBadge}>
+        <Text style={styles.previewBadgeText}>תצוגה מקדימה — נתוני דוגמה</Text>
       </View>
       <Text style={styles.title}>גלה שותפים</Text>
 
@@ -222,23 +227,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
   },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-  },
   topRowIcons: {
     flexDirection: 'row',
-    gap: theme.spacing.lg,
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+  },
+  navButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    minHeight: 48, // Touch target minimum
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  navButtonText: {
+    fontSize: 13,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.text,
   },
   previewBadge: {
+    alignSelf: 'flex-end',
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.surfaceHover,
     borderRadius: theme.borderRadius.full,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
   },
   previewBadgeText: {
     color: theme.colors.textTertiary,
