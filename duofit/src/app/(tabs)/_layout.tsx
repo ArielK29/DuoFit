@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Search, MessageSquare, LayoutDashboard } from 'lucide-react-native';
+import { Home, Search, MessageSquare, Globe, BarChart3 } from 'lucide-react-native';
 import { theme } from '@styles/theme';
 
 export default function TabsLayout() {
@@ -18,14 +18,21 @@ export default function TabsLayout() {
         },
         tabBarLabelStyle: {
           fontFamily: theme.typography.label.fontFamily,
-          fontSize: 12,
+          fontSize: 11,
         },
       }}
     >
       <Tabs.Screen
+        name="dashboard"
+        options={{
+          title: 'בית',
+          tabBarIcon: ({ color, size }) => <Home color={color} size={size} strokeWidth={2} />,
+        }}
+      />
+      <Tabs.Screen
         name="discover"
         options={{
-          title: 'גלה',
+          title: 'התאמות',
           tabBarIcon: ({ color, size }) => <Search color={color} size={size} strokeWidth={2} />,
         }}
       />
@@ -37,10 +44,17 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="dashboard"
+        name="community"
         options={{
-          title: 'לוח בקרה',
-          tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} strokeWidth={2} />,
+          title: 'קהילה',
+          tabBarIcon: ({ color, size }) => <Globe color={color} size={size} strokeWidth={2} />,
+        }}
+      />
+      <Tabs.Screen
+        name="progress"
+        options={{
+          title: 'התקדמות',
+          tabBarIcon: ({ color, size }) => <BarChart3 color={color} size={size} strokeWidth={2} />,
         }}
       />
     </Tabs>
