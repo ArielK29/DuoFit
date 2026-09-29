@@ -57,7 +57,7 @@ export function ConversationScreen() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.header}>
-        <Pressable style={styles.iconButton} onPress={() => router.back()}>
+        <Pressable style={styles.iconButton} onPress={() => router.back()} accessibilityLabel="חזרה">
           <ArrowLeft color={theme.colors.magenta} size={22} strokeWidth={2} />
         </Pressable>
         <Text style={styles.headerName}>{partnerName}</Text>
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.xs,
-    minHeight: 40,
+    minHeight: 48, // Touch target minimum
     borderRadius: theme.borderRadius.md,
   },
   inviteDecline: {
