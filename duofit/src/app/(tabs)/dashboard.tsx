@@ -3,6 +3,8 @@ import { useRouter } from 'expo-router';
 import { Activity, LogOut, Users } from 'lucide-react-native';
 import { ProgressRing } from '@components/ProgressRing';
 import { StreakDisplay } from '@components/StreakDisplay';
+import { WeekStrip } from '@components/WeekStrip';
+import { UpcomingWorkoutCard } from '@components/UpcomingWorkoutCard';
 import { Button } from '@components/Button';
 import { useAuth } from '@hooks/useAuth';
 import { useWorkoutStore, ScheduledWorkout } from '@hooks/useWorkoutStore';
@@ -64,14 +66,29 @@ export default function Dashboard() {
     .filter((workout) => workout.checkedIn)
     .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
 
+  const upcomingWorkout = scheduledWorkouts
+    .filter((workout) => !workout.checkedIn)
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0];
+
   const streakDays = computeStreak(completedWorkouts);
   const partnersCount = new Set(scheduledWorkouts.map((workout) => workout.partnerId)).size;
   const hasHistory = completedWorkouts.length > 0;
+
+  const activeDates = new Set(
+    completedWorkouts.map((workout) => {
+      const d = new Date(workout.scheduledAt);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    })
+  );
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>לוח הבקרה שלי</Text>
+
+        <View style={styles.weekStripWrapper}>
+          <WeekStrip activeDates={activeDates} />
+        </View>
 
         <StreakDisplay days={streakDays} goal={STREAK_GOAL} />
 
@@ -110,6 +127,13 @@ export default function Dashboard() {
             </ProgressRing>
           </View>
         </View>
+
+        {upcomingWorkout && (
+          <UpcomingWorkoutCard
+            workout={upcomingWorkout}
+            onPress={() => router.push({ pathname: '/check-in', params: { workoutId: upcomingWorkout.id } })}
+          />
+        )}
 
         <Text style={styles.sectionLabel}>היסטוריית אימונים</Text>
         {hasHistory ? (
@@ -165,6 +189,9 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
     textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    marginBottom: theme.spacing.lg,
+  },
+  weekStripWrapper: {
     marginBottom: theme.spacing.lg,
   },
   statsRow: {
