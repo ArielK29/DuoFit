@@ -1,7 +1,8 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Activity, ArrowLeft, Users, Zap } from 'lucide-react-native';
+import { Activity, LogOut, Users, Zap } from 'lucide-react-native';
 import { ProgressRing } from '@components/ProgressRing';
+import { useAuth } from '@hooks/useAuth';
 import { theme } from '@styles/theme';
 
 // Static placeholder data. This screen is a visual mockup only (per issue #2)
@@ -114,10 +115,18 @@ export default function Dashboard() {
           </View>
         ))}
 
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <ArrowLeft color={theme.colors.magenta} size={20} strokeWidth={2} />
-          <Text style={styles.backButtonText}>חזרה</Text>
-        </Pressable>
+        {__DEV__ && (
+          <Pressable
+            onPress={() => {
+              useAuth.getState().logout();
+              router.replace('/login');
+            }}
+            style={styles.backButton}
+          >
+            <LogOut color={theme.colors.magenta} size={20} strokeWidth={2} />
+            <Text style={styles.backButtonText}>התנתק (לבדיקות)</Text>
+          </Pressable>
+        )}
       </ScrollView>
     </View>
   );

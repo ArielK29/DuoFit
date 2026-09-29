@@ -86,8 +86,7 @@ export default function RootLayout() {
                 <Stack.Screen name="profile-setup" />
               </Stack.Protected>
               <Stack.Protected guard={isAuthenticated}>
-                <Stack.Screen name="discover" />
-                <Stack.Screen name="dashboard" />
+                <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="partner-profile" />
               </Stack.Protected>
             </Stack>

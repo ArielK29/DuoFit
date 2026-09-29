@@ -10,9 +10,8 @@ import Animated, {
   withRepeat,
   runOnJS,
 } from 'react-native-reanimated';
-import { Heart, X, MapPin, SearchX, Dumbbell, LayoutDashboard, LogOut } from 'lucide-react-native';
+import { Heart, X, MapPin, SearchX, Dumbbell } from 'lucide-react-native';
 import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatching';
-import { useAuth } from '@hooks/useAuth';
 import { EmptyState } from '@components/EmptyState';
 import { theme } from '@styles/theme';
 
@@ -38,29 +37,6 @@ export function DiscoverScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.topRowIcons}>
-        <Pressable
-          style={styles.navButton}
-          onPress={() => router.push('/dashboard')}
-          accessibilityLabel="לוח הבקרה שלי"
-        >
-          <LayoutDashboard color={theme.colors.cyan} size={20} strokeWidth={2} />
-          <Text style={styles.navButtonText}>לוח בקרה</Text>
-        </Pressable>
-        {__DEV__ && (
-          <Pressable
-            style={styles.navButton}
-            onPress={() => {
-              useAuth.getState().logout();
-              router.replace('/login');
-            }}
-            accessibilityLabel="התנתק (לבדיקות)"
-          >
-            <LogOut color={theme.colors.textTertiary} size={20} strokeWidth={2} />
-            <Text style={styles.navButtonText}>התנתק</Text>
-          </Pressable>
-        )}
-      </View>
       <View style={styles.previewBadge}>
         <Text style={styles.previewBadgeText}>תצוגה מקדימה — נתוני דוגמה</Text>
       </View>
@@ -226,27 +202,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.bg,
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
-  },
-  topRowIcons: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-  },
-  navButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-    minHeight: 48, // Touch target minimum
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.surfaceHover,
-    borderRadius: theme.borderRadius.full,
-    paddingHorizontal: theme.spacing.lg,
-  },
-  navButtonText: {
-    fontSize: 13,
-    fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.text,
   },
   previewBadge: {
     alignSelf: 'flex-end',
