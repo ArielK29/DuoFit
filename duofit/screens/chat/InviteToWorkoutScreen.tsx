@@ -1,35 +1,33 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useWorkoutStore } from '@hooks/useWorkoutStore';
-import { scheduleWorkoutReminder } from '@lib/notifications';
+import { useChatStore } from '@hooks/useChatStore';
 import { ScheduleForm } from '@components/ScheduleForm';
 import { theme } from '@styles/theme';
 
-export function ScheduleWorkoutScreen() {
+const DEFAULT_ACTIVITY = 'אימון משותף';
+
+export function InviteToWorkoutScreen() {
   const router = useRouter();
-  const { partnerId = '', partnerName = '', activity = 'אימון משותף' } = useLocalSearchParams<
-    '/schedule-workout',
-    { partnerId: string; partnerName: string; activity: string }
+  const { partnerId = '', partnerName = '' } = useLocalSearchParams<
+    '/invite-to-workout',
+    { partnerId: string; partnerName: string }
   >();
-  const scheduleWorkout = useWorkoutStore((state) => state.scheduleWorkout);
+  const sendInvite = useChatStore((state) => state.sendInvite);
 
   const handleConfirm = (scheduledAt: Date, location: string) => {
-    const workout = scheduleWorkout({
-      partnerId,
-      partnerName,
-      activity,
+    sendInvite(partnerId, partnerName, {
+      activity: DEFAULT_ACTIVITY,
       location,
       scheduledAt: scheduledAt.toISOString(),
     });
-    scheduleWorkoutReminder({ activity, partnerName, scheduledAt });
-    router.replace({ pathname: '/check-in', params: { workoutId: workout.id } });
+    router.back();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>קביעת אימון</Text>
-      <Text style={styles.subtitle}>עם {partnerName} · {activity}</Text>
-      <ScheduleForm confirmLabel="אשר תזמון" onConfirm={handleConfirm} />
+      <Text style={styles.title}>הזמנה לאימון</Text>
+      <Text style={styles.subtitle}>עם {partnerName}</Text>
+      <ScheduleForm confirmLabel="שלח הזמנה" onConfirm={handleConfirm} />
     </View>
   );
 }

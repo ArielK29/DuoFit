@@ -74,7 +74,11 @@ export function ChatListScreen() {
                 <View style={styles.rowTextWrap}>
                   <Text style={styles.partnerName}>{partnerName}</Text>
                   <Text style={styles.preview} numberOfLines={1}>
-                    {lastMessage ? lastMessage.text : 'התחילו שיחה'}
+                    {lastMessage
+                      ? lastMessage.kind === 'invite'
+                        ? 'הזמנה לאימון'
+                        : lastMessage.text
+                      : 'התחילו שיחה'}
                   </Text>
                 </View>
                 {lastMessage && <Text style={styles.time}>{formatRelativeTime(lastMessage.sentAt)}</Text>}

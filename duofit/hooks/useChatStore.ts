@@ -1,13 +1,18 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useWorkoutStore } from '@hooks/useWorkoutStore';
 
-export interface ChatMessage {
-  id: string;
-  senderId: 'me' | 'partner';
-  text: string;
-  sentAt: string; // ISO
+export interface WorkoutInvite {
+  activity: string;
+  location: string;
+  scheduledAt: string; // ISO
+  status: 'pending' | 'accepted' | 'declined';
 }
+
+export type ChatMessage =
+  | { id: string; senderId: 'me' | 'partner'; sentAt: string; kind: 'text'; text: string }
+  | { id: string; senderId: 'me' | 'partner'; sentAt: string; kind: 'invite'; invite: WorkoutInvite };
 
 export interface Conversation {
   partnerId: string;
@@ -20,6 +25,8 @@ interface ChatState {
 
   ensureConversation: (partnerId: string, partnerName: string) => void;
   sendMessage: (partnerId: string, partnerName: string, text: string) => void;
+  sendInvite: (partnerId: string, partnerName: string, invite: Omit<WorkoutInvite, 'status'>) => void;
+  respondToInvite: (partnerId: string, messageId: string, accept: boolean) => void;
 }
 
 // Canned auto-replies simulating the other side of the conversation — there's
@@ -32,6 +39,14 @@ const AUTO_REPLIES = [
 ];
 export const AUTO_REPLY_DELAY_MS = 1500;
 
+function getOrCreateConversation(
+  conversations: Record<string, Conversation>,
+  partnerId: string,
+  partnerName: string
+): Conversation {
+  return conversations[partnerId] ?? { partnerId, partnerName, messages: [] };
+}
+
 export const useChatStore = create<ChatState>()(
   persist(
     (set, get) => ({
@@ -40,16 +55,19 @@ export const useChatStore = create<ChatState>()(
       ensureConversation: (partnerId, partnerName) => {
         if (get().conversations[partnerId]) return;
         set({
-          conversations: {
-            ...get().conversations,
-            [partnerId]: { partnerId, partnerName, messages: [] },
-          },
+          conversations: { ...get().conversations, [partnerId]: { partnerId, partnerName, messages: [] } },
         });
       },
 
       sendMessage: (partnerId, partnerName, text) => {
-        const existing = get().conversations[partnerId] ?? { partnerId, partnerName, messages: [] };
-        const myMessage: ChatMessage = { id: `${Date.now()}`, senderId: 'me', text, sentAt: new Date().toISOString() };
+        const existing = getOrCreateConversation(get().conversations, partnerId, partnerName);
+        const myMessage: ChatMessage = {
+          id: `${Date.now()}`,
+          senderId: 'me',
+          kind: 'text',
+          text,
+          sentAt: new Date().toISOString(),
+        };
 
         set({
           conversations: {
@@ -64,6 +82,7 @@ export const useChatStore = create<ChatState>()(
           const reply: ChatMessage = {
             id: `${Date.now()}`,
             senderId: 'partner',
+            kind: 'text',
             text: AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)],
             sentAt: new Date().toISOString(),
           };
@@ -74,6 +93,59 @@ export const useChatStore = create<ChatState>()(
             },
           });
         }, AUTO_REPLY_DELAY_MS);
+      },
+
+      sendInvite: (partnerId, partnerName, invite) => {
+        const existing = getOrCreateConversation(get().conversations, partnerId, partnerName);
+        const inviteMessage: ChatMessage = {
+          id: `${Date.now()}`,
+          senderId: 'me',
+          kind: 'invite',
+          invite: { ...invite, status: 'pending' },
+          sentAt: new Date().toISOString(),
+        };
+
+        set({
+          conversations: {
+            ...get().conversations,
+            [partnerId]: { ...existing, messages: [...existing.messages, inviteMessage] },
+          },
+        });
+      },
+
+      // No second device to accept/decline from, so this is a manual demo
+      // action on the same invite card rather than a simulated incoming reply.
+      respondToInvite: (partnerId, messageId, accept) => {
+        const conversation = get().conversations[partnerId];
+        if (!conversation) return;
+
+        const message = conversation.messages.find((item) => item.id === messageId);
+        if (!message || message.kind !== 'invite' || message.invite.status !== 'pending') return;
+
+        const status = accept ? 'accepted' : 'declined';
+        set({
+          conversations: {
+            ...get().conversations,
+            [partnerId]: {
+              ...conversation,
+              messages: conversation.messages.map((item) =>
+                item.id === messageId && item.kind === 'invite'
+                  ? { ...item, invite: { ...item.invite, status } }
+                  : item
+              ),
+            },
+          },
+        });
+
+        if (accept) {
+          useWorkoutStore.getState().scheduleWorkout({
+            partnerId,
+            partnerName: conversation.partnerName,
+            activity: message.invite.activity,
+            location: message.invite.location,
+            scheduledAt: message.invite.scheduledAt,
+          });
+        }
       },
     }),
     {

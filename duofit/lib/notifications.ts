@@ -65,3 +65,24 @@ export async function scheduleWorkoutReminder({ activity, partnerName, scheduled
     // See module comment — expected in Expo Go on Android.
   }
 }
+
+// Fired the moment a workout invite is accepted/declined (issue #7's
+// "notification when an invite is ... answered" — there's only one device in
+// this mock, so "received" isn't a separate event worth notifying for).
+export async function notifyInviteAnswered(partnerName: string, accepted: boolean) {
+  try {
+    const Notifications = await getNotifications();
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted') return;
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: accepted ? 'ההזמנה אושרה!' : 'ההזמנה נדחתה',
+        body: accepted ? `${partnerName} אישר/ה את ההזמנה לאימון` : `${partnerName} דחה/תה את ההזמנה לאימון`,
+      },
+      trigger: null,
+    });
+  } catch {
+    // See module comment — expected in Expo Go on Android.
+  }
+}
