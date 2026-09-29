@@ -88,6 +88,8 @@ export default function RootLayout() {
               <Stack.Protected guard={isAuthenticated}>
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="partner-profile" />
+                <Stack.Screen name="schedule-workout" />
+                <Stack.Screen name="check-in" />
               </Stack.Protected>
             </Stack>
           </PostHogErrorBoundary>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -28,11 +28,12 @@ export function DiscoverScreen() {
 
   const handleInterested = () => {
     if (!currentPartner) return;
-    const name = currentPartner.name;
+    const { id, name, activities } = currentPartner;
     interested();
-    // No real chat/scheduling backend yet (feature/checkout not built) —
-    // this confirms the action without pretending to send anything real.
-    Alert.alert('מעולה!', `שלחנו ל${name} הודעה שאת/ה מעוניין/ת להתאמן יחד (בקרוב: תזמון אימון אמיתי)`);
+    router.push({
+      pathname: '/schedule-workout',
+      params: { partnerId: id, partnerName: name, activity: activities[0] ?? 'אימון משותף' },
+    });
   };
 
   return (
