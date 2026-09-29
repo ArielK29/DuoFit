@@ -68,12 +68,20 @@ export function ChatListScreen() {
               onPress={() => router.push({ pathname: '/conversation', params: { partnerId, partnerName } })}
             >
               <Card style={styles.row}>
-                <View style={styles.avatarCircle}>
-                  <Text style={styles.avatarInitial}>{partnerName[0]}</Text>
+                <View style={styles.avatarWrap}>
+                  <View style={styles.avatarCircle}>
+                    <Text style={styles.avatarInitial}>{partnerName[0]}</Text>
+                  </View>
+                  {lastMessage?.senderId === 'partner' && <View style={styles.unreadDot} />}
                 </View>
                 <View style={styles.rowTextWrap}>
-                  <Text style={styles.partnerName}>{partnerName}</Text>
-                  <Text style={styles.preview} numberOfLines={1}>
+                  <Text style={[styles.partnerName, lastMessage?.senderId === 'partner' && styles.partnerNameUnread]}>
+                    {partnerName}
+                  </Text>
+                  <Text
+                    style={[styles.preview, lastMessage?.senderId === 'partner' && styles.previewUnread]}
+                    numberOfLines={1}
+                  >
                     {lastMessage
                       ? lastMessage.kind === 'invite'
                         ? 'הזמנה לאימון'
@@ -127,6 +135,9 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
     marginBottom: theme.spacing.sm,
   },
+  avatarWrap: {
+    position: 'relative',
+  },
   avatarCircle: {
     width: 48,
     height: 48,
@@ -140,6 +151,17 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.h3.fontFamily,
     color: theme.colors.cyan,
   },
+  unreadDot: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 12,
+    height: 12,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.magenta,
+    borderWidth: 2,
+    borderColor: theme.colors.surface,
+  },
   rowTextWrap: {
     flex: 1,
     alignItems: 'flex-end',
@@ -149,11 +171,18 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
   },
+  partnerNameUnread: {
+    color: theme.colors.cyan,
+  },
   preview: {
     fontSize: 13,
     fontFamily: theme.typography.bodySmall.fontFamily,
     color: theme.colors.textSecondary,
     marginTop: 2,
+  },
+  previewUnread: {
+    color: theme.colors.text,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
   },
   time: {
     fontSize: 11,
