@@ -7,6 +7,7 @@ import { Heebo_400Regular, Heebo_500Medium, Heebo_700Bold, Heebo_800ExtraBold } 
 import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk';
 import { JetBrainsMono_400Regular, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono';
 import { Stack } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PostHogErrorBoundary } from 'posthog-react-native';
 import { ErrorFallback } from '@components/ErrorFallback';
 import { useAuth } from '@hooks/useAuth';
@@ -72,24 +73,27 @@ export default function RootLayout() {
   // AnalyticsProvider wraps both the loading state and the real navigator so
   // PostHog is initialized as early as possible, without changing this gate.
   return (
-    <AnalyticsProvider>
-      {!hasHydrated || !fontsReady ? (
-        <LoadingScreen />
-      ) : (
-        <PostHogErrorBoundary fallback={ErrorFallback}>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg } }}>
-            <Stack.Protected guard={!isAuthenticated}>
-              <Stack.Screen name="login" />
-              <Stack.Screen name="verify-otp" />
-              <Stack.Screen name="profile-setup" />
-            </Stack.Protected>
-            <Stack.Protected guard={isAuthenticated}>
-              <Stack.Screen name="discover" />
-              <Stack.Screen name="dashboard" />
-            </Stack.Protected>
-          </Stack>
-        </PostHogErrorBoundary>
-      )}
-    </AnalyticsProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AnalyticsProvider>
+        {!hasHydrated || !fontsReady ? (
+          <LoadingScreen />
+        ) : (
+          <PostHogErrorBoundary fallback={ErrorFallback}>
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg } }}>
+              <Stack.Protected guard={!isAuthenticated}>
+                <Stack.Screen name="login" />
+                <Stack.Screen name="verify-otp" />
+                <Stack.Screen name="profile-setup" />
+              </Stack.Protected>
+              <Stack.Protected guard={isAuthenticated}>
+                <Stack.Screen name="discover" />
+                <Stack.Screen name="dashboard" />
+                <Stack.Screen name="partner-profile" />
+              </Stack.Protected>
+            </Stack>
+          </PostHogErrorBoundary>
+        )}
+      </AnalyticsProvider>
+    </GestureHandlerRootView>
   );
 }
