@@ -1,27 +1,18 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Activity, LogOut, Users, Zap } from 'lucide-react-native';
+import { Activity, LogOut, Users } from 'lucide-react-native';
 import { ProgressRing } from '@components/ProgressRing';
+import { StreakDisplay } from '@components/StreakDisplay';
+import { Button } from '@components/Button';
 import { useAuth } from '@hooks/useAuth';
+import { useWorkoutStore, ScheduledWorkout } from '@hooks/useWorkoutStore';
 import { theme } from '@styles/theme';
 
-// Static placeholder data. This screen is a visual mockup only (per issue #2)
-// — there is no backend yet (#15) and no completed check-ins to show real
-// numbers for, so every value here is an example, not live data.
-const MOCK_STATS = {
-  streakDays: 4,
-  streakGoal: 7,
-  workouts: 12,
-  workoutsGoal: 15,
-  partners: 3,
-  partnersGoal: 5,
-};
-
-const MOCK_HISTORY = [
-  { id: '1', title: 'ריצה עם דניאל', date: 'אתמול' },
-  { id: '2', title: 'כושר גופני עם נועה', date: 'לפני 3 ימים' },
-  { id: '3', title: 'יוגה עם תומר', date: 'לפני שבוע' },
-];
+// Target thresholds shown alongside the real numbers below — not mock data,
+// just static goals until a goal-setting feature exists.
+const STREAK_GOAL = 7;
+const WORKOUTS_GOAL = 12;
+const PARTNERS_GOAL = 5;
 
 // Elevation to lift cards off the background, matching the reference design's
 // floating-card look — Android reads `elevation`, iOS reads the shadow* trio.
@@ -35,48 +26,66 @@ const cardElevation = Platform.select({
   },
 });
 
+function formatRelativeDate(iso: string): string {
+  const date = new Date(iso);
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(new Date()) - startOfDay(date)) / 86400000);
+
+  if (diffDays === 0) return 'היום';
+  if (diffDays === 1) return 'אתמול';
+  if (diffDays > 1 && diffDays < 7) return `לפני ${diffDays} ימים`;
+  if (diffDays >= 7 && diffDays < 14) return 'לפני שבוע';
+  return date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long' });
+}
+
+// Longest run of consecutive calendar days ending at the most recent
+// check-in — simple streak definition, no "did you break it today" logic.
+function computeStreak(workouts: ScheduledWorkout[]): number {
+  if (workouts.length === 0) return 0;
+
+  const dayKeys = Array.from(
+    new Set(workouts.map((workout) => new Date(workout.scheduledAt).toDateString()))
+  ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+  let streak = 1;
+  for (let i = 1; i < dayKeys.length; i++) {
+    const diff = (new Date(dayKeys[i - 1]).getTime() - new Date(dayKeys[i]).getTime()) / 86400000;
+    if (diff === 1) streak++;
+    else break;
+  }
+  return streak;
+}
+
 export default function Dashboard() {
   const router = useRouter();
+  const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
+
+  const completedWorkouts = scheduledWorkouts
+    .filter((workout) => workout.checkedIn)
+    .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+
+  const streakDays = computeStreak(completedWorkouts);
+  const partnersCount = new Set(scheduledWorkouts.map((workout) => workout.partnerId)).size;
+  const hasHistory = completedWorkouts.length > 0;
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.previewBadge}>
-          <Text style={styles.previewBadgeText}>תצוגה מקדימה — נתוני דוגמה</Text>
-        </View>
-
         <Text style={styles.title}>לוח הבקרה שלי</Text>
 
-        <View style={[styles.heroCard, cardElevation]}>
-          <View style={styles.heroTextBlock}>
-            <Text style={styles.heroValue}>
-              {MOCK_STATS.streakDays}
-              <Text style={styles.heroGoal}>/{MOCK_STATS.streakGoal}</Text>
-            </Text>
-            <Text style={styles.heroLabel}>ימים ברצף השבוע</Text>
-          </View>
-          <ProgressRing
-            size={88}
-            strokeWidth={10}
-            progress={MOCK_STATS.streakDays / MOCK_STATS.streakGoal}
-            color={theme.colors.cyan}
-            trackColor={theme.colors.surfaceHover}
-          >
-            <Zap color={theme.colors.cyan} size={28} strokeWidth={2} />
-          </ProgressRing>
-        </View>
+        <StreakDisplay days={streakDays} goal={STREAK_GOAL} />
 
         <View style={styles.statsRow}>
           <View style={[styles.statCard, cardElevation]}>
             <Text style={styles.statValue}>
-              {MOCK_STATS.workouts}
-              <Text style={styles.statGoal}>/{MOCK_STATS.workoutsGoal}</Text>
+              {completedWorkouts.length}
+              <Text style={styles.statGoal}>/{WORKOUTS_GOAL}</Text>
             </Text>
             <Text style={styles.statLabel}>אימונים החודש</Text>
             <ProgressRing
               size={52}
               strokeWidth={6}
-              progress={MOCK_STATS.workouts / MOCK_STATS.workoutsGoal}
+              progress={completedWorkouts.length / WORKOUTS_GOAL}
               color={theme.colors.magenta}
               trackColor={theme.colors.surfaceHover}
             >
@@ -86,14 +95,14 @@ export default function Dashboard() {
 
           <View style={[styles.statCard, cardElevation]}>
             <Text style={styles.statValue}>
-              {MOCK_STATS.partners}
-              <Text style={styles.statGoal}>/{MOCK_STATS.partnersGoal}</Text>
+              {partnersCount}
+              <Text style={styles.statGoal}>/{PARTNERS_GOAL}</Text>
             </Text>
             <Text style={styles.statLabel}>שותפים פעילים</Text>
             <ProgressRing
               size={52}
               strokeWidth={6}
-              progress={MOCK_STATS.partners / MOCK_STATS.partnersGoal}
+              progress={partnersCount / PARTNERS_GOAL}
               color={theme.colors.text}
               trackColor={theme.colors.surfaceHover}
             >
@@ -103,17 +112,26 @@ export default function Dashboard() {
         </View>
 
         <Text style={styles.sectionLabel}>היסטוריית אימונים</Text>
-        {MOCK_HISTORY.map((item) => (
-          <View key={item.id} style={[styles.historyRow, cardElevation]}>
-            <View style={styles.historyIconWrap}>
-              <Activity color={theme.colors.textSecondary} size={20} strokeWidth={2} />
+        {hasHistory ? (
+          completedWorkouts.map((workout) => (
+            <View key={workout.id} style={[styles.historyRow, cardElevation]}>
+              <View style={styles.historyIconWrap}>
+                <Activity color={theme.colors.textSecondary} size={20} strokeWidth={2} />
+              </View>
+              <View style={styles.historyTextWrap}>
+                <Text style={styles.historyTitle}>
+                  {workout.activity} עם {workout.partnerName}
+                </Text>
+                <Text style={styles.historyDate}>{formatRelativeDate(workout.scheduledAt)}</Text>
+              </View>
             </View>
-            <View style={styles.historyTextWrap}>
-              <Text style={styles.historyTitle}>{item.title}</Text>
-              <Text style={styles.historyDate}>{item.date}</Text>
-            </View>
+          ))
+        ) : (
+          <View style={[styles.emptyHistory, cardElevation]}>
+            <Text style={styles.emptyHistoryText}>עדיין אין לך אימונים שהושלמו</Text>
+            <Button label="התחל להתאמן עכשיו" variant="primary" onPress={() => router.push('/discover')} />
           </View>
-        ))}
+        )}
 
         {__DEV__ && (
           <Pressable
@@ -141,21 +159,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingVertical: theme.spacing.xl,
   },
-  previewBadge: {
-    alignSelf: 'flex-end',
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.surfaceHover,
-    borderRadius: theme.borderRadius.full,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
-  },
-  previewBadgeText: {
-    color: theme.colors.textTertiary,
-    fontSize: 12,
-    fontFamily: theme.typography.label.fontFamily,
-  },
   title: {
     width: '100%',
     fontSize: 28,
@@ -164,37 +167,10 @@ const styles = StyleSheet.create({
     textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     marginBottom: theme.spacing.lg,
   },
-  heroCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.md,
-  },
-  heroTextBlock: {
-    alignItems: 'flex-end',
-  },
-  heroValue: {
-    fontSize: 40,
-    fontFamily: theme.typography.display.fontFamily,
-    color: theme.colors.text,
-  },
-  heroGoal: {
-    fontSize: 18,
-    fontFamily: theme.typography.display.fontFamily,
-    color: theme.colors.textTertiary,
-  },
-  heroLabel: {
-    fontSize: 13,
-    fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-  },
   statsRow: {
     flexDirection: 'row',
     gap: theme.spacing.sm,
+    marginTop: theme.spacing.md,
     marginBottom: theme.spacing.xl,
   },
   statCard: {
@@ -262,6 +238,19 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.bodySmall.fontFamily,
     color: theme.colors.textTertiary,
     marginTop: 2,
+  },
+  emptyHistory: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    alignItems: 'center',
+    gap: theme.spacing.md,
+  },
+  emptyHistoryText: {
+    fontSize: 14,
+    fontFamily: theme.typography.body.fontFamily,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
   },
   backButton: {
     flexDirection: 'row',
