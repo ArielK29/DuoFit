@@ -90,6 +90,7 @@ export function PartnerMapView({ candidates, viewerOrigin, isLoading, isEmpty, o
             style={styles.previewClose}
             onPress={() => setSelectedId(null)}
             accessibilityLabel="סגור"
+            hitSlop={8} // Extends the 32px visual icon to a 48px effective touch target
           >
             <X color={theme.colors.textSecondary} size={18} strokeWidth={2} />
           </Pressable>
@@ -146,6 +147,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pin: {
+    // Map pins are exempt from the app's usual 48px touch-target minimum —
+    // matches standard map UX (Google/Apple Maps pins are smaller too),
+    // and users already expect precision tapping when zoomed into a map.
     width: 36,
     height: 36,
     borderRadius: theme.borderRadius.full,

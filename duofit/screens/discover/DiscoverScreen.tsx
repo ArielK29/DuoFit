@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -7,13 +7,13 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
-  withRepeat,
   runOnJS,
 } from 'react-native-reanimated';
 import { Heart, X, MapPin, SearchX, Dumbbell, List, Map as MapIcon } from 'lucide-react-native';
 import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatching';
 import { PartnerMapView } from '@screens/discover/PartnerMapView';
 import { EmptyState } from '@components/EmptyState';
+import { SkeletonLoader } from '@components/SkeletonLoader';
 import { theme } from '@styles/theme';
 
 type ViewMode = 'list' | 'map';
@@ -216,15 +216,7 @@ const PartnerCard = React.forwardRef<PartnerCardHandle, PartnerCardProps>(functi
 });
 
 function LoadingSkeleton() {
-  const pulse = useSharedValue(0.4);
-
-  useEffect(() => {
-    pulse.value = withRepeat(withTiming(1, { duration: 800 }), -1, true);
-  }, [pulse]);
-
-  const animatedStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
-
-  return <Animated.View style={[styles.card, styles.skeleton, animatedStyle]} />;
+  return <SkeletonLoader style={styles.card} />;
 }
 
 const styles = StyleSheet.create({
@@ -301,9 +293,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.surfaceHover,
     borderRadius: theme.borderRadius.xl,
-  },
-  skeleton: {
-    backgroundColor: theme.colors.surfaceHover,
   },
   cardContent: {
     flex: 1,
