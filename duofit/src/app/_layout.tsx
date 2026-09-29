@@ -90,6 +90,7 @@ export default function RootLayout() {
                 <Stack.Screen name="partner-profile" />
                 <Stack.Screen name="schedule-workout" />
                 <Stack.Screen name="check-in" />
+                <Stack.Screen name="conversation" />
               </Stack.Protected>
             </Stack>
           </PostHogErrorBoundary>

@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Search, LayoutDashboard } from 'lucide-react-native';
+import { Search, MessageSquare, LayoutDashboard } from 'lucide-react-native';
 import { theme } from '@styles/theme';
 
 export default function TabsLayout() {
@@ -27,6 +27,13 @@ export default function TabsLayout() {
         options={{
           title: 'גלה',
           tabBarIcon: ({ color, size }) => <Search color={color} size={size} strokeWidth={2} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: "צ'אטים",
+          tabBarIcon: ({ color, size }) => <MessageSquare color={color} size={size} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
