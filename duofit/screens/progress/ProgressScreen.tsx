@@ -1,9 +1,10 @@
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Alert, StyleSheet } from 'react-native';
 import { Scale } from 'lucide-react-native';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { WeekStrip } from '@components/WeekStrip';
 import { WeeklyBarChart, WeekBucket } from '@components/WeeklyBarChart';
 import { Card } from '@components/Card';
+import { Button } from '@components/Button';
 import { theme } from '@styles/theme';
 
 const WEEKS_SHOWN = 8;
@@ -53,6 +54,10 @@ export function ProgressScreen() {
   const weeklyBuckets = buildWeeklyBuckets(completedWorkouts.map((workout) => workout.scheduledAt));
   const weeksMetGoal = weeklyBuckets.filter((week) => week.count >= WEEKLY_GOAL).length;
 
+  const handleLogWeight = () => {
+    Alert.alert('בקרוב', 'מעקב משקל יהיה זמין בעתיד');
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -77,6 +82,9 @@ export function ProgressScreen() {
             />
           </View>
           <Text style={styles.weightGoalText}>יעד: {MOCK_WEIGHT.goal} ק"ג</Text>
+          <View style={styles.logWeightButton}>
+            <Button label="רשום משקל" variant="secondary" onPress={handleLogWeight} />
+          </View>
         </Card>
 
         <Card style={styles.section}>
@@ -163,6 +171,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: theme.typography.bodySmall.fontFamily,
     color: theme.colors.textTertiary,
+    marginBottom: theme.spacing.md,
+  },
+  logWeightButton: {
+    alignSelf: 'stretch',
   },
   section: {
     marginBottom: theme.spacing.md,

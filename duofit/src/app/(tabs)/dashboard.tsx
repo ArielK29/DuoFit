@@ -5,9 +5,11 @@ import { ProgressRing } from '@components/ProgressRing';
 import { StreakDisplay } from '@components/StreakDisplay';
 import { WeekStrip } from '@components/WeekStrip';
 import { UpcomingWorkoutCard } from '@components/UpcomingWorkoutCard';
+import { PartnerStreakCard } from '@components/PartnerStreakCard';
 import { Button } from '@components/Button';
 import { useAuth } from '@hooks/useAuth';
 import { useWorkoutStore, ScheduledWorkout } from '@hooks/useWorkoutStore';
+import { getActivityStyle } from '@lib/activityStyles';
 import { theme } from '@styles/theme';
 
 // Target thresholds shown alongside the real numbers below — not mock data,
@@ -58,6 +60,32 @@ function computeStreak(workouts: ScheduledWorkout[]): number {
   return streak;
 }
 
+interface PartnerStreak {
+  partnerId: string;
+  partnerName: string;
+  streak: number;
+}
+
+// Per-partner version of computeStreak, for the "ביחד ברצף" row — real data,
+// grouped by who you actually trained with.
+function computePartnerStreaks(completedWorkouts: ScheduledWorkout[]): PartnerStreak[] {
+  const byPartner = new Map<string, ScheduledWorkout[]>();
+  completedWorkouts.forEach((workout) => {
+    const list = byPartner.get(workout.partnerId) ?? [];
+    list.push(workout);
+    byPartner.set(workout.partnerId, list);
+  });
+
+  return Array.from(byPartner.entries())
+    .map(([partnerId, workouts]) => ({
+      partnerId,
+      partnerName: workouts[0].partnerName,
+      streak: computeStreak(workouts),
+    }))
+    .filter((entry) => entry.streak > 1)
+    .sort((a, b) => b.streak - a.streak);
+}
+
 export default function Dashboard() {
   const router = useRouter();
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
@@ -73,6 +101,7 @@ export default function Dashboard() {
   const streakDays = computeStreak(completedWorkouts);
   const partnersCount = new Set(scheduledWorkouts.map((workout) => workout.partnerId)).size;
   const hasHistory = completedWorkouts.length > 0;
+  const partnerStreaks = computePartnerStreaks(completedWorkouts);
 
   const activeDates = new Set(
     completedWorkouts.map((workout) => {
@@ -135,21 +164,36 @@ export default function Dashboard() {
           />
         )}
 
+        {partnerStreaks.length > 0 && (
+          <View style={styles.partnerStreaksSection}>
+            <Text style={styles.sectionLabel}>ביחד ברצף</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.partnerStreaksRow}>
+              {partnerStreaks.map((entry) => (
+                <PartnerStreakCard key={entry.partnerId} partnerName={entry.partnerName} streak={entry.streak} />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
         <Text style={styles.sectionLabel}>היסטוריית אימונים</Text>
         {hasHistory ? (
-          completedWorkouts.map((workout) => (
-            <View key={workout.id} style={[styles.historyRow, cardElevation]}>
-              <View style={styles.historyIconWrap}>
-                <Activity color={theme.colors.textSecondary} size={20} strokeWidth={2} />
+          completedWorkouts.map((workout) => {
+            const activityStyle = getActivityStyle(workout.activity);
+            const ActivityIcon = activityStyle.icon;
+            return (
+              <View key={workout.id} style={[styles.historyRow, cardElevation]}>
+                <View style={[styles.historyIconWrap, { backgroundColor: activityStyle.color }]}>
+                  <ActivityIcon color={theme.colors.black} size={20} strokeWidth={2} />
+                </View>
+                <View style={styles.historyTextWrap}>
+                  <Text style={styles.historyTitle}>
+                    {workout.activity} עם {workout.partnerName}
+                  </Text>
+                  <Text style={styles.historyDate}>{formatRelativeDate(workout.scheduledAt)}</Text>
+                </View>
               </View>
-              <View style={styles.historyTextWrap}>
-                <Text style={styles.historyTitle}>
-                  {workout.activity} עם {workout.partnerName}
-                </Text>
-                <Text style={styles.historyDate}>{formatRelativeDate(workout.scheduledAt)}</Text>
-              </View>
-            </View>
-          ))
+            );
+          })
         ) : (
           <View style={[styles.emptyHistory, cardElevation]}>
             <Text style={styles.emptyHistoryText}>עדיין אין לך אימונים שהושלמו</Text>
@@ -223,6 +267,12 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
     textAlign: 'right',
+  },
+  partnerStreaksSection: {
+    marginBottom: theme.spacing.lg,
+  },
+  partnerStreaksRow: {
+    gap: theme.spacing.sm,
   },
   sectionLabel: {
     width: '100%',

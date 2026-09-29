@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { useMemo, useState } from 'react';
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MessageSquare } from 'lucide-react-native';
+import { MessageSquare, Search } from 'lucide-react-native';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { useChatStore } from '@hooks/useChatStore';
 import { Card } from '@components/Card';
@@ -23,6 +23,7 @@ export function ChatListScreen() {
   const router = useRouter();
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
   const conversations = useChatStore((state) => state.conversations);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const matches = useMemo(() => {
     const partnersById = new Map<string, string>();
@@ -42,9 +43,24 @@ export function ChatListScreen() {
       });
   }, [scheduledWorkouts, conversations]);
 
+  const filteredMatches = matches.filter((match) => match.partnerName.includes(searchQuery.trim()));
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>צ'אטים</Text>
+
+      {matches.length > 0 && (
+        <View style={styles.searchBar}>
+          <Search color={theme.colors.textTertiary} size={18} strokeWidth={2} />
+          <TextInput
+            style={styles.searchInput}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="חיפוש שותף"
+            placeholderTextColor={theme.colors.textTertiary}
+          />
+        </View>
+      )}
 
       {matches.length === 0 ? (
         <View style={styles.emptyWrap}>
@@ -62,7 +78,7 @@ export function ChatListScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.list}>
-          {matches.map(({ partnerId, partnerName, lastMessage }) => (
+          {filteredMatches.map(({ partnerId, partnerName, lastMessage }) => (
             <Pressable
               key={partnerId}
               onPress={() => router.push({ pathname: '/conversation', params: { partnerId, partnerName } })}
@@ -113,6 +129,23 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     marginBottom: theme.spacing.lg,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    minHeight: 48,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: theme.typography.body.fontFamily,
+    color: theme.colors.text,
+    textAlign: 'right',
   },
   emptyWrap: {
     flex: 1,

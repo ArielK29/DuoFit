@@ -1,7 +1,12 @@
+import { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from 'react-native';
 import { Trophy, Heart, MessageCircle, Flag, Camera } from 'lucide-react-native';
 import { Card } from '@components/Card';
 import { theme } from '@styles/theme';
+
+// Illustrative only — DuoFit has no real user directory/social graph yet
+// (#15); the whole tab is already labeled "תצוגה מקדימה" below.
+const MOCK_MEMBER_COUNT = 3214;
 
 interface CommunityPost {
   id: string;
@@ -68,15 +73,25 @@ const MOCK_POSTS: CommunityPost[] = [
   },
 ];
 
+const ACTIVITY_FILTERS = ['הכל', ...Array.from(new Set(MOCK_POSTS.map((post) => post.activityTag)))];
+
 export function CommunityScreen() {
+  const [activeFilter, setActiveFilter] = useState('הכל');
+
   const handleComposerPress = () => {
     Alert.alert('בקרוב', 'פרסום עדכון יהיה זמין לאחר חיבור לשרת אמיתי');
   };
+
+  const visiblePosts = useMemo(
+    () => (activeFilter === 'הכל' ? MOCK_POSTS : MOCK_POSTS.filter((post) => post.activityTag === activeFilter)),
+    [activeFilter]
+  );
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>קהילה</Text>
+        <Text style={styles.subtitle}>{MOCK_MEMBER_COUNT.toLocaleString('he-IL')} מתאמנים בתל אביב והסביבה</Text>
 
         <View style={styles.previewBadge}>
           <Text style={styles.previewBadgeText}>תצוגה מקדימה — פוסטים לדוגמה</Text>
@@ -87,7 +102,21 @@ export function CommunityScreen() {
           <Text style={styles.composerText}>איך היה האימון היום?</Text>
         </Pressable>
 
-        {MOCK_POSTS.map((post) => (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersRow}>
+          {ACTIVITY_FILTERS.map((filter) => (
+            <Pressable
+              key={filter}
+              style={[styles.filterChip, activeFilter === filter && styles.filterChipActive]}
+              onPress={() => setActiveFilter(filter)}
+            >
+              <Text style={[styles.filterChipText, activeFilter === filter && styles.filterChipTextActive]}>
+                {filter}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        {visiblePosts.map((post) => (
           <Card key={post.id} style={styles.postCard}>
             <View style={styles.postHeader}>
               <View style={styles.tagPill}>
@@ -151,6 +180,14 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
     textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    marginBottom: theme.spacing.xs,
+  },
+  subtitle: {
+    width: '100%',
+    fontSize: 13,
+    fontFamily: theme.typography.bodySmall.fontFamily,
+    color: theme.colors.textSecondary,
+    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     marginBottom: theme.spacing.md,
   },
   previewBadge: {
@@ -182,6 +219,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.textTertiary,
+  },
+  filtersRow: {
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.lg,
+  },
+  filterChip: {
+    minHeight: 36,
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  filterChipActive: {
+    backgroundColor: theme.colors.cyan,
+  },
+  filterChipText: {
+    fontSize: 13,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textSecondary,
+  },
+  filterChipTextActive: {
+    color: theme.colors.black,
   },
   postCard: {
     marginBottom: theme.spacing.md,
