@@ -95,6 +95,7 @@ export function findPartnerById(id: string): Partner | undefined {
 interface PartnerMatchingState {
   candidates: PartnerWithDistance[];
   currentPartner: PartnerWithDistance | undefined;
+  viewerOrigin: Coordinates;
   isLoading: boolean;
   isEmpty: boolean;
   interested: () => void;
@@ -117,8 +118,10 @@ export function usePartnerMatching(): PartnerMatchingState {
     return () => clearTimeout(timeout);
   }, [fetchCycle]);
 
+  const viewerOrigin = coords ?? FALLBACK_ORIGIN;
+
   const candidates = useMemo(() => {
-    const origin = coords ?? FALLBACK_ORIGIN;
+    const origin = viewerOrigin;
     const favoriteActivities = user?.favoriteActivities ?? [];
 
     const pool =
@@ -138,6 +141,7 @@ export function usePartnerMatching(): PartnerMatchingState {
   return {
     candidates,
     currentPartner: candidates[currentIndex],
+    viewerOrigin,
     isLoading,
     isEmpty: !isLoading && currentIndex >= candidates.length,
     interested: advance,

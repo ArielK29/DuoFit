@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -10,10 +10,13 @@ import Animated, {
   withRepeat,
   runOnJS,
 } from 'react-native-reanimated';
-import { Heart, X, MapPin, SearchX, Dumbbell } from 'lucide-react-native';
+import { Heart, X, MapPin, SearchX, Dumbbell, List, Map as MapIcon } from 'lucide-react-native';
 import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatching';
+import { PartnerMapView } from '@screens/discover/PartnerMapView';
 import { EmptyState } from '@components/EmptyState';
 import { theme } from '@styles/theme';
+
+type ViewMode = 'list' | 'map';
 
 const SWIPE_THRESHOLD = 120;
 // Per 05-MOTION-SPECS.md "Partner Card Swipe": rotate -45°, translateX(-200px), fade, 300ms ease-in.
@@ -23,8 +26,10 @@ const EXIT_DURATION_MS = 300;
 
 export function DiscoverScreen() {
   const router = useRouter();
-  const { currentPartner, isLoading, isEmpty, interested, pass, refresh } = usePartnerMatching();
+  const { candidates, currentPartner, viewerOrigin, isLoading, isEmpty, interested, pass, refresh } =
+    usePartnerMatching();
   const cardRef = useRef<PartnerCardHandle>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const handleInterested = () => {
     if (!currentPartner) return;
@@ -37,13 +42,39 @@ export function DiscoverScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.previewBadge}>
-        <Text style={styles.previewBadgeText}>תצוגה מקדימה — נתוני דוגמה</Text>
+      <View style={styles.topRow}>
+        <View style={styles.viewToggle}>
+          <Pressable
+            style={[styles.toggleButton, viewMode === 'list' && styles.toggleButtonActive]}
+            onPress={() => setViewMode('list')}
+            accessibilityLabel="תצוגת רשימה"
+          >
+            <List color={viewMode === 'list' ? theme.colors.cyan : theme.colors.textTertiary} size={18} strokeWidth={2} />
+          </Pressable>
+          <Pressable
+            style={[styles.toggleButton, viewMode === 'map' && styles.toggleButtonActive]}
+            onPress={() => setViewMode('map')}
+            accessibilityLabel="תצוגת מפה"
+          >
+            <MapIcon color={viewMode === 'map' ? theme.colors.cyan : theme.colors.textTertiary} size={18} strokeWidth={2} />
+          </Pressable>
+        </View>
+        <View style={styles.previewBadge}>
+          <Text style={styles.previewBadgeText}>תצוגה מקדימה — נתוני דוגמה</Text>
+        </View>
       </View>
       <Text style={styles.title}>גלה שותפים</Text>
 
       <View style={styles.stage}>
-        {isLoading ? (
+        {viewMode === 'map' ? (
+          <PartnerMapView
+            candidates={candidates}
+            viewerOrigin={viewerOrigin}
+            isLoading={isLoading}
+            isEmpty={isEmpty}
+            onRefresh={refresh}
+          />
+        ) : isLoading ? (
           <LoadingSkeleton />
         ) : isEmpty ? (
           <View style={styles.emptyWrap}>
@@ -78,7 +109,7 @@ export function DiscoverScreen() {
         )}
       </View>
 
-      {!isLoading && !isEmpty && currentPartner && (
+      {viewMode === 'list' && !isLoading && !isEmpty && currentPartner && (
         <View style={styles.actionsRow}>
           <Pressable
             style={[styles.actionButton, styles.passButton]}
@@ -203,15 +234,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
   },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    gap: theme.spacing.xs,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.full,
+    padding: 4,
+  },
+  toggleButton: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.borderRadius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  toggleButtonActive: {
+    backgroundColor: theme.colors.surfaceHover,
+  },
   previewBadge: {
-    alignSelf: 'flex-end',
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.surfaceHover,
     borderRadius: theme.borderRadius.full,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
   },
   previewBadgeText: {
     color: theme.colors.textTertiary,
