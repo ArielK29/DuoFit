@@ -7,9 +7,12 @@ import { HeroStatCard } from '@components/HeroStatCard';
 import { WeekStrip } from '@components/WeekStrip';
 import { UpcomingWorkoutCard } from '@components/UpcomingWorkoutCard';
 import { PartnerStreakCard } from '@components/PartnerStreakCard';
+import { SuggestedPartnerCard } from '@components/SuggestedPartnerCard';
+import { NearbyPartnersRow } from '@components/NearbyPartnersRow';
 import { Button } from '@components/Button';
 import { useAuth } from '@hooks/useAuth';
 import { useWorkoutStore, ScheduledWorkout } from '@hooks/useWorkoutStore';
+import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatching';
 import { getActivityStyle } from '@lib/activityStyles';
 import { theme } from '@styles/theme';
 
@@ -18,6 +21,7 @@ import { theme } from '@styles/theme';
 const WEEKLY_GOAL = 3;
 const PARTNERS_GOAL = 5;
 const RECENT_ACTIVITY_LIMIT = 5;
+const NEARBY_PARTNERS_LIMIT = 5;
 const PLAN_WINDOW_DAYS = 7;
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
@@ -164,6 +168,33 @@ export default function Dashboard() {
   const activeDates = new Set(completedWorkouts.map((workout) => startOfDay(new Date(workout.scheduledAt))));
   const recentActivity = completedWorkouts.slice(0, RECENT_ACTIVITY_LIMIT);
 
+  // Daily suggested partner: prefer people the user hasn't scheduled with
+  // yet, rotating by calendar day so the pick is stable within a day.
+  const { candidates, isLoading: partnersLoading } = usePartnerMatching();
+  const scheduledPartnerIds = new Set(scheduledWorkouts.map((workout) => workout.partnerId));
+  const freshCandidates = candidates.filter((candidate) => !scheduledPartnerIds.has(candidate.id));
+  const suggestionPool = freshCandidates.length > 0 ? freshCandidates : candidates;
+  const dayIndex = Math.floor(startOfDay(now) / 86400000);
+  const suggestedPartner =
+    suggestionPool.length > 0 ? suggestionPool[dayIndex % suggestionPool.length] : undefined;
+  const suggestedSharedActivity = suggestedPartner?.activities.find((activity) =>
+    user?.favoriteActivities.includes(activity)
+  );
+  const nearbyPartners = candidates
+    .filter((candidate) => candidate.id !== suggestedPartner?.id)
+    .slice(0, NEARBY_PARTNERS_LIMIT);
+
+  const openPartner = (partner: PartnerWithDistance) =>
+    router.push({
+      pathname: '/partner-profile',
+      params: { partnerId: partner.id, distanceKm: partner.distanceKm.toFixed(1) },
+    });
+  const invitePartner = (partner: PartnerWithDistance) =>
+    router.push({
+      pathname: '/schedule-workout',
+      params: { partnerId: partner.id, partnerName: partner.name, activity: partner.activities[0] ?? 'אימון משותף' },
+    });
+
   const statPages: StatPage[] = [
     {
       key: 'workouts',
@@ -290,6 +321,26 @@ export default function Dashboard() {
               })
             }
           />
+        )}
+
+        {!partnersLoading && suggestedPartner && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>שותף מוצע היום</Text>
+            <Text style={styles.sectionHint}>מתוך מאגר שותפים לדוגמה</Text>
+            <SuggestedPartnerCard
+              partner={suggestedPartner}
+              sharedActivity={suggestedSharedActivity}
+              onViewProfile={() => openPartner(suggestedPartner)}
+              onInvite={() => invitePartner(suggestedPartner)}
+            />
+          </View>
+        )}
+
+        {!partnersLoading && nearbyPartners.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>שותפים קרובים אליך</Text>
+            <NearbyPartnersRow partners={nearbyPartners} onOpen={openPartner} onInvite={invitePartner} />
+          </View>
         )}
 
         {partnerStreaks.length > 0 && (
@@ -461,6 +512,15 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
     textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    marginBottom: theme.spacing.md,
+  },
+  sectionHint: {
+    width: '100%',
+    fontSize: 11,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textTertiary,
+    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    marginTop: -theme.spacing.sm,
     marginBottom: theme.spacing.md,
   },
   partnerStreaksRow: {
