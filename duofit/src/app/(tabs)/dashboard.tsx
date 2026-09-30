@@ -21,7 +21,7 @@ import { theme } from '@styles/theme';
 const WEEKLY_GOAL = 3;
 const PARTNERS_GOAL = 5;
 const RECENT_ACTIVITY_LIMIT = 5;
-const NEARBY_PARTNERS_LIMIT = 5;
+const NEARBY_PARTNERS_LIMIT = 3;
 const PLAN_WINDOW_DAYS = 7;
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];

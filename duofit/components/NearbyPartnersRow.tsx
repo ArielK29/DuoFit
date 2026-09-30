@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { MapPin, Plus } from 'lucide-react-native';
 import { PartnerWithDistance } from '@hooks/usePartnerMatching';
 import { theme } from '@styles/theme';
@@ -10,10 +10,11 @@ interface NearbyPartnersRowProps {
   onInvite: (partner: PartnerWithDistance) => void;
 }
 
-// Horizontal strip of the closest candidates, with a one-tap invite.
+// Fixed row of the closest candidates (cards share the width evenly), each
+// with a one-tap invite.
 export const NearbyPartnersRow: React.FC<NearbyPartnersRowProps> = ({ partners, onOpen, onInvite }) => {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+    <View style={styles.row}>
       {partners.map((partner) => (
         <Pressable key={partner.id} style={styles.card} onPress={() => onOpen(partner)}>
           <View style={styles.avatar}>
@@ -37,16 +38,17 @@ export const NearbyPartnersRow: React.FC<NearbyPartnersRowProps> = ({ partners, 
           </Pressable>
         </Pressable>
       ))}
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   row: {
+    flexDirection: 'row',
     gap: theme.spacing.sm,
   },
   card: {
-    width: 128,
+    flex: 1,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.xl,
     padding: theme.spacing.md,
