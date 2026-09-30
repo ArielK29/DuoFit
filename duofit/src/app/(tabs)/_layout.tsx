@@ -1,8 +1,11 @@
 import { Tabs } from 'expo-router';
 import { Home, Search, MessageSquare, Globe, BarChart3 } from 'lucide-react-native';
+import { useUnreadCount } from '@hooks/useUnreadCount';
 import { theme } from '@styles/theme';
 
 export default function TabsLayout() {
+  const unreadCount = useUnreadCount();
+
   return (
     <Tabs
       screenOptions={{
@@ -40,6 +43,12 @@ export default function TabsLayout() {
         name="chat"
         options={{
           title: "צ'אטים",
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: theme.colors.magenta,
+            color: theme.colors.black,
+            fontFamily: theme.typography.bodySmallBold.fontFamily,
+          },
           tabBarIcon: ({ color, size }) => <MessageSquare color={color} size={size} strokeWidth={2} />,
         }}
       />

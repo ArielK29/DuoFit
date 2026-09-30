@@ -25,6 +25,7 @@ export function ConversationScreen() {
   const ensureConversation = useChatStore((state) => state.ensureConversation);
   const sendMessage = useChatStore((state) => state.sendMessage);
   const respondToInvite = useChatStore((state) => state.respondToInvite);
+  const markRead = useChatStore((state) => state.markRead);
 
   const [inputText, setInputText] = useState('');
   const [isPartnerTyping, setIsPartnerTyping] = useState(false);
@@ -35,6 +36,13 @@ export function ConversationScreen() {
   }, [partnerId, partnerName, ensureConversation]);
 
   const messages = conversation?.messages ?? [];
+  const isGroup = Boolean(conversation?.isGroup);
+
+  // Everything in an open chat counts as read, including replies that arrive
+  // while it is on screen.
+  useEffect(() => {
+    markRead(partnerId);
+  }, [partnerId, messages.length, markRead]);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
@@ -60,14 +68,23 @@ export function ConversationScreen() {
         <Pressable style={styles.iconButton} onPress={() => router.back()} accessibilityLabel="חזרה">
           <ArrowLeft color={theme.colors.magenta} size={22} strokeWidth={2} />
         </Pressable>
-        <Text style={styles.headerName}>{partnerName}</Text>
-        <Pressable
-          style={styles.iconButton}
-          onPress={() => router.push({ pathname: '/invite-to-workout', params: { partnerId, partnerName } })}
-          accessibilityLabel="הזמן לאימון"
-        >
-          <CalendarPlus color={theme.colors.cyan} size={22} strokeWidth={2} />
-        </Pressable>
+        <View style={styles.headerTitle}>
+          <Text style={styles.headerName}>{partnerName}</Text>
+          {isGroup && conversation?.memberCount !== undefined && (
+            <Text style={styles.headerSubtitle}>{`${conversation.memberCount} חברים`}</Text>
+          )}
+        </View>
+        {isGroup ? (
+          <View style={styles.iconButton} />
+        ) : (
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => router.push({ pathname: '/invite-to-workout', params: { partnerId, partnerName } })}
+            accessibilityLabel="הזמן לאימון"
+          >
+            <CalendarPlus color={theme.colors.cyan} size={22} strokeWidth={2} />
+          </Pressable>
+        )}
       </View>
 
       <ScrollView ref={scrollRef} contentContainerStyle={styles.messagesList}>
@@ -79,6 +96,7 @@ export function ConversationScreen() {
               key={message.id}
               style={[styles.bubble, message.senderId === 'me' ? styles.bubbleMine : styles.bubblePartner]}
             >
+              {message.senderName && <Text style={styles.senderName}>{message.senderName}</Text>}
               <Text style={[styles.bubbleText, message.senderId === 'me' && styles.bubbleTextMine]}>
                 {message.text}
               </Text>
@@ -174,12 +192,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerName: {
+  headerTitle: {
     flex: 1,
+    alignItems: 'center',
+  },
+  headerName: {
     fontSize: 18,
     fontFamily: theme.typography.h3.fontFamily,
     color: theme.colors.text,
     textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textSecondary,
+  },
+  senderName: {
+    fontSize: 12,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.cyan,
+    textAlign: 'right',
   },
   messagesList: {
     flexGrow: 1,

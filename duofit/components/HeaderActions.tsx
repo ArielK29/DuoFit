@@ -26,14 +26,15 @@ function confirmEmergencyCall() {
   ]);
 }
 
-// SOS + avatar cluster from the FitMatch headers. SOS is a real action: after
+// SOS + avatar cluster from the FitMatch headers (the avatar can be swapped
+// for another action, e.g. the Chat tab's "new chat" button). SOS is a real action: after
 // a confirmation it opens the phone dialer with the emergency number.
-export const HeaderActions: React.FC = () => (
+export const HeaderActions: React.FC<{ trailing?: React.ReactNode }> = ({ trailing }) => (
   <View style={styles.row}>
     <Pressable style={styles.sosButton} onPress={confirmEmergencyCall} accessibilityLabel="חירום">
       <Text style={styles.sosText}>SOS</Text>
     </Pressable>
-    <UserAvatar />
+    {trailing ?? <UserAvatar />}
   </View>
 );
 

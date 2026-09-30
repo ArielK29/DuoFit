@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GROUPS } from '@constants/community';
+import { PARTNER_POOL } from '@hooks/usePartnerMatching';
+import { useChatStore } from '@hooks/useChatStore';
 
 export interface UserPost {
   id: string;
@@ -56,7 +59,23 @@ export const useCommunityStore = create<CommunityState>()(
         return true;
       },
 
-      toggleGroup: (groupId) => set({ joinedGroupIds: toggle(get().joinedGroupIds, groupId) }),
+      // Joining a group also opens its group chat (leaving removes it).
+      toggleGroup: (groupId) => {
+        const joined = !get().joinedGroupIds.includes(groupId);
+        set({ joinedGroupIds: toggle(get().joinedGroupIds, groupId) });
+
+        const group = GROUPS.find((item) => item.id === groupId);
+        if (!group) return;
+        const chatId = `group-${groupId}`;
+        if (joined) {
+          const members = PARTNER_POOL.filter((partner) => partner.activities.includes(group.activity))
+            .slice(0, 4)
+            .map((partner) => partner.name);
+          useChatStore.getState().createGroup(chatId, group.name, members, group.members + 1);
+        } else {
+          useChatStore.getState().removeConversation(chatId);
+        }
+      },
       toggleLike: (postId) => set({ likedPostIds: toggle(get().likedPostIds, postId) }),
       toggleRsvp: (postId) => set({ rsvpPostIds: toggle(get().rsvpPostIds, postId) }),
       hidePost: (postId) => set({ hiddenPostIds: [...get().hiddenPostIds, postId] }),

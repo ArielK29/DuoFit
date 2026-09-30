@@ -155,6 +155,10 @@ const MOCK_PARTNERS: Partner[] = [
   },
 ];
 
+// The whole mock pool, for screens that need partners outside the swipe deck
+// (Chat: start a conversation, suggest a group).
+export const PARTNER_POOL = MOCK_PARTNERS;
+
 export interface PartnerFilters {
   gender: 'all' | Gender;
   maxAge: number;
