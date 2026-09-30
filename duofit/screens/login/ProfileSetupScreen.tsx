@@ -312,7 +312,12 @@ export const ProfileSetupScreen: React.FC = () => {
         </View>
 
         <View style={styles.avatarSection}>
-          <Pressable style={styles.avatarWrapper} onPress={pickAvatar} disabled={loading}>
+          <Pressable
+            style={styles.avatarWrapper}
+            onPress={pickAvatar}
+            disabled={loading}
+            accessibilityLabel="הוסף תמונת פרופיל"
+          >
             {avatar ? (
               <Image source={{ uri: avatar }} style={styles.avatarImage} contentFit="cover" />
             ) : (

@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -7,12 +7,13 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
-  withRepeat,
   runOnJS,
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Heart, X, MapPin, SearchX, Dumbbell } from 'lucide-react-native';
 import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatching';
 import { EmptyState } from '@components/EmptyState';
+import { SkeletonLoader } from '@components/SkeletonLoader';
 import { theme } from '@styles/theme';
 
 const SWIPE_THRESHOLD = 120;
@@ -28,11 +29,12 @@ export function DiscoverScreen() {
 
   const handleInterested = () => {
     if (!currentPartner) return;
-    const name = currentPartner.name;
+    const { id, name, activities } = currentPartner;
     interested();
-    // No real chat/scheduling backend yet (feature/checkout not built) —
-    // this confirms the action without pretending to send anything real.
-    Alert.alert('מעולה!', `שלחנו ל${name} הודעה שאת/ה מעוניין/ת להתאמן יחד (בקרוב: תזמון אימון אמיתי)`);
+    router.push({
+      pathname: '/schedule-workout',
+      params: { partnerId: id, partnerName: name, activity: activities[0] ?? 'אימון משותף' },
+    });
   };
 
   return (
@@ -158,25 +160,35 @@ const PartnerCard = React.forwardRef<PartnerCardHandle, PartnerCardProps>(functi
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.card, animatedStyle]}>
-        <Pressable style={styles.cardContent} onPress={onOpenProfile}>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarInitial}>{partner.name[0]}</Text>
-          </View>
-          <Text style={styles.partnerName}>
-            {partner.name}, {partner.age}
-          </Text>
-          <View style={styles.distanceRow}>
-            <MapPin color={theme.colors.textTertiary} size={16} strokeWidth={2} />
-            <Text style={styles.distanceText}>{partner.distanceKm.toFixed(1)} ק"מ ממך</Text>
-          </View>
-          <Text style={styles.bio}>{partner.bio}</Text>
-          <View style={styles.tagsRow}>
-            {partner.activities.map((activity) => (
-              <View key={activity} style={styles.tag}>
-                <Dumbbell color={theme.colors.cyan} size={16} strokeWidth={2} />
-                <Text style={styles.tagText}>{activity}</Text>
-              </View>
-            ))}
+        <Pressable style={styles.cardPressable} onPress={onOpenProfile}>
+          <LinearGradient
+            colors={[theme.colors.magenta, theme.colors.cyan]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.heroBand}
+          >
+            <View style={styles.distanceBadge}>
+              <MapPin color={theme.colors.black} size={14} strokeWidth={2} />
+              <Text style={styles.distanceBadgeText}>{partner.distanceKm.toFixed(1)} ק"מ</Text>
+            </View>
+            <View style={styles.avatarCircle}>
+              <Text style={styles.avatarInitial}>{partner.name[0]}</Text>
+            </View>
+          </LinearGradient>
+
+          <View style={styles.cardBody}>
+            <Text style={styles.partnerName}>
+              {partner.name}, {partner.age}
+            </Text>
+            <Text style={styles.bio}>{partner.bio}</Text>
+            <View style={styles.tagsRow}>
+              {partner.activities.map((activity) => (
+                <View key={activity} style={styles.tag}>
+                  <Dumbbell color={theme.colors.cyan} size={16} strokeWidth={2} />
+                  <Text style={styles.tagText}>{activity}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         </Pressable>
       </Animated.View>
@@ -185,15 +197,7 @@ const PartnerCard = React.forwardRef<PartnerCardHandle, PartnerCardProps>(functi
 });
 
 function LoadingSkeleton() {
-  const pulse = useSharedValue(0.4);
-
-  useEffect(() => {
-    pulse.value = withRepeat(withTiming(1, { duration: 800 }), -1, true);
-  }, [pulse]);
-
-  const animatedStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
-
-  return <Animated.View style={[styles.card, styles.skeleton, animatedStyle]} />;
+  return <SkeletonLoader style={styles.card} />;
 }
 
 const styles = StyleSheet.create({
@@ -249,45 +253,58 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.surfaceHover,
     borderRadius: theme.borderRadius.xl,
+    overflow: 'hidden',
   },
-  skeleton: {
-    backgroundColor: theme.colors.surfaceHover,
+  cardPressable: {
+    flex: 1,
   },
-  cardContent: {
+  heroBand: {
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  distanceBadge: {
+    position: 'absolute',
+    top: theme.spacing.md,
+    left: theme.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    backgroundColor: theme.colors.text,
+    borderRadius: theme.borderRadius.full,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+  },
+  distanceBadgeText: {
+    fontSize: 12,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.black,
+  },
+  avatarCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.bg,
+    borderWidth: 3,
+    borderColor: theme.colors.text,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInitial: {
+    fontSize: 32,
+    fontFamily: theme.typography.h2.fontFamily,
+    color: theme.colors.text,
+  },
+  cardBody: {
     flex: 1,
     alignItems: 'center',
     padding: theme.spacing.xl,
-  },
-  avatarCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.surfaceHover,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  avatarInitial: {
-    fontSize: 36,
-    fontFamily: theme.typography.h2.fontFamily,
-    color: theme.colors.cyan,
   },
   partnerName: {
     fontSize: 22,
     fontFamily: theme.typography.h3.fontFamily,
     color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
-  },
-  distanceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.lg,
-  },
-  distanceText: {
-    fontSize: 13,
-    fontFamily: theme.typography.bodySmall.fontFamily,
-    color: theme.colors.textTertiary,
+    marginBottom: theme.spacing.sm,
   },
   bio: {
     fontSize: 14,
