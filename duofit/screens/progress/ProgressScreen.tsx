@@ -1,105 +1,104 @@
-import { View, Text, ScrollView, Alert, StyleSheet } from 'react-native';
-import { Scale } from 'lucide-react-native';
+import { useState } from 'react';
+import { View, Text, ScrollView, Pressable, Alert, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Plus } from 'lucide-react-native';
+import { HeaderActions } from '@components/HeaderActions';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
-import { WeekStrip } from '@components/WeekStrip';
-import { WeeklyBarChart, WeekBucket } from '@components/WeeklyBarChart';
-import { Card } from '@components/Card';
-import { Button } from '@components/Button';
+import { useProgressStore, EXAMPLE_GOAL_WEIGHT } from '@hooks/useProgressStore';
+import { RunsCard } from '@screens/progress/RunsCard';
+import { GoalSheet, WeightSheet } from '@screens/progress/ProgressSheets';
+import { StepsCard } from '@screens/progress/StepsCard';
+import { StreakCard, WeightCard } from '@screens/progress/SummaryCards';
+import { WeightTrendCard } from '@screens/progress/WeightTrendCard';
+import { WorkoutsCard } from '@screens/progress/WorkoutsCard';
+import { buildExampleWeights, computeGoalStreakWeeks, goalProgress, toWeightPoints } from '@lib/progress';
 import { theme } from '@styles/theme';
 
-const WEEKS_SHOWN = 8;
-const WEEKLY_GOAL = 3;
-
-// Mock preview only — DuoFit has no weight-tracking feature/data model yet,
-// same "תצוגה מקדימה" convention already used for Dashboard/Discover mock data.
-const MOCK_WEIGHT = { current: 79.4, goal: 76 };
-
-function startOfWeek(date: Date): Date {
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  d.setDate(d.getDate() - d.getDay());
-  return d;
-}
-
-function buildWeeklyBuckets(scheduledAtList: string[]): WeekBucket[] {
-  const today = startOfWeek(new Date());
-  const buckets: WeekBucket[] = [];
-
-  for (let i = WEEKS_SHOWN - 1; i >= 0; i--) {
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - i * 7);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 7);
-
-    const count = scheduledAtList.filter((iso) => {
-      const date = new Date(iso);
-      return date >= weekStart && date < weekEnd;
-    }).length;
-
-    buckets.push({ label: `${weekStart.getDate()}.${weekStart.getMonth() + 1}`, count });
-  }
-
-  return buckets;
+function startOfDay(iso: string): number {
+  const d = new Date(iso);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
 
 export function ProgressScreen() {
+  const router = useRouter();
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
-  const completedWorkouts = scheduledWorkouts.filter((workout) => workout.checkedIn);
-  const activeDates = new Set(
-    completedWorkouts.map((workout) => {
-      const d = new Date(workout.scheduledAt);
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-    })
+  const { weeklyGoal, goalWeight, weightLog } = useProgressStore();
+  const { setWeeklyGoal, logWeight } = useProgressStore.getState();
+
+  const [weightSheetVisible, setWeightSheetVisible] = useState(false);
+  const [goalSheetVisible, setGoalSheetVisible] = useState(false);
+
+  const now = new Date();
+  const completedIso = scheduledWorkouts.filter((workout) => workout.checkedIn).map((workout) => workout.scheduledAt);
+
+  // Streak + this week's days (real)
+  const streakWeeks = computeGoalStreakWeeks(completedIso, weeklyGoal, now);
+  const activeDates = new Set(completedIso.map(startOfDay));
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+  const activeDays = Array.from({ length: 7 }, (_, index) =>
+    activeDates.has(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + index).getTime())
   );
 
-  const weeklyBuckets = buildWeeklyBuckets(completedWorkouts.map((workout) => workout.scheduledAt));
-  const weeksMetGoal = weeklyBuckets.filter((week) => week.count >= WEEKLY_GOAL).length;
+  // Weight: real log, or an example journey until the first entry
+  const isExampleWeight = weightLog.length === 0;
+  const weightPoints = isExampleWeight ? buildExampleWeights(now) : toWeightPoints(weightLog);
+  const goalKg = goalWeight ?? EXAMPLE_GOAL_WEIGHT;
+  const startKg = weightPoints[0].kg;
+  const currentKg = weightPoints[weightPoints.length - 1].kg;
 
-  const handleLogWeight = () => {
-    Alert.alert('בקרוב', 'מעקב משקל יהיה זמין בעתיד');
-  };
+  const openQuickActions = () =>
+    Alert.alert('מה להוסיף?', undefined, [
+      { text: 'רשום משקל', onPress: () => setWeightSheetVisible(true) },
+      { text: 'מצא שותף לאימון', onPress: () => router.push('/discover') },
+      { text: 'ביטול', style: 'cancel' },
+    ]);
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>ההתקדמות שלי</Text>
-
-        <View style={styles.previewBadge}>
-          <Text style={styles.previewBadgeText}>תצוגה מקדימה — משקל לדוגמה</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.title}>התקדמות</Text>
+          <HeaderActions />
         </View>
 
-        <Card style={styles.weightCard}>
-          <View style={styles.weightHeader}>
-            <Scale color={theme.colors.textSecondary} size={18} strokeWidth={2} />
-            <Text style={styles.weightLabel}>המשקל שלך</Text>
-          </View>
-          <Text style={styles.weightValue}>{MOCK_WEIGHT.current} ק"ג</Text>
-          <View style={styles.weightBarTrack}>
-            <View
-              style={[
-                styles.weightBarFill,
-                { width: `${Math.min(100, (MOCK_WEIGHT.goal / MOCK_WEIGHT.current) * 100)}%` },
-              ]}
-            />
-          </View>
-          <Text style={styles.weightGoalText}>יעד: {MOCK_WEIGHT.goal} ק"ג</Text>
-          <View style={styles.logWeightButton}>
-            <Button label="רשום משקל" variant="secondary" onPress={handleLogWeight} />
-          </View>
-        </Card>
+        <View style={styles.previewPill}>
+          <Text style={styles.previewPillText}>תצוגה מקדימה — צעדים וריצות לדוגמה</Text>
+        </View>
 
-        <Card style={styles.section}>
-          <Text style={styles.sectionLabel}>רצף שבועי</Text>
-          <WeekStrip activeDates={activeDates} />
-        </Card>
+        <View style={styles.summaryRow}>
+          <WeightCard
+            kg={currentKg}
+            goalKg={goalKg}
+            progress={goalProgress(startKg, currentKg, goalKg)}
+            isExample={isExampleWeight}
+            onLog={() => setWeightSheetVisible(true)}
+          />
+          <StreakCard weeks={streakWeeks} activeDays={activeDays} />
+        </View>
 
-        <Card style={styles.section}>
-          <Text style={styles.sectionLabel}>אימונים בשבוע (8 שבועות אחרונים)</Text>
-          <WeeklyBarChart weeks={weeklyBuckets} goal={WEEKLY_GOAL} />
-          <Text style={styles.consistencyText}>
-            עמדת ביעד ב-{weeksMetGoal} מתוך {WEEKS_SHOWN} השבועות האחרונים
-          </Text>
-        </Card>
+        <WorkoutsCard completedIso={completedIso} goal={weeklyGoal} onEditGoal={() => setGoalSheetVisible(true)} />
+        <WeightTrendCard points={weightPoints} goalKg={goalKg} isExample={isExampleWeight} />
+        <StepsCard />
+        <RunsCard />
       </ScrollView>
+
+      <Pressable style={styles.fab} onPress={openQuickActions} accessibilityLabel="הוסף">
+        <Plus color={theme.colors.black} size={30} strokeWidth={2.5} />
+      </Pressable>
+
+      <WeightSheet
+        visible={weightSheetVisible}
+        currentKg={currentKg}
+        goalKg={goalKg}
+        onSave={logWeight}
+        onClose={() => setWeightSheetVisible(false)}
+      />
+      <GoalSheet
+        visible={goalSheetVisible}
+        goal={weeklyGoal}
+        onSave={setWeeklyGoal}
+        onClose={() => setGoalSheetVisible(false)}
+      />
     </View>
   );
 }
@@ -111,17 +110,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   scrollContent: {
-    paddingVertical: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: 112, // room for the floating "+" button
   },
-  title: {
-    width: '100%',
-    fontSize: 28,
-    fontFamily: theme.typography.h2.fontFamily,
-    color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: theme.spacing.md,
   },
-  previewBadge: {
+  title: {
+    fontSize: 34,
+    fontFamily: theme.typography.h1.fontFamily,
+    color: theme.colors.text,
+  },
+  previewPill: {
     alignSelf: 'flex-end',
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
@@ -131,67 +134,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     marginBottom: theme.spacing.lg,
   },
-  previewBadgeText: {
-    color: theme.colors.textTertiary,
-    fontSize: 12,
+  previewPillText: {
+    fontSize: 11,
     fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textTertiary,
   },
-  weightCard: {
-    marginBottom: theme.spacing.md,
-  },
-  weightHeader: {
+  summaryRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.sm,
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
-  weightLabel: {
-    fontSize: 13,
-    fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.textSecondary,
-  },
-  weightValue: {
-    fontSize: 32,
-    fontFamily: theme.typography.display.fontFamily,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
-  },
-  weightBarTrack: {
-    height: 6,
+  fab: {
+    position: 'absolute',
+    bottom: theme.spacing.lg,
+    left: theme.spacing.lg,
+    width: 64,
+    height: 64,
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.surfaceHover,
-    overflow: 'hidden',
-    marginBottom: theme.spacing.xs,
-  },
-  weightBarFill: {
-    height: '100%',
-    backgroundColor: theme.colors.cyan,
-  },
-  weightGoalText: {
-    fontSize: 12,
-    fontFamily: theme.typography.bodySmall.fontFamily,
-    color: theme.colors.textTertiary,
-    marginBottom: theme.spacing.md,
-  },
-  logWeightButton: {
-    alignSelf: 'stretch',
-  },
-  section: {
-    marginBottom: theme.spacing.md,
-  },
-  sectionLabel: {
-    width: '100%',
-    fontSize: 12,
-    fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.textTertiary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
-    marginBottom: theme.spacing.md,
-  },
-  consistencyText: {
-    fontSize: 13,
-    fontFamily: theme.typography.bodySmall.fontFamily,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginTop: theme.spacing.md,
+    backgroundColor: theme.colors.magenta,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 6,
   },
 });

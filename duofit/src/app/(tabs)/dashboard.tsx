@@ -14,31 +14,19 @@ import { useAuth } from '@hooks/useAuth';
 import { useWorkoutStore, ScheduledWorkout } from '@hooks/useWorkoutStore';
 import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatching';
 import { useCommunityStore } from '@hooks/useCommunityStore';
+import { useProgressStore } from '@hooks/useProgressStore';
+import { MOCK_HEALTH } from '@constants/mockHealth';
 import { getActivityStyle } from '@lib/activityStyles';
 import { computePlankRank, getPlankSeconds } from '@lib/plank';
 import { theme } from '@styles/theme';
 
-// Target thresholds shown alongside the real numbers below — not mock data,
-// just static goals until a goal-setting feature exists.
-const WEEKLY_GOAL = 3;
+// Target thresholds shown alongside the real numbers below — not mock data.
 const PARTNERS_GOAL = 5;
 const RECENT_ACTIVITY_LIMIT = 5;
 const NEARBY_PARTNERS_LIMIT = 3;
 const PLAN_WINDOW_DAYS = 7;
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
-
-// Example numbers only — steps/calories/running need Health Connect
-// (Android) / HealthKit (iOS), which aren't available in Expo Go. Replace
-// with real sensor data once the app moves to a development build.
-const MOCK_HEALTH = {
-  steps: 8432,
-  stepsGoal: 10000,
-  calories: 2140,
-  caloriesGoal: 2600,
-  runKm: 17.2,
-  runKmGoal: 25,
-};
 
 // Example numbers only — screen time needs Android Digital Wellbeing / iOS
 // Screen Time access (not available in Expo Go), and the plank challenge
@@ -134,6 +122,7 @@ export default function Dashboard() {
   // value until the first real attempt).
   const plankBestSeconds = useCommunityStore((state) => state.plankBestSeconds);
   const plankRank = computePlankRank(getPlankSeconds(plankBestSeconds));
+  const weeklyGoal = useProgressStore((state) => state.weeklyGoal);
 
   const now = new Date();
   const weekStart = startOfWeek(now);
@@ -206,10 +195,10 @@ export default function Dashboard() {
       hero: (
         <HeroStatCard
           value={String(workoutsThisWeek)}
-          suffix={`/${WEEKLY_GOAL}`}
+          suffix={`/${weeklyGoal}`}
           label="אימונים השבוע"
-          subtext={getWeeklyEncouragement(workoutsThisWeek, WEEKLY_GOAL)}
-          progress={workoutsThisWeek / WEEKLY_GOAL}
+          subtext={getWeeklyEncouragement(workoutsThisWeek, weeklyGoal)}
+          progress={workoutsThisWeek / weeklyGoal}
           color={theme.colors.cyan}
           icon={Dumbbell}
         />

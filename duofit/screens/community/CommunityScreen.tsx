@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, Linking, StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
+import { View, Text, ScrollView, Pressable, Alert, StyleSheet } from 'react-native';
 import { Camera, Plus } from 'lucide-react-native';
+import { HeaderActions, UserAvatar } from '@components/HeaderActions';
 import { useAuth } from '@hooks/useAuth';
 import { useCommunityStore, UserPost } from '@hooks/useCommunityStore';
 import { FEED_FILTERS, MEMBER_COUNT, SEED_POSTS } from '@constants/community';
@@ -20,14 +20,6 @@ function formatTimeAgo(iso: string): string {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `לפני ${hours} שעות`;
   return `לפני ${Math.floor(hours / 24)} ימים`;
-}
-
-function confirmEmergencyCall() {
-  Alert.alert('מצב חירום', 'בחר למי להתקשר. השיחה תתחיל רק אחרי שתלחץ על חיוג.', [
-    { text: 'משטרה · 100', onPress: () => Linking.openURL('tel:100') },
-    { text: 'מד״א · 101', onPress: () => Linking.openURL('tel:101') },
-    { text: 'ביטול', style: 'cancel' },
-  ]);
 }
 
 export function CommunityScreen() {
@@ -89,16 +81,6 @@ export function CommunityScreen() {
       { text: 'מחק', style: 'destructive', onPress: () => deletePost(post.id) },
     ]);
 
-  const avatar = (
-    <View style={styles.avatar}>
-      {user?.avatar ? (
-        <Image source={{ uri: user.avatar }} style={styles.avatarImage} contentFit="cover" />
-      ) : (
-        <Text style={styles.avatarInitial}>{initial}</Text>
-      )}
-    </View>
-  );
-
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -107,12 +89,7 @@ export function CommunityScreen() {
             <Text style={styles.title}>קהילה</Text>
             <Text style={styles.subtitle}>{`${MEMBER_COUNT.toLocaleString('he-IL')} מתאמנים בתל אביב והסביבה`}</Text>
           </View>
-          <View style={styles.headerActions}>
-            <Pressable style={styles.sosButton} onPress={confirmEmergencyCall} accessibilityLabel="חירום">
-              <Text style={styles.sosText}>SOS</Text>
-            </Pressable>
-            {avatar}
-          </View>
+          <HeaderActions />
         </View>
 
         <View style={styles.previewPill}>
@@ -120,7 +97,7 @@ export function CommunityScreen() {
         </View>
 
         <Pressable style={styles.composer} onPress={() => setComposeVisible(true)} accessibilityLabel="כתוב פוסט">
-          {avatar}
+          <UserAvatar />
           <Text style={styles.composerText}>איך היה האימון היום?</Text>
           <Camera color={theme.colors.textSecondary} size={22} strokeWidth={2} />
         </Pressable>
@@ -211,44 +188,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.bodySmall.fontFamily,
     color: theme.colors.textSecondary,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    paddingTop: theme.spacing.sm,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.surfaceHover,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-  },
-  avatarInitial: {
-    fontSize: 18,
-    fontFamily: theme.typography.h3.fontFamily,
-    color: theme.colors.text,
-  },
-  sosButton: {
-    minWidth: 64,
-    minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.colors.magenta,
-    borderRadius: theme.borderRadius.full,
-    paddingHorizontal: theme.spacing.lg,
-  },
-  sosText: {
-    fontSize: 16,
-    fontFamily: theme.typography.button.fontFamily,
-    color: theme.colors.black,
   },
   previewPill: {
     alignSelf: 'flex-end',
