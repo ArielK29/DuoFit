@@ -1,166 +1,183 @@
-import { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from 'react-native';
-import { Trophy, Heart, MessageCircle, Flag, Camera } from 'lucide-react-native';
-import { Card } from '@components/Card';
+import { useState } from 'react';
+import { View, Text, ScrollView, Pressable, Alert, Linking, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
+import { Camera, Plus } from 'lucide-react-native';
+import { useAuth } from '@hooks/useAuth';
+import { useCommunityStore, UserPost } from '@hooks/useCommunityStore';
+import { FEED_FILTERS, MEMBER_COUNT, SEED_POSTS } from '@constants/community';
+import { ChallengeSection } from '@screens/community/ChallengeSection';
+import { CommentsModal } from '@screens/community/CommentsModal';
+import { ComposeModal } from '@screens/community/ComposeModal';
+import { GroupsSection } from '@screens/community/GroupsSection';
+import { FeedPost, PostCard } from '@screens/community/PostCard';
+import { PlankTimerModal } from '@screens/community/PlankTimerModal';
 import { theme } from '@styles/theme';
 
-// Illustrative only — DuoFit has no real user directory/social graph yet
-// (#15); the whole tab is already labeled "תצוגה מקדימה" below.
-const MOCK_MEMBER_COUNT = 3214;
-
-interface CommunityPost {
-  id: string;
-  authorName: string;
-  authorInitial: string;
-  avatarColor: string;
-  activityTag: string;
-  timeAgo: string;
-  text: string;
-  achievement?: { label: string; value: string };
-  likes: number;
-  comments: number;
+function formatTimeAgo(iso: string): string {
+  const minutes = Math.floor((new Date().getTime() - new Date(iso).getTime()) / 60000);
+  if (minutes < 1) return 'עכשיו';
+  if (minutes < 60) return `לפני ${minutes} דק׳`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `לפני ${hours} שעות`;
+  return `לפני ${Math.floor(hours / 24)} ימים`;
 }
 
-// Static mock feed — no backend/social-graph yet (#15), same "תצוגה מקדימה"
-// convention used for Dashboard/Discover before they had real data.
-const MOCK_POSTS: CommunityPost[] = [
-  {
-    id: '1',
-    authorName: 'מאיה שרון',
-    authorInitial: 'מ',
-    avatarColor: theme.colors.cyan,
-    activityTag: 'כוח',
-    timeAgo: 'לפני 25 דק׳',
-    text: 'שיא אישי חדש בסקוואט! תודה לרועי שעמד מאחוריי ולא נתן לי לוותר על החזרה האחרונה.',
-    achievement: { label: 'סקוואט', value: '100 ק"ג' },
-    likes: 48,
-    comments: 12,
-  },
-  {
-    id: '2',
-    authorName: 'עומר דהן',
-    authorInitial: 'ע',
-    avatarColor: theme.colors.magenta,
-    activityTag: 'כדורסל',
-    timeAgo: 'לפני שעה',
-    text: 'חסרים 2 שחקנים ל-3 על 3 הערב במגרש גורדון. רמה בינונית, אווירה טובה — מי בא?',
-    likes: 19,
-    comments: 7,
-  },
-  {
-    id: '3',
-    authorName: 'שיר מזרחי',
-    authorInitial: 'ש',
-    avatarColor: theme.colors.cyan,
-    activityTag: 'ריצה',
-    timeAgo: 'לפני 3 שעות',
-    text: 'ריצת בוקר עם הקבוצה — 7 אנשים ב-06:30. מי אמר שאין מוטיבציה בבוקר?',
-    achievement: { label: 'מרחק', value: '6.4 ק"מ' },
-    likes: 86,
-    comments: 21,
-  },
-  {
-    id: '4',
-    authorName: 'איתי ברק',
-    authorInitial: 'א',
-    avatarColor: theme.colors.magenta,
-    activityTag: 'קליסטניקס',
-    timeAgo: 'אתמול',
-    text: '3 שבועות של עבודה משותפת בפארק סוף סוף משתלמות. תודה לכל מי שהתאמן איתי בדרך.',
-    achievement: { label: 'משיכות רצופות', value: '15' },
-    likes: 64,
-    comments: 15,
-  },
-];
-
-const ACTIVITY_FILTERS = ['הכל', ...Array.from(new Set(MOCK_POSTS.map((post) => post.activityTag)))];
+function confirmEmergencyCall() {
+  Alert.alert('מצב חירום', 'בחר למי להתקשר. השיחה תתחיל רק אחרי שתלחץ על חיוג.', [
+    { text: 'משטרה · 100', onPress: () => Linking.openURL('tel:100') },
+    { text: 'מד״א · 101', onPress: () => Linking.openURL('tel:101') },
+    { text: 'ביטול', style: 'cancel' },
+  ]);
+}
 
 export function CommunityScreen() {
+  const user = useAuth((state) => state.user);
+  const { userPosts, likedPostIds, rsvpPostIds, hiddenPostIds, comments } = useCommunityStore();
+  const { toggleLike, toggleRsvp, hidePost, deletePost } = useCommunityStore.getState();
+
   const [activeFilter, setActiveFilter] = useState('הכל');
+  const [composeVisible, setComposeVisible] = useState(false);
+  const [plankVisible, setPlankVisible] = useState(false);
+  const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
 
-  const handleComposerPress = () => {
-    Alert.alert('בקרוב', 'פרסום עדכון יהיה זמין לאחר חיבור לשרת אמיתי');
-  };
+  const initial = user?.name?.[0] ?? '?';
 
-  const visiblePosts = useMemo(
-    () => (activeFilter === 'הכל' ? MOCK_POSTS : MOCK_POSTS.filter((post) => post.activityTag === activeFilter)),
-    [activeFilter]
+  const myPosts: FeedPost[] = userPosts.map((post: UserPost) => ({
+    id: post.id,
+    authorName: user?.name ?? 'אתה',
+    authorInitial: initial,
+    avatarColor: theme.colors.magenta,
+    verified: false,
+    activity: post.activity,
+    meta: formatTimeAgo(post.createdAt),
+    text: post.text,
+    imageUri: post.imageUri,
+    likes: likedPostIds.includes(post.id) ? 1 : 0,
+    comments: comments[post.id]?.length ?? 0,
+    isMine: true,
+  }));
+
+  const seedPosts: FeedPost[] = SEED_POSTS.map((post) => ({
+    id: post.id,
+    authorName: post.authorName,
+    authorInitial: post.authorName[0],
+    avatarColor: post.avatarColor,
+    verified: post.verified,
+    activity: post.activity,
+    meta: `${post.timeAgo} · ${post.place}`,
+    text: post.text,
+    attachment: post.attachment,
+    likes: post.likes + (likedPostIds.includes(post.id) ? 1 : 0),
+    comments: post.comments + (comments[post.id]?.length ?? 0),
+    isMine: false,
+  }));
+
+  const visiblePosts = [...myPosts, ...seedPosts].filter(
+    (post) => !hiddenPostIds.includes(post.id) && (activeFilter === 'הכל' || post.activity === activeFilter)
+  );
+  const commentsPost = [...myPosts, ...seedPosts].find((post) => post.id === commentsPostId);
+
+  const reportPost = (post: FeedPost) =>
+    Alert.alert('דיווח על פוסט', `לדווח על הפוסט של ${post.authorName}? הוא יוסתר מהפיד שלך.`, [
+      { text: 'ביטול', style: 'cancel' },
+      { text: 'דווח והסתר', style: 'destructive', onPress: () => hidePost(post.id) },
+    ]);
+
+  const confirmDelete = (post: FeedPost) =>
+    Alert.alert('מחיקת פוסט', 'למחוק את הפוסט שלך?', [
+      { text: 'ביטול', style: 'cancel' },
+      { text: 'מחק', style: 'destructive', onPress: () => deletePost(post.id) },
+    ]);
+
+  const avatar = (
+    <View style={styles.avatar}>
+      {user?.avatar ? (
+        <Image source={{ uri: user.avatar }} style={styles.avatarImage} contentFit="cover" />
+      ) : (
+        <Text style={styles.avatarInitial}>{initial}</Text>
+      )}
+    </View>
   );
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>קהילה</Text>
-        <Text style={styles.subtitle}>{MOCK_MEMBER_COUNT.toLocaleString('he-IL')} מתאמנים בתל אביב והסביבה</Text>
-
-        <View style={styles.previewBadge}>
-          <Text style={styles.previewBadgeText}>תצוגה מקדימה — פוסטים לדוגמה</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>קהילה</Text>
+            <Text style={styles.subtitle}>{`${MEMBER_COUNT.toLocaleString('he-IL')} מתאמנים בתל אביב והסביבה`}</Text>
+          </View>
+          <View style={styles.headerActions}>
+            <Pressable style={styles.sosButton} onPress={confirmEmergencyCall} accessibilityLabel="חירום">
+              <Text style={styles.sosText}>SOS</Text>
+            </Pressable>
+            {avatar}
+          </View>
         </View>
 
-        <Pressable style={styles.composer} onPress={handleComposerPress}>
-          <Camera color={theme.colors.textTertiary} size={18} strokeWidth={2} />
+        <View style={styles.previewPill}>
+          <Text style={styles.previewPillText}>תצוגה מקדימה — פוסטים, קבוצות ודירוג לדוגמה</Text>
+        </View>
+
+        <Pressable style={styles.composer} onPress={() => setComposeVisible(true)} accessibilityLabel="כתוב פוסט">
+          {avatar}
           <Text style={styles.composerText}>איך היה האימון היום?</Text>
+          <Camera color={theme.colors.textSecondary} size={22} strokeWidth={2} />
         </Pressable>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersRow}>
-          {ACTIVITY_FILTERS.map((filter) => (
+        <ChallengeSection onTryRecord={() => setPlankVisible(true)} />
+
+        <GroupsSection />
+
+        <Text style={styles.feedTitle}>הפיד</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsRow}
+          style={styles.chipsScroll}
+        >
+          {FEED_FILTERS.map((filter) => (
             <Pressable
               key={filter}
-              style={[styles.filterChip, activeFilter === filter && styles.filterChipActive]}
+              style={[styles.chip, activeFilter === filter && styles.chipActive]}
               onPress={() => setActiveFilter(filter)}
+              accessibilityState={{ selected: activeFilter === filter }}
             >
-              <Text style={[styles.filterChipText, activeFilter === filter && styles.filterChipTextActive]}>
-                {filter}
-              </Text>
+              <Text style={[styles.chipText, activeFilter === filter && styles.chipTextActive]}>{filter}</Text>
             </Pressable>
           ))}
         </ScrollView>
 
-        {visiblePosts.map((post) => (
-          <Card key={post.id} style={styles.postCard}>
-            <View style={styles.postHeader}>
-              <View style={styles.tagPill}>
-                <Text style={styles.tagPillText}>{post.activityTag}</Text>
-              </View>
-              <View style={styles.authorBlock}>
-                <Text style={styles.authorName}>{post.authorName}</Text>
-                <Text style={styles.timeAgo}>{post.timeAgo}</Text>
-              </View>
-              <View style={[styles.avatarCircle, { backgroundColor: post.avatarColor }]}>
-                <Text style={styles.avatarInitial}>{post.authorInitial}</Text>
-              </View>
-            </View>
-
-            <Text style={styles.postText}>{post.text}</Text>
-
-            {post.achievement && (
-              <View style={styles.achievementCard}>
-                <View style={styles.achievementIconWrap}>
-                  <Trophy color={theme.colors.magenta} size={20} strokeWidth={2} />
-                </View>
-                <View style={styles.achievementTextWrap}>
-                  <Text style={styles.achievementLabel}>{post.achievement.label}</Text>
-                  <Text style={styles.achievementValue}>{post.achievement.value}</Text>
-                </View>
-              </View>
-            )}
-
-            <View style={styles.postFooter}>
-              <Flag color={theme.colors.textTertiary} size={16} strokeWidth={2} />
-              <View style={styles.postFooterRight}>
-                <View style={styles.footerStat}>
-                  <Text style={styles.footerStatText}>{post.comments}</Text>
-                  <MessageCircle color={theme.colors.textTertiary} size={16} strokeWidth={2} />
-                </View>
-                <View style={styles.footerStat}>
-                  <Text style={styles.footerStatText}>{post.likes}</Text>
-                  <Heart color={theme.colors.textTertiary} size={16} strokeWidth={2} />
-                </View>
-              </View>
-            </View>
-          </Card>
-        ))}
+        {visiblePosts.length === 0 ? (
+          <Text style={styles.emptyFeed}>אין פוסטים בקטגוריה הזו כרגע</Text>
+        ) : (
+          visiblePosts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              liked={likedPostIds.includes(post.id)}
+              rsvped={rsvpPostIds.includes(post.id)}
+              onToggleLike={() => toggleLike(post.id)}
+              onOpenComments={() => setCommentsPostId(post.id)}
+              onToggleRsvp={() => toggleRsvp(post.id)}
+              onReport={() => reportPost(post)}
+              onDelete={() => confirmDelete(post)}
+            />
+          ))
+        )}
       </ScrollView>
+
+      <Pressable style={styles.fab} onPress={() => setComposeVisible(true)} accessibilityLabel="פוסט חדש">
+        <Plus color={theme.colors.black} size={30} strokeWidth={2.5} />
+      </Pressable>
+
+      <ComposeModal visible={composeVisible} onClose={() => setComposeVisible(false)} />
+      <PlankTimerModal visible={plankVisible} onClose={() => setPlankVisible(false)} />
+      <CommentsModal
+        postId={commentsPostId}
+        authorName={commentsPost?.authorName ?? ''}
+        onClose={() => setCommentsPostId(null)}
+      />
     </View>
   );
 }
@@ -172,25 +189,68 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   scrollContent: {
-    paddingVertical: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: 112, // room for the floating "+" button
   },
-  title: {
-    width: '100%',
-    fontSize: 28,
-    fontFamily: theme.typography.h2.fontFamily,
-    color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
-    marginBottom: theme.spacing.xs,
-  },
-  subtitle: {
-    width: '100%',
-    fontSize: 13,
-    fontFamily: theme.typography.bodySmall.fontFamily,
-    color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: theme.spacing.md,
   },
-  previewBadge: {
+  headerText: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  title: {
+    fontSize: 34,
+    fontFamily: theme.typography.h1.fontFamily,
+    color: theme.colors.text,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontFamily: theme.typography.bodySmall.fontFamily,
+    color: theme.colors.textSecondary,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    paddingTop: theme.spacing.sm,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.surfaceHover,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarInitial: {
+    fontSize: 18,
+    fontFamily: theme.typography.h3.fontFamily,
+    color: theme.colors.text,
+  },
+  sosButton: {
+    minWidth: 64,
+    minHeight: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.magenta,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  sosText: {
+    fontSize: 16,
+    fontFamily: theme.typography.button.fontFamily,
+    color: theme.colors.black,
+  },
+  previewPill: {
     alignSelf: 'flex-end',
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
@@ -200,149 +260,81 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     marginBottom: theme.spacing.lg,
   },
-  previewBadgeText: {
-    color: theme.colors.textTertiary,
-    fontSize: 12,
+  previewPillText: {
+    fontSize: 11,
     fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textTertiary,
   },
   composer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    minHeight: 48,
+    gap: theme.spacing.md,
+    minHeight: 72,
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.full,
-    paddingHorizontal: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.xl * 1.5,
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.xl,
   },
   composerText: {
-    fontSize: 14,
+    flex: 1,
+    fontSize: 16,
     fontFamily: theme.typography.body.fontFamily,
-    color: theme.colors.textTertiary,
+    color: theme.colors.textSecondary,
+    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
   },
-  filtersRow: {
-    gap: theme.spacing.sm,
+  feedTitle: {
+    width: '100%',
+    fontSize: 22,
+    fontFamily: theme.typography.h2.fontFamily,
+    color: theme.colors.text,
+    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    marginBottom: theme.spacing.md,
+  },
+  chipsScroll: {
+    flexGrow: 0,
     marginBottom: theme.spacing.lg,
   },
-  filterChip: {
-    minHeight: 36,
+  chipsRow: {
+    gap: theme.spacing.sm,
+  },
+  chip: {
+    minHeight: 48,
     justifyContent: 'center',
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.full,
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
   },
-  filterChipActive: {
+  chipActive: {
     backgroundColor: theme.colors.cyan,
   },
-  filterChipText: {
-    fontSize: 13,
-    fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.textSecondary,
-  },
-  filterChipTextActive: {
-    color: theme.colors.black,
-  },
-  postCard: {
-    marginBottom: theme.spacing.md,
-  },
-  postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-  },
-  avatarCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.borderRadius.full,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarInitial: {
+  chipText: {
     fontSize: 15,
-    fontFamily: theme.typography.h3.fontFamily,
-    color: theme.colors.black,
-  },
-  authorBlock: {
-    flex: 1,
-    alignItems: 'flex-end',
-  },
-  authorName: {
-    fontSize: 14,
-    fontFamily: theme.typography.bodySmallBold.fontFamily,
-    color: theme.colors.text,
-  },
-  timeAgo: {
-    fontSize: 11,
-    fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.textTertiary,
-    marginTop: 2,
-  },
-  tagPill: {
-    backgroundColor: theme.colors.surfaceHover,
-    borderRadius: theme.borderRadius.full,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.md,
-  },
-  tagPillText: {
-    fontSize: 12,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
   },
-  postText: {
+  chipTextActive: {
+    color: theme.colors.black,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+  },
+  emptyFeed: {
     fontSize: 14,
     fontFamily: theme.typography.body.fontFamily,
-    color: theme.colors.text,
-    textAlign: 'right',
-    marginBottom: theme.spacing.md,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    paddingVertical: theme.spacing.xl,
   },
-  achievementCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-    backgroundColor: theme.colors.surfaceHover,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-  },
-  achievementIconWrap: {
-    width: 40,
-    height: 40,
+  fab: {
+    position: 'absolute',
+    bottom: theme.spacing.lg,
+    left: theme.spacing.lg,
+    width: 64,
+    height: 64,
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.magenta,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  achievementTextWrap: {
-    alignItems: 'flex-end',
-  },
-  achievementLabel: {
-    fontSize: 12,
-    fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.textSecondary,
-  },
-  achievementValue: {
-    fontSize: 18,
-    fontFamily: theme.typography.display.fontFamily,
-    color: theme.colors.text,
-  },
-  postFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  postFooterRight: {
-    flexDirection: 'row',
-    gap: theme.spacing.lg,
-  },
-  footerStat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-  },
-  footerStatText: {
-    fontSize: 13,
-    fontFamily: theme.typography.bodySmall.fontFamily,
-    color: theme.colors.textTertiary,
+    elevation: 6,
   },
 });

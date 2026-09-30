@@ -13,7 +13,9 @@ import { Button } from '@components/Button';
 import { useAuth } from '@hooks/useAuth';
 import { useWorkoutStore, ScheduledWorkout } from '@hooks/useWorkoutStore';
 import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatching';
+import { useCommunityStore } from '@hooks/useCommunityStore';
 import { getActivityStyle } from '@lib/activityStyles';
+import { computePlankRank, getPlankSeconds } from '@lib/plank';
 import { theme } from '@styles/theme';
 
 // Target thresholds shown alongside the real numbers below — not mock data,
@@ -44,7 +46,6 @@ const MOCK_HEALTH = {
 const MOCK_WELLBEING = {
   realLifeHours: 4.2,
   screenTimeDropHours: 6.5,
-  plankRank: 37,
 };
 
 function getWeeklyEncouragement(completed: number, goal: number): string {
@@ -129,6 +130,10 @@ export default function Dashboard() {
   const router = useRouter();
   const user = useAuth((state) => state.user);
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
+  // Plank rank follows the record set in the Community challenge (an example
+  // value until the first real attempt).
+  const plankBestSeconds = useCommunityStore((state) => state.plankBestSeconds);
+  const plankRank = computePlankRank(getPlankSeconds(plankBestSeconds));
 
   const now = new Date();
   const weekStart = startOfWeek(now);
@@ -256,12 +261,12 @@ export default function Dashboard() {
       ),
       stats: [
         {
-          value: `#${MOCK_WELLBEING.plankRank}`,
+          value: `#${plankRank}`,
           label: 'באתגר הפלאנק',
           progress: 0.6,
           color: theme.colors.cyan,
           icon: Trophy,
-          isExample: true,
+          isExample: plankBestSeconds === null,
         },
         {
           value: String(noShowsThisMonth),
