@@ -189,9 +189,12 @@ export function distanceKm(a: Coordinates, b: Coordinates): number {
 
 // Search anchor for the mock pool. Candidates are fixed points in Tel Aviv,
 // so distances only make sense from inside the city: the device's GPS fix is
-// used when it's in the Tel Aviv area, otherwise the city center.
+// used when it's in the Tel Aviv area, otherwise the city center. The cutoff
+// must stay well under MAX_RADIUS_KM minus the pool's own spread (~3 km): a
+// fix 20-40 km out would put every mock partner outside the default radius and
+// empty Home's suggested/nearby sections.
 export const TEL_AVIV_CENTER: Coordinates = { latitude: 32.0809, longitude: 34.7806 };
-const LOCAL_RADIUS_KM = 40;
+const LOCAL_RADIUS_KM = 10;
 
 export interface PartnerWithDistance extends Partner {
   distanceKm: number;
