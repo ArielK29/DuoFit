@@ -1,8 +1,9 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Activity, LogOut, Users } from 'lucide-react-native';
+import { Image } from 'expo-image';
+import { Activity, Check, Flame, LogOut, Users } from 'lucide-react-native';
 import { ProgressRing } from '@components/ProgressRing';
-import { StreakDisplay } from '@components/StreakDisplay';
+import { WeeklyGoalRing } from '@components/WeeklyGoalRing';
 import { WeekStrip } from '@components/WeekStrip';
 import { UpcomingWorkoutCard } from '@components/UpcomingWorkoutCard';
 import { PartnerStreakCard } from '@components/PartnerStreakCard';
@@ -14,12 +15,17 @@ import { theme } from '@styles/theme';
 
 // Target thresholds shown alongside the real numbers below — not mock data,
 // just static goals until a goal-setting feature exists.
-const STREAK_GOAL = 7;
-const WORKOUTS_GOAL = 12;
+const WEEKLY_GOAL = 3;
+const MONTHLY_GOAL = 12;
 const PARTNERS_GOAL = 5;
+const STREAK_GOAL = 7;
+const RECENT_ACTIVITY_LIMIT = 5;
+const PLAN_WINDOW_DAYS = 7;
 
-// Elevation to lift cards off the background, matching the reference design's
-// floating-card look — Android reads `elevation`, iOS reads the shadow* trio.
+const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
+
+// Elevation to lift cards off the background — Android reads `elevation`,
+// iOS reads the shadow* trio.
 const cardElevation = Platform.select({
   android: { elevation: 4 },
   default: {
@@ -30,16 +36,20 @@ const cardElevation = Platform.select({
   },
 });
 
-function formatRelativeDate(iso: string): string {
-  const date = new Date(iso);
-  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  const diffDays = Math.round((startOfDay(new Date()) - startOfDay(date)) / 86400000);
+function startOfDay(date: Date): number {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+}
 
-  if (diffDays === 0) return 'היום';
-  if (diffDays === 1) return 'אתמול';
-  if (diffDays > 1 && diffDays < 7) return `לפני ${diffDays} ימים`;
-  if (diffDays >= 7 && diffDays < 14) return 'לפני שבוע';
-  return date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long' });
+function startOfWeek(date: Date): number {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  d.setDate(d.getDate() - d.getDay());
+  return d.getTime();
+}
+
+function formatDayAndTime(iso: string): string {
+  const date = new Date(iso);
+  const time = date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+  return `${WEEKDAY_LETTERS[date.getDay()]} ${time}`;
 }
 
 // Longest run of consecutive calendar days ending at the most recent
@@ -66,8 +76,7 @@ interface PartnerStreak {
   streak: number;
 }
 
-// Per-partner version of computeStreak, for the "ביחד ברצף" row — real data,
-// grouped by who you actually trained with.
+// Per-partner version of computeStreak, for the "ביחד ברצף" row.
 function computePartnerStreaks(completedWorkouts: ScheduledWorkout[]): PartnerStreak[] {
   const byPartner = new Map<string, ScheduledWorkout[]>();
   completedWorkouts.forEach((workout) => {
@@ -88,50 +97,81 @@ function computePartnerStreaks(completedWorkouts: ScheduledWorkout[]): PartnerSt
 
 export default function Dashboard() {
   const router = useRouter();
+  const user = useAuth((state) => state.user);
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
+
+  const now = new Date();
+  const weekStart = startOfWeek(now);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
   const completedWorkouts = scheduledWorkouts
     .filter((workout) => workout.checkedIn)
     .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
 
-  const upcomingWorkout = scheduledWorkouts
+  const pendingWorkouts = scheduledWorkouts
     .filter((workout) => !workout.checkedIn)
-    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0];
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+  const upcomingWorkout = pendingWorkouts[0];
+
+  const planEnd = now.getTime() + PLAN_WINDOW_DAYS * 86400000;
+  const weekPlan = pendingWorkouts
+    .slice(1)
+    .filter((workout) => new Date(workout.scheduledAt).getTime() <= planEnd);
+
+  const workoutsThisWeek = completedWorkouts.filter(
+    (workout) => new Date(workout.scheduledAt).getTime() >= weekStart
+  ).length;
+  const workoutsThisMonth = completedWorkouts.filter(
+    (workout) => new Date(workout.scheduledAt).getTime() >= monthStart
+  ).length;
 
   const streakDays = computeStreak(completedWorkouts);
   const partnersCount = new Set(scheduledWorkouts.map((workout) => workout.partnerId)).size;
-  const hasHistory = completedWorkouts.length > 0;
   const partnerStreaks = computePartnerStreaks(completedWorkouts);
+  const upcomingPartnerStreak = upcomingWorkout
+    ? partnerStreaks.find((entry) => entry.partnerId === upcomingWorkout.partnerId)?.streak
+    : undefined;
 
-  const activeDates = new Set(
-    completedWorkouts.map((workout) => {
-      const d = new Date(workout.scheduledAt);
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-    })
-  );
+  const activeDates = new Set(completedWorkouts.map((workout) => startOfDay(new Date(workout.scheduledAt))));
+  const recentActivity = completedWorkouts.slice(0, RECENT_ACTIVITY_LIMIT);
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>לוח הבקרה שלי</Text>
+        <View style={styles.topBar}>
+          <Text style={styles.wordmark}>DuoFit</Text>
+          <View style={styles.topBarLeft}>
+            <View style={styles.streakPill}>
+              <Flame color={theme.colors.magenta} size={16} strokeWidth={2} />
+              <Text style={styles.streakPillText}>{streakDays}</Text>
+            </View>
+            <View style={styles.avatar}>
+              {user?.avatar ? (
+                <Image source={{ uri: user.avatar }} style={styles.avatarImage} contentFit="cover" />
+              ) : (
+                <Text style={styles.avatarInitial}>{user?.name?.[0] ?? '?'}</Text>
+              )}
+            </View>
+          </View>
+        </View>
 
         <View style={styles.weekStripWrapper}>
           <WeekStrip activeDates={activeDates} />
         </View>
 
-        <StreakDisplay days={streakDays} goal={STREAK_GOAL} />
+        <WeeklyGoalRing completed={workoutsThisWeek} goal={WEEKLY_GOAL} />
 
         <View style={styles.statsRow}>
           <View style={[styles.statCard, cardElevation]}>
             <Text style={styles.statValue}>
-              {completedWorkouts.length}
-              <Text style={styles.statGoal}>/{WORKOUTS_GOAL}</Text>
+              {workoutsThisMonth}
+              <Text style={styles.statGoal}>/{MONTHLY_GOAL}</Text>
             </Text>
             <Text style={styles.statLabel}>אימונים החודש</Text>
             <ProgressRing
               size={52}
               strokeWidth={6}
-              progress={completedWorkouts.length / WORKOUTS_GOAL}
+              progress={workoutsThisMonth / MONTHLY_GOAL}
               color={theme.colors.magenta}
               trackColor={theme.colors.surfaceHover}
             >
@@ -144,7 +184,7 @@ export default function Dashboard() {
               {partnersCount}
               <Text style={styles.statGoal}>/{PARTNERS_GOAL}</Text>
             </Text>
-            <Text style={styles.statLabel}>שותפים פעילים</Text>
+            <Text style={styles.statLabel}>שותפים</Text>
             <ProgressRing
               size={52}
               strokeWidth={6}
@@ -155,18 +195,42 @@ export default function Dashboard() {
               <Users color={theme.colors.text} size={18} strokeWidth={2} />
             </ProgressRing>
           </View>
+
+          <View style={[styles.statCard, cardElevation]}>
+            <Text style={styles.statValue}>
+              {streakDays}
+              <Text style={styles.statGoal}>/{STREAK_GOAL}</Text>
+            </Text>
+            <Text style={styles.statLabel}>ימים ברצף</Text>
+            <ProgressRing
+              size={52}
+              strokeWidth={6}
+              progress={streakDays / STREAK_GOAL}
+              color={theme.colors.cyan}
+              trackColor={theme.colors.surfaceHover}
+            >
+              <Flame color={theme.colors.cyan} size={18} strokeWidth={2} />
+            </ProgressRing>
+          </View>
         </View>
 
         {upcomingWorkout && (
           <UpcomingWorkoutCard
             workout={upcomingWorkout}
-            onPress={() => router.push({ pathname: '/check-in', params: { workoutId: upcomingWorkout.id } })}
+            partnerStreak={upcomingPartnerStreak}
+            onCheckInPress={() => router.push({ pathname: '/check-in', params: { workoutId: upcomingWorkout.id } })}
+            onMessagePress={() =>
+              router.push({
+                pathname: '/conversation',
+                params: { partnerId: upcomingWorkout.partnerId, partnerName: upcomingWorkout.partnerName },
+              })
+            }
           />
         )}
 
         {partnerStreaks.length > 0 && (
-          <View style={styles.partnerStreaksSection}>
-            <Text style={styles.sectionLabel}>ביחד ברצף</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>ביחד ברצף</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.partnerStreaksRow}>
               {partnerStreaks.map((entry) => (
                 <PartnerStreakCard key={entry.partnerId} partnerName={entry.partnerName} streak={entry.streak} />
@@ -175,31 +239,72 @@ export default function Dashboard() {
           </View>
         )}
 
-        <Text style={styles.sectionLabel}>היסטוריית אימונים</Text>
-        {hasHistory ? (
-          completedWorkouts.map((workout) => {
-            const activityStyle = getActivityStyle(workout.activity);
-            const ActivityIcon = activityStyle.icon;
-            return (
-              <View key={workout.id} style={[styles.historyRow, cardElevation]}>
-                <View style={[styles.historyIconWrap, { backgroundColor: activityStyle.color }]}>
-                  <ActivityIcon color={theme.colors.black} size={20} strokeWidth={2} />
-                </View>
-                <View style={styles.historyTextWrap}>
-                  <Text style={styles.historyTitle}>
-                    {workout.activity} עם {workout.partnerName}
-                  </Text>
-                  <Text style={styles.historyDate}>{formatRelativeDate(workout.scheduledAt)}</Text>
-                </View>
-              </View>
-            );
-          })
-        ) : (
-          <View style={[styles.emptyHistory, cardElevation]}>
-            <Text style={styles.emptyHistoryText}>עדיין אין לך אימונים שהושלמו</Text>
-            <Button label="התחל להתאמן עכשיו" variant="primary" onPress={() => router.push('/discover')} />
+        {weekPlan.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>התוכנית לשבוע הקרוב</Text>
+            <View style={[styles.planCard, cardElevation]}>
+              {weekPlan.map((workout, index) => {
+                const date = new Date(workout.scheduledAt);
+                const ActivityIcon = getActivityStyle(workout.activity).icon;
+                return (
+                  <Pressable
+                    key={workout.id}
+                    style={[styles.planRow, index > 0 && styles.planRowDivider]}
+                    onPress={() => router.push({ pathname: '/check-in', params: { workoutId: workout.id } })}
+                  >
+                    <View style={styles.planDay}>
+                      <Text style={styles.planDayLetter}>{WEEKDAY_LETTERS[date.getDay()]}</Text>
+                      <Text style={styles.planDayDate}>{`${date.getDate()}.${date.getMonth() + 1}`}</Text>
+                    </View>
+                    <View style={styles.planTextWrap}>
+                      <View style={styles.planTitleRow}>
+                        <ActivityIcon color={theme.colors.text} size={14} strokeWidth={2} />
+                        <Text style={styles.planTitle}>
+                          {workout.activity} · {date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                      </View>
+                      <Text style={styles.planSubtitle}>
+                        עם {workout.partnerName} · {workout.location}
+                      </Text>
+                    </View>
+                    <View style={styles.planCheck}>
+                      <Check color={theme.colors.black} size={14} strokeWidth={3} />
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
         )}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>פעילות אחרונה</Text>
+          {recentActivity.length > 0 ? (
+            recentActivity.map((workout) => {
+              const activityStyle = getActivityStyle(workout.activity);
+              const ActivityIcon = activityStyle.icon;
+              return (
+                <View key={workout.id} style={[styles.activityRow, cardElevation]}>
+                  <View style={[styles.activityIconTile, { backgroundColor: activityStyle.color }]}>
+                    <ActivityIcon color={theme.colors.black} size={24} strokeWidth={2} />
+                  </View>
+                  <View style={styles.activityTextWrap}>
+                    <Text style={styles.activityTitle}>
+                      {workout.activity} עם {workout.partnerName}
+                    </Text>
+                    <Text style={styles.activitySubtitle}>{workout.location}</Text>
+                  </View>
+                  <Text style={styles.activityTime}>{formatDayAndTime(workout.scheduledAt)}</Text>
+                </View>
+              );
+            })
+          ) : (
+            <View style={[styles.emptyHistory, cardElevation]}>
+              <Text style={styles.emptyHistoryText}>עדיין אין לך אימונים שהושלמו</Text>
+              <Button label="התחל להתאמן עכשיו" variant="primary" onPress={() => router.push('/discover')} />
+            </View>
+          )}
+        </View>
 
         {__DEV__ && (
           <Pressable
@@ -227,13 +332,55 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingVertical: theme.spacing.xl,
   },
-  title: {
-    width: '100%',
-    fontSize: 28,
-    fontFamily: theme.typography.h2.fontFamily,
-    color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: theme.spacing.lg,
+  },
+  wordmark: {
+    fontSize: 26,
+    fontFamily: theme.typography.display.fontFamily,
+    color: theme.colors.text,
+  },
+  topBarLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  streakPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.full,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+  },
+  streakPillText: {
+    fontSize: 16,
+    fontFamily: theme.typography.display.fontFamily,
+    color: theme.colors.text,
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.surfaceHover,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarInitial: {
+    fontSize: 18,
+    fontFamily: theme.typography.h3.fontFamily,
+    color: theme.colors.cyan,
   },
   weekStripWrapper: {
     marginBottom: theme.spacing.lg,
@@ -253,68 +400,130 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   statValue: {
-    fontSize: 22,
+    fontSize: 20,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },
   statGoal: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.textTertiary,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
     textAlign: 'right',
   },
-  partnerStreaksSection: {
-    marginBottom: theme.spacing.lg,
+  section: {
+    marginBottom: theme.spacing.xl,
   },
-  partnerStreaksRow: {
-    gap: theme.spacing.sm,
-  },
-  sectionLabel: {
+  sectionTitle: {
     width: '100%',
-    fontSize: 14,
-    fontFamily: theme.typography.label.fontFamily,
+    fontSize: 20,
+    fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
     textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     marginBottom: theme.spacing.md,
   },
-  historyRow: {
+  partnerStreaksRow: {
+    gap: theme.spacing.sm,
+  },
+  planCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.xl,
+    paddingHorizontal: theme.spacing.md,
+  },
+  planRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
     gap: theme.spacing.md,
+    minHeight: 64,
+    paddingVertical: theme.spacing.md,
   },
-  historyIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.surfaceHover,
-    justifyContent: 'center',
+  planRowDivider: {
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.surfaceHover,
+  },
+  planDay: {
+    width: 40,
     alignItems: 'center',
   },
-  historyTextWrap: {
+  planDayLetter: {
+    fontSize: 18,
+    fontFamily: theme.typography.h2.fontFamily,
+    color: theme.colors.text,
+  },
+  planDayDate: {
+    fontSize: 11,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textTertiary,
+  },
+  planTextWrap: {
     flex: 1,
     alignItems: 'flex-end',
   },
-  historyTitle: {
+  planTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  planTitle: {
     fontSize: 14,
-    fontFamily: theme.typography.body.fontFamily,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.text,
+  },
+  planSubtitle: {
+    fontSize: 12,
+    fontFamily: theme.typography.bodySmall.fontFamily,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  planCheck: {
+    width: 28,
+    height: 28,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.cyan,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    gap: theme.spacing.md,
+  },
+  activityIconTile: {
+    width: 56,
+    height: 56,
+    borderRadius: theme.borderRadius.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activityTextWrap: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  activityTitle: {
+    fontSize: 15,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
     textAlign: 'right',
   },
-  historyDate: {
+  activitySubtitle: {
     fontSize: 12,
     fontFamily: theme.typography.bodySmall.fontFamily,
-    color: theme.colors.textTertiary,
+    color: theme.colors.textSecondary,
     marginTop: 2,
+  },
+  activityTime: {
+    alignSelf: 'flex-start',
+    fontSize: 11,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textTertiary,
   },
   emptyHistory: {
     backgroundColor: theme.colors.surface,

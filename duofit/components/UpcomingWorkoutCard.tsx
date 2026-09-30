@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Calendar, MapPin } from 'lucide-react-native';
+import { View, Text, Pressable, Linking, StyleSheet } from 'react-native';
+import { Calendar, MapPin, MessageCircle, Navigation, Flame } from 'lucide-react-native';
 import { ScheduledWorkout } from '@hooks/useWorkoutStore';
 import { Card } from '@components/Card';
 import { Button } from '@components/Button';
@@ -35,12 +35,26 @@ function formatCountdown(iso: string): string {
 
 interface UpcomingWorkoutCardProps {
   workout: ScheduledWorkout;
-  onPress: () => void;
+  partnerStreak?: number;
+  onCheckInPress: () => void;
+  onMessagePress: () => void;
 }
 
 // "Next workout" card, per the FitMatch reference layout — restyled with
-// DuoFit's own dark palette instead of FitMatch's light theme.
-export const UpcomingWorkoutCard: React.FC<UpcomingWorkoutCardProps> = ({ workout, onPress }) => {
+// DuoFit's own dark palette instead of FitMatch's light theme. FitMatch's
+// "3 confirmed participants" isn't included — DuoFit's workouts are 1-on-1,
+// not group, so there's no second/third participant to show.
+export const UpcomingWorkoutCard: React.FC<UpcomingWorkoutCardProps> = ({
+  workout,
+  partnerStreak,
+  onCheckInPress,
+  onMessagePress,
+}) => {
+  const openLocation = () => {
+    const query = encodeURIComponent(workout.location);
+    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+  };
+
   return (
     <Card style={styles.card}>
       <View style={styles.headerRow}>
@@ -58,8 +72,25 @@ export const UpcomingWorkoutCard: React.FC<UpcomingWorkoutCardProps> = ({ workou
         <MapPin color={theme.colors.textSecondary} size={14} strokeWidth={2} />
         <Text style={styles.detailText}>{workout.location}</Text>
       </View>
-      <View style={styles.ctaWrapper}>
-        <Button label="לצ'ק-אין" variant="primary" onPress={onPress} />
+      {!!partnerStreak && partnerStreak > 1 && (
+        <View style={styles.detailRow}>
+          <Flame color={theme.colors.magenta} size={14} strokeWidth={2} />
+          <Text style={styles.detailText}>
+            {partnerStreak} אימונים ברצף עם {workout.partnerName} · אל תשבור
+          </Text>
+        </View>
+      )}
+
+      <View style={styles.actionsRow}>
+        <Pressable style={styles.iconButton} onPress={onMessagePress} accessibilityLabel="הודעה">
+          <MessageCircle color={theme.colors.textSecondary} size={18} strokeWidth={2} />
+        </Pressable>
+        <Pressable style={styles.iconButton} onPress={openLocation} accessibilityLabel="ניווט למיקום">
+          <Navigation color={theme.colors.textSecondary} size={18} strokeWidth={2} />
+        </Pressable>
+        <View style={styles.ctaWrapper}>
+          <Button label="סיימתי את האימון" variant="primary" onPress={onCheckInPress} />
+        </View>
       </View>
     </Card>
   );
@@ -104,7 +135,21 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.textSecondary,
   },
-  ctaWrapper: {
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
     marginTop: theme.spacing.md,
+  },
+  iconButton: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.surfaceHover,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ctaWrapper: {
+    flex: 1,
   },
 });
