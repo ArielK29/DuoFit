@@ -1,43 +1,53 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Dumbbell } from 'lucide-react-native';
+import type { LucideIcon } from 'lucide-react-native';
 import { ProgressRing } from '@components/ProgressRing';
 import { theme } from '@styles/theme';
 
-interface WeeklyGoalRingProps {
-  completed: number;
-  goal: number;
+interface HeroStatCardProps {
+  value: string;
+  suffix?: string; // "/3" goal or a unit like "שע'"
+  label: string;
+  subtext?: string;
+  subtextColor?: string;
+  progress: number;
+  color: string;
+  icon: LucideIcon;
+  isExample?: boolean;
 }
 
-function getEncouragement(completed: number, goal: number): string {
-  const remaining = goal - completed;
-  if (remaining <= 0) return 'עברת את היעד השבוע! כל הכבוד';
-  if (remaining === 1) return 'עוד אימון אחד ליעד';
-  return `עוד ${remaining} אימונים ליעד`;
-}
-
-// Home hero card — real weekly workout count vs goal, per the FitMatch
-// reference (its icon is a dumbbell, not a flame; the flame/streak lives in
-// the top-bar badge and the "ביחד ברצף" section instead).
-export const WeeklyGoalRing: React.FC<WeeklyGoalRingProps> = ({ completed, goal }) => {
+// Large ring card at the top of each Home carousel page, per the FitMatch
+// reference. `isExample` marks values that aren't real data yet.
+export const HeroStatCard: React.FC<HeroStatCardProps> = ({
+  value,
+  suffix,
+  label,
+  subtext,
+  subtextColor = theme.colors.magenta,
+  progress,
+  color,
+  icon: Icon,
+  isExample,
+}) => {
   return (
     <View style={styles.container}>
       <View style={styles.textBlock}>
         <Text style={styles.value}>
-          {completed}
-          <Text style={styles.goal}>/{goal}</Text>
+          {value}
+          {suffix && <Text style={styles.suffix}>{suffix}</Text>}
         </Text>
-        <Text style={styles.label}>אימונים השבוע</Text>
-        <Text style={styles.encouragement}>{getEncouragement(completed, goal)}</Text>
+        <Text style={styles.label}>{label}</Text>
+        {subtext && <Text style={[styles.subtext, { color: subtextColor }]}>{subtext}</Text>}
+        {isExample && <Text style={styles.exampleTag}>לדוגמה</Text>}
       </View>
       <ProgressRing
         size={88}
         strokeWidth={10}
-        progress={goal > 0 ? completed / goal : 0}
-        color={theme.colors.cyan}
+        progress={progress}
+        color={color}
         trackColor={theme.colors.surfaceHover}
       >
-        <Dumbbell color={theme.colors.cyan} size={28} strokeWidth={2} />
+        <Icon color={color} size={28} strokeWidth={2} />
       </ProgressRing>
     </View>
   );
@@ -53,6 +63,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
   },
   textBlock: {
+    flex: 1,
     alignItems: 'flex-end',
   },
   value: {
@@ -60,7 +71,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },
-  goal: {
+  suffix: {
     fontSize: 18,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.textTertiary,
@@ -71,10 +82,16 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginTop: 2,
   },
-  encouragement: {
+  subtext: {
     fontSize: 12,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
-    color: theme.colors.magenta,
+    marginTop: theme.spacing.xs,
+    textAlign: 'right',
+  },
+  exampleTag: {
+    fontSize: 10,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textTertiary,
     marginTop: theme.spacing.xs,
   },
 });

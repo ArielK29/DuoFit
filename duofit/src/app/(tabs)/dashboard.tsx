@@ -1,9 +1,9 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { Activity, Check, Flame, Footprints, LogOut, Route, Users, Zap } from 'lucide-react-native';
+import { Check, Dumbbell, Flame, Footprints, LogOut, PhoneOff, Route, Trophy, Users, X, Zap } from 'lucide-react-native';
 import { StatCarousel, StatPage } from '@components/StatCarousel';
-import { WeeklyGoalRing } from '@components/WeeklyGoalRing';
+import { HeroStatCard } from '@components/HeroStatCard';
 import { WeekStrip } from '@components/WeekStrip';
 import { UpcomingWorkoutCard } from '@components/UpcomingWorkoutCard';
 import { PartnerStreakCard } from '@components/PartnerStreakCard';
@@ -16,9 +16,7 @@ import { theme } from '@styles/theme';
 // Target thresholds shown alongside the real numbers below — not mock data,
 // just static goals until a goal-setting feature exists.
 const WEEKLY_GOAL = 3;
-const MONTHLY_GOAL = 12;
 const PARTNERS_GOAL = 5;
-const STREAK_GOAL = 7;
 const RECENT_ACTIVITY_LIMIT = 5;
 const PLAN_WINDOW_DAYS = 7;
 
@@ -35,6 +33,22 @@ const MOCK_HEALTH = {
   runKm: 17.2,
   runKmGoal: 25,
 };
+
+// Example numbers only — screen time needs Android Digital Wellbeing / iOS
+// Screen Time access (not available in Expo Go), and the plank challenge
+// doesn't exist as a real feature yet.
+const MOCK_WELLBEING = {
+  realLifeHours: 4.2,
+  screenTimeDropHours: 6.5,
+  plankRank: 37,
+};
+
+function getWeeklyEncouragement(completed: number, goal: number): string {
+  const remaining = goal - completed;
+  if (remaining <= 0) return 'עברת את היעד השבוע! כל הכבוד';
+  if (remaining === 1) return 'עוד אימון אחד ליעד';
+  return `עוד ${remaining} אימונים ליעד`;
+}
 
 // Elevation to lift cards off the background — Android reads `elevation`,
 // iOS reads the shadow* trio.
@@ -133,9 +147,12 @@ export default function Dashboard() {
   const workoutsThisWeek = completedWorkouts.filter(
     (workout) => new Date(workout.scheduledAt).getTime() >= weekStart
   ).length;
-  const workoutsThisMonth = completedWorkouts.filter(
-    (workout) => new Date(workout.scheduledAt).getTime() >= monthStart
-  ).length;
+  // Real "no-shows": workouts scheduled earlier this month whose time has
+  // passed without a check-in.
+  const noShowsThisMonth = pendingWorkouts.filter((workout) => {
+    const time = new Date(workout.scheduledAt).getTime();
+    return time >= monthStart && time < now.getTime();
+  }).length;
 
   const streakDays = computeStreak(completedWorkouts);
   const partnersCount = new Set(scheduledWorkouts.map((workout) => workout.partnerId)).size;
@@ -149,8 +166,18 @@ export default function Dashboard() {
 
   const statPages: StatPage[] = [
     {
-      key: 'health',
-      badge: 'תצוגה מקדימה — נתונים לדוגמה',
+      key: 'workouts',
+      hero: (
+        <HeroStatCard
+          value={String(workoutsThisWeek)}
+          suffix={`/${WEEKLY_GOAL}`}
+          label="אימונים השבוע"
+          subtext={getWeeklyEncouragement(workoutsThisWeek, WEEKLY_GOAL)}
+          progress={workoutsThisWeek / WEEKLY_GOAL}
+          color={theme.colors.cyan}
+          icon={Dumbbell}
+        />
+      ),
       stats: [
         {
           value: MOCK_HEALTH.steps.toLocaleString('he-IL'),
@@ -159,6 +186,7 @@ export default function Dashboard() {
           progress: MOCK_HEALTH.steps / MOCK_HEALTH.stepsGoal,
           color: theme.colors.magenta,
           icon: Footprints,
+          isExample: true,
         },
         {
           value: MOCK_HEALTH.calories.toLocaleString('he-IL'),
@@ -167,6 +195,7 @@ export default function Dashboard() {
           progress: MOCK_HEALTH.calories / MOCK_HEALTH.caloriesGoal,
           color: theme.colors.warning,
           icon: Zap,
+          isExample: true,
         },
         {
           value: String(MOCK_HEALTH.runKm),
@@ -175,35 +204,47 @@ export default function Dashboard() {
           progress: MOCK_HEALTH.runKm / MOCK_HEALTH.runKmGoal,
           color: theme.colors.cyan,
           icon: Route,
+          isExample: true,
         },
       ],
     },
     {
-      key: 'workouts',
+      key: 'wellbeing',
+      hero: (
+        <HeroStatCard
+          value={String(MOCK_WELLBEING.realLifeHours)}
+          suffix=" שע'"
+          label="Real Life Time השבוע"
+          subtext={`↓ ${MOCK_WELLBEING.screenTimeDropHours} שעות מסך פחות משבוע שעבר`}
+          subtextColor={theme.colors.cyan}
+          progress={0.7}
+          color={theme.colors.cyan}
+          icon={PhoneOff}
+          isExample
+        />
+      ),
       stats: [
         {
-          value: String(workoutsThisMonth),
-          goal: String(MONTHLY_GOAL),
-          label: 'אימונים החודש',
-          progress: workoutsThisMonth / MONTHLY_GOAL,
-          color: theme.colors.magenta,
-          icon: Activity,
+          value: `#${MOCK_WELLBEING.plankRank}`,
+          label: 'באתגר הפלאנק',
+          progress: 0.6,
+          color: theme.colors.cyan,
+          icon: Trophy,
+          isExample: true,
+        },
+        {
+          value: String(noShowsThisMonth),
+          label: 'הברזות החודש',
+          progress: 1,
+          color: noShowsThisMonth === 0 ? theme.colors.cyan : theme.colors.magenta,
+          icon: noShowsThisMonth === 0 ? Check : X,
         },
         {
           value: String(partnersCount),
-          goal: String(PARTNERS_GOAL),
-          label: 'שותפים',
-          progress: partnersCount / PARTNERS_GOAL,
-          color: theme.colors.text,
+          label: 'אנשים פגשת',
+          progress: Math.min(1, partnersCount / PARTNERS_GOAL),
+          color: theme.colors.warning,
           icon: Users,
-        },
-        {
-          value: String(streakDays),
-          goal: String(STREAK_GOAL),
-          label: 'ימים ברצף',
-          progress: streakDays / STREAK_GOAL,
-          color: theme.colors.cyan,
-          icon: Flame,
         },
       ],
     },
@@ -232,8 +273,6 @@ export default function Dashboard() {
         <View style={styles.weekStripWrapper}>
           <WeekStrip activeDates={activeDates} />
         </View>
-
-        <WeeklyGoalRing completed={workoutsThisWeek} goal={WEEKLY_GOAL} />
 
         <View style={styles.statsWrapper}>
           <StatCarousel pages={statPages} />
@@ -411,7 +450,6 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   statsWrapper: {
-    marginTop: theme.spacing.md,
     marginBottom: theme.spacing.xl,
   },
   section: {

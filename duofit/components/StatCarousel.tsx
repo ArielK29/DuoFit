@@ -6,16 +6,17 @@ import { theme } from '@styles/theme';
 
 export interface RingStat {
   value: string;
-  goal: string;
+  goal?: string;
   label: string;
   progress: number;
   color: string;
   icon: LucideIcon;
+  isExample?: boolean;
 }
 
 export interface StatPage {
   key: string;
-  badge?: string;
+  hero: React.ReactNode;
   stats: RingStat[];
 }
 
@@ -29,9 +30,9 @@ const cardElevation = Platform.select({
   },
 });
 
-// Swipeable pages of 3 stat rings with dot indicators, per the FitMatch home
-// reference. FlatList + onViewableItemsChanged (not raw scroll offsets) so the
-// active dot stays correct under forced RTL on Android.
+// Swipeable pages (hero card + 3 stat rings) with dot indicators, per the
+// FitMatch home reference. FlatList + onViewableItemsChanged (not raw scroll
+// offsets) so the active dot stays correct under forced RTL on Android.
 export const StatCarousel: React.FC<{ pages: StatPage[] }> = ({ pages }) => {
   const [width, setWidth] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -55,11 +56,7 @@ export const StatCarousel: React.FC<{ pages: StatPage[] }> = ({ pages }) => {
           viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
           renderItem={({ item }) => (
             <View style={{ width }}>
-              {item.badge && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{item.badge}</Text>
-                </View>
-              )}
+              {item.hero}
               <View style={styles.row}>
                 {item.stats.map((stat) => {
                   const Icon = stat.icon;
@@ -67,7 +64,7 @@ export const StatCarousel: React.FC<{ pages: StatPage[] }> = ({ pages }) => {
                     <View key={stat.label} style={[styles.card, cardElevation]}>
                       <Text style={styles.value}>
                         {stat.value}
-                        <Text style={styles.goal}>/{stat.goal}</Text>
+                        {stat.goal && <Text style={styles.goal}>/{stat.goal}</Text>}
                       </Text>
                       <Text style={styles.label}>{stat.label}</Text>
                       <ProgressRing
@@ -79,6 +76,7 @@ export const StatCarousel: React.FC<{ pages: StatPage[] }> = ({ pages }) => {
                       >
                         <Icon color={stat.color} size={18} strokeWidth={2} />
                       </ProgressRing>
+                      {stat.isExample && <Text style={styles.exampleTag}>לדוגמה</Text>}
                     </View>
                   );
                 })}
@@ -97,24 +95,10 @@ export const StatCarousel: React.FC<{ pages: StatPage[] }> = ({ pages }) => {
 };
 
 const styles = StyleSheet.create({
-  badge: {
-    alignSelf: 'flex-end',
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.surfaceHover,
-    borderRadius: theme.borderRadius.full,
-    paddingVertical: 2,
-    paddingHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-  },
-  badgeText: {
-    fontSize: 11,
-    fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.textTertiary,
-  },
   row: {
     flexDirection: 'row',
     gap: theme.spacing.sm,
+    marginTop: theme.spacing.md,
   },
   card: {
     flex: 1,
@@ -139,6 +123,11 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
     textAlign: 'right',
+  },
+  exampleTag: {
+    fontSize: 10,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textTertiary,
   },
   dots: {
     flexDirection: 'row',
