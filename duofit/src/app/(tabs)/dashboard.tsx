@@ -1,8 +1,8 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { Activity, Check, Flame, LogOut, Users } from 'lucide-react-native';
-import { ProgressRing } from '@components/ProgressRing';
+import { Activity, Check, Flame, Footprints, LogOut, Route, Users, Zap } from 'lucide-react-native';
+import { StatCarousel, StatPage } from '@components/StatCarousel';
 import { WeeklyGoalRing } from '@components/WeeklyGoalRing';
 import { WeekStrip } from '@components/WeekStrip';
 import { UpcomingWorkoutCard } from '@components/UpcomingWorkoutCard';
@@ -23,6 +23,18 @@ const RECENT_ACTIVITY_LIMIT = 5;
 const PLAN_WINDOW_DAYS = 7;
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
+
+// Example numbers only — steps/calories/running need Health Connect
+// (Android) / HealthKit (iOS), which aren't available in Expo Go. Replace
+// with real sensor data once the app moves to a development build.
+const MOCK_HEALTH = {
+  steps: 8432,
+  stepsGoal: 10000,
+  calories: 2140,
+  caloriesGoal: 2600,
+  runKm: 17.2,
+  runKmGoal: 25,
+};
 
 // Elevation to lift cards off the background — Android reads `elevation`,
 // iOS reads the shadow* trio.
@@ -135,6 +147,68 @@ export default function Dashboard() {
   const activeDates = new Set(completedWorkouts.map((workout) => startOfDay(new Date(workout.scheduledAt))));
   const recentActivity = completedWorkouts.slice(0, RECENT_ACTIVITY_LIMIT);
 
+  const statPages: StatPage[] = [
+    {
+      key: 'health',
+      badge: 'תצוגה מקדימה — נתונים לדוגמה',
+      stats: [
+        {
+          value: MOCK_HEALTH.steps.toLocaleString('he-IL'),
+          goal: '10K',
+          label: 'צעדים היום',
+          progress: MOCK_HEALTH.steps / MOCK_HEALTH.stepsGoal,
+          color: theme.colors.magenta,
+          icon: Footprints,
+        },
+        {
+          value: MOCK_HEALTH.calories.toLocaleString('he-IL'),
+          goal: '2.6K',
+          label: 'קלוריות שרפת',
+          progress: MOCK_HEALTH.calories / MOCK_HEALTH.caloriesGoal,
+          color: theme.colors.warning,
+          icon: Zap,
+        },
+        {
+          value: String(MOCK_HEALTH.runKm),
+          goal: String(MOCK_HEALTH.runKmGoal),
+          label: 'ק"מ ריצה בחודש',
+          progress: MOCK_HEALTH.runKm / MOCK_HEALTH.runKmGoal,
+          color: theme.colors.cyan,
+          icon: Route,
+        },
+      ],
+    },
+    {
+      key: 'workouts',
+      stats: [
+        {
+          value: String(workoutsThisMonth),
+          goal: String(MONTHLY_GOAL),
+          label: 'אימונים החודש',
+          progress: workoutsThisMonth / MONTHLY_GOAL,
+          color: theme.colors.magenta,
+          icon: Activity,
+        },
+        {
+          value: String(partnersCount),
+          goal: String(PARTNERS_GOAL),
+          label: 'שותפים',
+          progress: partnersCount / PARTNERS_GOAL,
+          color: theme.colors.text,
+          icon: Users,
+        },
+        {
+          value: String(streakDays),
+          goal: String(STREAK_GOAL),
+          label: 'ימים ברצף',
+          progress: streakDays / STREAK_GOAL,
+          color: theme.colors.cyan,
+          icon: Flame,
+        },
+      ],
+    },
+  ];
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -161,57 +235,8 @@ export default function Dashboard() {
 
         <WeeklyGoalRing completed={workoutsThisWeek} goal={WEEKLY_GOAL} />
 
-        <View style={styles.statsRow}>
-          <View style={[styles.statCard, cardElevation]}>
-            <Text style={styles.statValue}>
-              {workoutsThisMonth}
-              <Text style={styles.statGoal}>/{MONTHLY_GOAL}</Text>
-            </Text>
-            <Text style={styles.statLabel}>אימונים החודש</Text>
-            <ProgressRing
-              size={52}
-              strokeWidth={6}
-              progress={workoutsThisMonth / MONTHLY_GOAL}
-              color={theme.colors.magenta}
-              trackColor={theme.colors.surfaceHover}
-            >
-              <Activity color={theme.colors.magenta} size={18} strokeWidth={2} />
-            </ProgressRing>
-          </View>
-
-          <View style={[styles.statCard, cardElevation]}>
-            <Text style={styles.statValue}>
-              {partnersCount}
-              <Text style={styles.statGoal}>/{PARTNERS_GOAL}</Text>
-            </Text>
-            <Text style={styles.statLabel}>שותפים</Text>
-            <ProgressRing
-              size={52}
-              strokeWidth={6}
-              progress={partnersCount / PARTNERS_GOAL}
-              color={theme.colors.text}
-              trackColor={theme.colors.surfaceHover}
-            >
-              <Users color={theme.colors.text} size={18} strokeWidth={2} />
-            </ProgressRing>
-          </View>
-
-          <View style={[styles.statCard, cardElevation]}>
-            <Text style={styles.statValue}>
-              {streakDays}
-              <Text style={styles.statGoal}>/{STREAK_GOAL}</Text>
-            </Text>
-            <Text style={styles.statLabel}>ימים ברצף</Text>
-            <ProgressRing
-              size={52}
-              strokeWidth={6}
-              progress={streakDays / STREAK_GOAL}
-              color={theme.colors.cyan}
-              trackColor={theme.colors.surfaceHover}
-            >
-              <Flame color={theme.colors.cyan} size={18} strokeWidth={2} />
-            </ProgressRing>
-          </View>
+        <View style={styles.statsWrapper}>
+          <StatCarousel pages={statPages} />
         </View>
 
         {upcomingWorkout && (
@@ -385,35 +410,9 @@ const styles = StyleSheet.create({
   weekStripWrapper: {
     marginBottom: theme.spacing.lg,
   },
-  statsRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
+  statsWrapper: {
     marginTop: theme.spacing.md,
     marginBottom: theme.spacing.xl,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.md,
-    alignItems: 'flex-end',
-    gap: theme.spacing.sm,
-  },
-  statValue: {
-    fontSize: 20,
-    fontFamily: theme.typography.display.fontFamily,
-    color: theme.colors.text,
-  },
-  statGoal: {
-    fontSize: 12,
-    fontFamily: theme.typography.display.fontFamily,
-    color: theme.colors.textTertiary,
-  },
-  statLabel: {
-    fontSize: 11,
-    fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.textSecondary,
-    textAlign: 'right',
   },
   section: {
     marginBottom: theme.spacing.xl,
