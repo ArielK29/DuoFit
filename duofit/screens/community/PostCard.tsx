@@ -75,7 +75,14 @@ export const PostCard: React.FC<PostCardProps> = ({
         </Pressable>
       )}
       <View style={styles.footerStats}>
-        <Pressable style={styles.stat} onPress={onToggleLike} hitSlop={12} accessibilityLabel="לייק">
+        <Pressable
+          style={styles.stat}
+          onPress={onToggleLike}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityState={{ selected: liked }}
+          accessibilityLabel={`${liked ? 'הסר לייק' : 'לייק'}, ${post.likes} לייקים`}
+        >
           <Heart
             color={liked ? theme.colors.magenta : theme.colors.textTertiary}
             fill={liked ? theme.colors.magenta : 'transparent'}
@@ -84,7 +91,13 @@ export const PostCard: React.FC<PostCardProps> = ({
           />
           <Text style={[styles.statText, liked && styles.statTextActive]}>{post.likes}</Text>
         </Pressable>
-        <Pressable style={styles.stat} onPress={onOpenComments} hitSlop={12} accessibilityLabel="תגובות">
+        <Pressable
+          style={styles.stat}
+          onPress={onOpenComments}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={`${post.comments} תגובות. פתח תגובות`}
+        >
           <MessageCircle color={theme.colors.textTertiary} size={20} strokeWidth={2} />
           <Text style={styles.statText}>{post.comments}</Text>
         </Pressable>

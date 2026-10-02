@@ -33,6 +33,7 @@ interface LineChartProps {
   formatValue: (value: number) => string;
   formatDate: (time: number) => string;
   height?: number;
+  accessibilityLabel?: string;
 }
 
 // Smooth line via Catmull-Rom converted to cubic Béziers.
@@ -68,6 +69,7 @@ export const LineChart: React.FC<LineChartProps> = ({
   formatValue,
   formatDate,
   height = 280,
+  accessibilityLabel,
 }) => {
   const [width, setWidth] = useState(0);
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
@@ -108,6 +110,9 @@ export const LineChart: React.FC<LineChartProps> = ({
     <View
       onLayout={onLayout}
       style={{ height }}
+      accessible={accessibilityLabel !== undefined}
+      accessibilityRole="image"
+      accessibilityLabel={accessibilityLabel}
       onStartShouldSetResponder={() => points.length > 0}
       onMoveShouldSetResponder={() => points.length > 0}
       onResponderGrant={selectFromTouch}

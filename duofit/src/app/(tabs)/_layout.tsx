@@ -44,6 +44,7 @@ export default function TabsLayout() {
         options={{
           title: "צ'אטים",
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          tabBarAccessibilityLabel: unreadCount > 0 ? `צ'אטים, ${unreadCount} הודעות שלא נקראו` : "צ'אטים",
           tabBarBadgeStyle: {
             backgroundColor: theme.colors.magenta,
             color: theme.colors.black,

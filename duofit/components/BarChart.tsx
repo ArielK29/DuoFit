@@ -26,6 +26,7 @@ interface BarChartProps {
   goalColor?: string;
   height?: number;
   labelEvery?: number;
+  accessibilityLabel?: string;
 }
 
 // Custom bar chart drawn with SVG. Every coordinate is physical (SVG is not
@@ -40,6 +41,7 @@ export const BarChart: React.FC<BarChartProps> = ({
   goalColor = theme.colors.magenta,
   height = 200,
   labelEvery = 1,
+  accessibilityLabel,
 }) => {
   const [width, setWidth] = useState(0);
   const onLayout = (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width);
@@ -53,7 +55,13 @@ export const BarChart: React.FC<BarChartProps> = ({
   const yFor = (value: number) => plotBottom - (Math.min(value, max) / max) * plotHeight;
 
   return (
-    <View onLayout={onLayout} style={{ height }}>
+    <View
+      onLayout={onLayout}
+      style={{ height }}
+      accessible={accessibilityLabel !== undefined}
+      accessibilityRole="image"
+      accessibilityLabel={accessibilityLabel}
+    >
       {width > 0 && (
         <Svg width={width} height={height}>
           {ticks.map((tick) => (

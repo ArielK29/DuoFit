@@ -76,6 +76,7 @@ export const WeightTrendCard: React.FC<WeightTrendCardProps> = ({ points, goalKg
     >
       <View style={styles.chart}>
         <LineChart
+          accessibilityLabel={`מגמת משקל: ${formatKg(first.kg)} ק"ג בתחילה, ${formatKg(last.kg)} ק"ג עכשיו, יעד ${formatKg(goalKg)} ק"ג`}
           points={shown.map((point) => ({ time: point.time, value: point.kg }))}
           startTime={start}
           endTime={now}

@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   PressableProps
 } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { theme } from '@styles/theme';
 
 interface ButtonProps extends PressableProps {
@@ -49,6 +50,11 @@ export const Button: React.FC<ButtonProps> = ({
     }
   };
 
+  // 05-MOTION-SPECS.md "Press/Active State": scale 1 -> 0.98 in 100ms ease-out.
+  const scale = useSharedValue(1);
+  const pressStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const { onPressIn, onPressOut, ...pressableProps } = props;
+
   const styles = StyleSheet.create({
     button: {
       backgroundColor: getBackgroundColor(),
@@ -56,6 +62,7 @@ export const Button: React.FC<ButtonProps> = ({
       paddingHorizontal: getPadding() * 1.5,
       borderRadius: theme.borderRadius.md,
       minHeight: 48, // Touch target minimum
+      overflow: 'hidden', // keeps the Android ripple inside the rounded corners
       justifyContent: 'center',
       alignItems: 'center',
       opacity: disabled ? 0.6 : 1,
@@ -70,20 +77,32 @@ export const Button: React.FC<ButtonProps> = ({
   });
 
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.button,
-        pressed && { opacity: 0.8 },
-      ]}
-      onPress={onPress}
-      disabled={disabled || loading}
-      {...props}
-    >
-      {loading ? (
-        <ActivityIndicator color={getTextColor()} size="small" />
-      ) : (
-        <Text style={styles.text}>{label}</Text>
-      )}
-    </Pressable>
+    <Animated.View style={pressStyle}>
+      <Pressable
+        style={({ pressed }) => [
+          styles.button,
+          pressed && { opacity: 0.8 },
+        ]}
+        onPress={onPress}
+        onPressIn={(event) => {
+          scale.set(withTiming(0.98, { duration: 100, easing: Easing.out(Easing.ease) }));
+          onPressIn?.(event);
+        }}
+        onPressOut={(event) => {
+          scale.set(withTiming(1, { duration: 150, easing: Easing.inOut(Easing.ease) }));
+          onPressOut?.(event);
+        }}
+        android_ripple={{ color: 'rgba(255,255,255,0.12)' }}
+        disabled={disabled || loading}
+        accessibilityRole="button"
+        {...pressableProps}
+      >
+        {loading ? (
+          <ActivityIndicator color={getTextColor()} size="small" />
+        ) : (
+          <Text style={styles.text}>{label}</Text>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 };

@@ -1,27 +1,44 @@
-import React, { useRef } from 'react';
-import { View, Text, Pressable, Alert, StyleSheet } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Text, Pressable, Alert, Linking, StyleSheet } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { CalendarPlus } from 'lucide-react-native';
+import { CalendarPlus, MapPinOff, Zap } from 'lucide-react-native';
 import { PLACES, Place } from '@constants/places';
 import { darkMapStyle } from '@constants/mapStyle';
-import { distanceKm } from '@hooks/usePartnerMatching';
-import type { Coordinates } from '@hooks/useLocation';
+import { PartnerWithDistance, distanceKm } from '@hooks/usePartnerMatching';
+import { Coordinates, useLocation } from '@hooks/useLocation';
+import { getActivityStyle } from '@lib/activityStyles';
 import { theme } from '@styles/theme';
 
 const REGION_DELTA = 0.07;
+// Partners are people, not businesses: their pins are snapped to a ~500 m grid
+// so the map never shows anyone's exact position.
+const APPROXIMATE_GRID_DEGREES = 0.005;
+
+function approximate(coords: Coordinates): Coordinates {
+  const snap = (value: number) => Math.round(value / APPROXIMATE_GRID_DEGREES) * APPROXIMATE_GRID_DEGREES;
+  return { latitude: snap(coords.latitude), longitude: snap(coords.longitude) };
+}
 
 interface PlacesViewProps {
   origin: Coordinates;
+  partners: PartnerWithDistance[];
+  onOpenPartner: (partner: PartnerWithDistance) => void;
+  onInvitePartner: (partner: PartnerWithDistance) => void;
 }
 
-// "מקומות" view per the FitMatch reference: a map of numbered pins (people
-// training there right now) and a list of the venues. Venue names are real;
+// Map view of Discover: partner pins (tap for a preview, then profile or an
+// invite), numbered venue pins, and the list of venues. Venue names are real;
 // the counts are example numbers (no live check-ins yet) and there are no
 // promotions — DuoFit has no agreement with any of these businesses.
-export const PlacesView: React.FC<PlacesViewProps> = ({ origin }) => {
+export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpenPartner, onInvitePartner }) => {
   const mapRef = useRef<MapView>(null);
+  const { status } = useLocation();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const selected = partners.find((partner) => partner.id === selectedId);
 
   const focusPlace = (place: Place) => {
+    setSelectedId(null);
     mapRef.current?.animateToRegion(
       { ...place.coords, latitudeDelta: 0.02, longitudeDelta: 0.02 },
       400
@@ -30,12 +47,23 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin }) => {
 
   return (
     <View>
+      {status === 'denied' && (
+        <View style={styles.permissionBanner}>
+          <MapPinOff color={theme.colors.warning} size={20} strokeWidth={2} />
+          <Text style={styles.permissionText}>המיקום שלך כבוי, אז המרחקים נמדדים ממרכז תל אביב</Text>
+          <Pressable style={styles.permissionButton} onPress={() => Linking.openSettings()} accessibilityRole="button">
+            <Text style={styles.permissionButtonText}>פתח הגדרות</Text>
+          </Pressable>
+        </View>
+      )}
+
       <View style={styles.mapWrap}>
         <MapView
           ref={mapRef}
           style={styles.map}
           customMapStyle={darkMapStyle}
-          showsUserLocation
+          showsUserLocation={status === 'granted'}
+          onPress={() => setSelectedId(null)}
           initialRegion={{
             latitude: origin.latitude,
             longitude: origin.longitude,
@@ -50,17 +78,54 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin }) => {
               </View>
             </Marker>
           ))}
+          {partners.map((partner) => {
+            const active = partner.id === selectedId;
+            return (
+              <Marker
+                key={partner.id}
+                coordinate={approximate(partner.coords)}
+                onPress={() => setSelectedId(partner.id)}
+                zIndex={active ? 10 : 5}
+              >
+                <View style={[styles.partnerPin, active && styles.partnerPinActive]}>
+                  <Text style={styles.partnerPinText}>{partner.name[0]}</Text>
+                </View>
+              </Marker>
+            );
+          })}
         </MapView>
+
+        {partners.length === 0 && (
+          <View style={styles.emptyOverlay} pointerEvents="none">
+            <Text style={styles.emptyText}>אין שותפים קרובים לפי הסינון</Text>
+          </View>
+        )}
         <View style={styles.caption} pointerEvents="none">
           <Text style={styles.captionText}>מספר = מתאמני DuoFit שם עכשיו (לדוגמה)</Text>
         </View>
       </View>
 
+      {selected ? (
+        <PartnerPreview
+          partner={selected}
+          onOpen={() => onOpenPartner(selected)}
+          onInvite={() => onInvitePartner(selected)}
+        />
+      ) : (
+        <Text style={styles.hint}>עיגול עם אות = שותף קרוב (מיקום מוצג בקירוב). לחץ עליו לתצוגה מקדימה</Text>
+      )}
+
       {PLACES.map((place) => {
         const Icon = place.icon;
         const distance = distanceKm(origin, place.coords);
         return (
-          <Pressable key={place.id} style={styles.card} onPress={() => focusPlace(place)}>
+          <Pressable
+            key={place.id}
+            style={styles.card}
+            onPress={() => focusPlace(place)}
+            accessibilityRole="button"
+            accessibilityLabel={`${place.name}, ${place.type}, ${distance.toFixed(1)} ק"מ, ${place.trainingNow} מתאמנים עכשיו`}
+          >
             <Pressable
               style={styles.calendarButton}
               onPress={() => Alert.alert('בקרוב', 'תזמון אימון במקום מסוים יהיה זמין בקרוב')}
@@ -83,7 +148,69 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin }) => {
   );
 };
 
+interface PartnerPreviewProps {
+  partner: PartnerWithDistance;
+  onOpen: () => void;
+  onInvite: () => void;
+}
+
+const PartnerPreview: React.FC<PartnerPreviewProps> = ({ partner, onOpen, onInvite }) => {
+  const { icon: ActivityIcon } = getActivityStyle(partner.activities[0]);
+
+  return (
+    <View style={styles.preview}>
+      <Pressable style={styles.previewMain} onPress={onOpen} accessibilityRole="button" accessibilityLabel={`פרופיל של ${partner.name}`}>
+        <View style={styles.previewAvatar}>
+          <Text style={styles.previewAvatarText}>{partner.name[0]}</Text>
+        </View>
+        <View style={styles.previewText}>
+          <Text style={styles.previewName}>{`${partner.name}, ${partner.age}`}</Text>
+          <View style={styles.previewMetaRow}>
+            <ActivityIcon color={theme.colors.textSecondary} size={14} strokeWidth={2} />
+            <Text style={styles.previewMeta}>{`${partner.activities.join(' · ')} · ${partner.distanceKm.toFixed(1)} ק"מ`}</Text>
+          </View>
+          <Text style={styles.previewMatch}>{`${partner.matchPercent}% התאמה`}</Text>
+        </View>
+      </Pressable>
+      <Pressable style={styles.inviteButton} onPress={onInvite} accessibilityRole="button" accessibilityLabel={`הזמן את ${partner.name} לאימון`}>
+        <Zap color={theme.colors.black} size={18} strokeWidth={2} />
+        <Text style={styles.inviteText}>הזמן</Text>
+      </Pressable>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
+  permissionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.warning,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+  },
+  permissionText: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: theme.typography.bodySmall.fontFamily,
+    color: theme.colors.text,
+    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+  },
+  permissionButton: {
+    minHeight: 48,
+    justifyContent: 'center',
+    backgroundColor: theme.colors.warning,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  permissionButtonText: {
+    fontSize: 14,
+    fontFamily: theme.typography.button.fontFamily,
+    color: theme.colors.black,
+  },
   mapWrap: {
     height: 300,
     borderRadius: theme.borderRadius.xl * 1.5,
@@ -108,6 +235,45 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.black,
   },
+  partnerPin: {
+    width: 32,
+    height: 32,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.surfaceHover,
+    borderWidth: 2,
+    borderColor: theme.colors.cyan,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  partnerPinActive: {
+    width: 40,
+    height: 40,
+    backgroundColor: theme.colors.magenta,
+    borderColor: theme.colors.text,
+    borderWidth: 3,
+  },
+  partnerPinText: {
+    fontSize: 14,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.text,
+  },
+  emptyOverlay: {
+    position: 'absolute',
+    top: theme.spacing.md,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 13,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.text,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.full,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    overflow: 'hidden',
+  },
   caption: {
     position: 'absolute',
     bottom: theme.spacing.md,
@@ -120,6 +286,86 @@ const styles = StyleSheet.create({
   captionText: {
     fontSize: 13,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.black,
+  },
+  hint: {
+    width: '100%',
+    fontSize: 12,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textTertiary,
+    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    marginBottom: theme.spacing.md,
+  },
+  preview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.magenta,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+  },
+  previewMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+    minHeight: 56,
+  },
+  previewAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.magenta,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewAvatarText: {
+    fontSize: 22,
+    fontFamily: theme.typography.h2.fontFamily,
+    color: theme.colors.black,
+  },
+  previewText: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  previewName: {
+    fontSize: 17,
+    fontFamily: theme.typography.h3.fontFamily,
+    color: theme.colors.text,
+  },
+  previewMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    marginTop: 2,
+  },
+  previewMeta: {
+    fontSize: 13,
+    fontFamily: theme.typography.bodySmall.fontFamily,
+    color: theme.colors.textSecondary,
+  },
+  previewMatch: {
+    fontSize: 12,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.cyan,
+    marginTop: 2,
+  },
+  inviteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.xs,
+    minHeight: 48,
+    backgroundColor: theme.colors.magenta,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  inviteText: {
+    fontSize: 15,
+    fontFamily: theme.typography.button.fontFamily,
     color: theme.colors.black,
   },
   card: {

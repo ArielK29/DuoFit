@@ -156,7 +156,19 @@ export function ChatListScreen() {
 
 function ChatRowItem({ row, now, onPress }: { row: ChatRow; now: Date; onPress: () => void }) {
   return (
-    <Pressable style={styles.row} onPress={onPress} accessibilityRole="button">
+    <Pressable
+      style={styles.row}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={[
+        row.isGroup ? `קבוצה ${row.name}` : row.name,
+        row.unread > 0 ? `${row.unread} הודעות שלא נקראו` : null,
+        row.preview,
+        row.sentAt ? formatListTime(row.sentAt, now) : null,
+      ]
+        .filter(Boolean)
+        .join(', ')}
+    >
       {row.isGroup ? (
         <View style={styles.groupTile}>
           <Users color={theme.colors.text} size={28} strokeWidth={2} />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, Pressable } from 'react-native';
+import { Text, Pressable, StyleSheet } from 'react-native';
 import { Flag } from 'lucide-react-native';
 import { BarChart, Bar } from '@components/BarChart';
 import { SegmentedToggle } from '@components/SegmentedToggle';
@@ -50,7 +50,12 @@ export const WorkoutsCard: React.FC<WorkoutsCardProps> = ({ completedIso, goal, 
     <CardShell
       title="אימונים בשבוע"
       chip={
-        <Pressable style={pillStyles.pill} onPress={onEditGoal} accessibilityLabel="שנה יעד שבועי">
+        <Pressable
+          style={[pillStyles.pill, styles.goalPill]}
+          onPress={onEditGoal}
+          accessibilityRole="button"
+          accessibilityLabel={`יעד שבועי: ${goal} אימונים. לחץ לשינוי`}
+        >
           <Flag color={theme.colors.textSecondary} size={16} strokeWidth={2} />
           <Text style={pillStyles.pillMuted}>
             יעד <Text style={pillStyles.pillText}>{goal}</Text> בשבוע
@@ -59,6 +64,7 @@ export const WorkoutsCard: React.FC<WorkoutsCardProps> = ({ completedIso, goal, 
       }
     >
       <BarChart
+        accessibilityLabel={`גרף אימונים בשבוע, יעד ${goal}. ${points.map((point) => `${point.label}: ${point.value}`).join(', ')}`}
         bars={bars}
         max={max}
         ticks={ticks}
@@ -72,3 +78,9 @@ export const WorkoutsCard: React.FC<WorkoutsCardProps> = ({ completedIso, goal, 
     </CardShell>
   );
 };
+
+const styles = StyleSheet.create({
+  goalPill: {
+    minHeight: 48,
+  },
+});

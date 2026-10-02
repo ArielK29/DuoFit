@@ -47,6 +47,7 @@ export const StepsCard: React.FC = () => {
         </Text>
       </View>
       <BarChart
+        accessibilityLabel={`צעדים לפי יום, יעד ${stepsGoal.toLocaleString('he-IL')}. היום ${steps.toLocaleString('he-IL')}`}
         bars={bars}
         max={CHART_MAX}
         ticks={[0, CHART_MAX / 3, (2 * CHART_MAX) / 3, CHART_MAX]}
