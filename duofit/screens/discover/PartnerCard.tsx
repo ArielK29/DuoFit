@@ -7,6 +7,7 @@ import Animated, {
   withSpring,
   withTiming,
   runOnJS,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BadgeCheck, MapPin, ShieldCheck, Sparkles, Star } from 'lucide-react-native';
@@ -15,8 +16,10 @@ import { getActivityStyle } from '@lib/activityStyles';
 import { theme } from '@styles/theme';
 
 const SWIPE_THRESHOLD = 120;
-// Per 05-MOTION-SPECS.md "Partner Card Swipe": rotate, translate, fade, 300ms.
-const EXIT_TRANSLATE_X = 500;
+// Per 05-MOTION-SPECS.md "Partner Card Swipe": rotate 45°, translateX 200px, fade,
+// 300ms ease-in. The drag itself maps 500px of finger travel to the full rotation.
+const DRAG_ROTATION_RANGE_PX = 500;
+const EXIT_TRANSLATE_X = 200;
 const EXIT_ROTATION_DEG = 45;
 const EXIT_DURATION_MS = 300;
 
@@ -44,9 +47,10 @@ export const PartnerCard = React.forwardRef<PartnerCardHandle, PartnerCardProps>
 
   const exit = (direction: 'left' | 'right', onDone: () => void) => {
     const sign = direction === 'left' ? -1 : 1;
-    translateX.value = withTiming(sign * EXIT_TRANSLATE_X, { duration: EXIT_DURATION_MS });
-    rotate.value = withTiming(sign * EXIT_ROTATION_DEG, { duration: EXIT_DURATION_MS });
-    opacity.value = withTiming(0, { duration: EXIT_DURATION_MS }, (finished) => {
+    const timing = { duration: EXIT_DURATION_MS, easing: Easing.in(Easing.ease) };
+    translateX.value = withTiming(sign * EXIT_TRANSLATE_X, timing);
+    rotate.value = withTiming(sign * EXIT_ROTATION_DEG, timing);
+    opacity.value = withTiming(0, timing, (finished) => {
       if (finished) runOnJS(onDone)();
     });
   };
@@ -62,7 +66,7 @@ export const PartnerCard = React.forwardRef<PartnerCardHandle, PartnerCardProps>
     .failOffsetY([-12, 12])
     .onUpdate((event) => {
       translateX.value = event.translationX;
-      rotate.value = (event.translationX / EXIT_TRANSLATE_X) * EXIT_ROTATION_DEG;
+      rotate.value = (event.translationX / DRAG_ROTATION_RANGE_PX) * EXIT_ROTATION_DEG;
     })
     .onEnd((event) => {
       if (event.translationX < -SWIPE_THRESHOLD) {
@@ -86,7 +90,12 @@ export const PartnerCard = React.forwardRef<PartnerCardHandle, PartnerCardProps>
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.card, animatedStyle]}>
-        <Pressable style={styles.pressable} onPress={onOpenProfile}>
+        <Pressable
+          style={styles.pressable}
+          onPress={onOpenProfile}
+          accessibilityRole="button"
+          accessibilityLabel={`${partner.name}, ${partner.age}, ${partner.activities.join(' ו')}, ${partner.distanceKm.toFixed(1)} ק"מ, ${partner.matchPercent}% התאמה. לחץ לפרופיל`}
+        >
           <LinearGradient
             colors={[theme.colors.magenta, theme.colors.cyan]}
             start={{ x: 0, y: 0 }}

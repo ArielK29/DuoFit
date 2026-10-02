@@ -79,7 +79,15 @@ export default function RootLayout() {
           <LoadingScreen />
         ) : (
           <PostHogErrorBoundary fallback={ErrorFallback}>
-            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg } }}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: theme.colors.bg },
+                // 05-MOTION-SPECS.md: screens fade in while sliding up, 300ms ease-out.
+                animation: 'fade_from_bottom',
+                animationDuration: 300,
+              }}
+            >
               <Stack.Protected guard={!isAuthenticated}>
                 <Stack.Screen name="login" />
                 <Stack.Screen name="verify-otp" />

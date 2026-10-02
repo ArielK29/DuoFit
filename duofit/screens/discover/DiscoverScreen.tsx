@@ -8,6 +8,7 @@ import {
   MAX_AGE,
   MAX_RADIUS_KM,
   PartnerFilters,
+  PartnerWithDistance,
   usePartnerMatching,
 } from '@hooks/usePartnerMatching';
 import { useChatStore } from '@hooks/useChatStore';
@@ -46,7 +47,7 @@ export function DiscoverScreen() {
   const cardRef = useRef<PartnerCardHandle>(null);
   const ensureConversation = useChatStore((state) => state.ensureConversation);
 
-  const { allPartners, currentPartner, viewerOrigin, isLoading, isEmpty, interested, pass, refresh } =
+  const { allPartners, candidates, currentPartner, viewerOrigin, isLoading, isEmpty, interested, pass, refresh } =
     usePartnerMatching(filters);
 
   const handleInterested = () => {
@@ -58,6 +59,18 @@ export function DiscoverScreen() {
       params: { partnerId: id, partnerName: name, activity: activities[0] ?? 'אימון משותף' },
     });
   };
+
+  const openPartnerProfile = (partner: PartnerWithDistance) =>
+    router.push({
+      pathname: '/partner-profile',
+      params: { partnerId: partner.id, distanceKm: partner.distanceKm.toFixed(1) },
+    });
+
+  const invitePartner = (partner: PartnerWithDistance) =>
+    router.push({
+      pathname: '/schedule-workout',
+      params: { partnerId: partner.id, partnerName: partner.name, activity: partner.activities[0] ?? 'אימון משותף' },
+    });
 
   const openChat = () => {
     if (!currentPartner) return;
@@ -190,7 +203,12 @@ export function DiscoverScreen() {
           </>
         ) : (
           <View style={styles.placesWrap}>
-            <PlacesView origin={viewerOrigin} />
+            <PlacesView
+              origin={viewerOrigin}
+              partners={candidates}
+              onOpenPartner={openPartnerProfile}
+              onInvitePartner={invitePartner}
+            />
           </View>
         )}
       </ScrollView>

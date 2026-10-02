@@ -11,14 +11,17 @@ import { SuggestedPartnerCard } from '@components/SuggestedPartnerCard';
 import { NearbyPartnersRow } from '@components/NearbyPartnersRow';
 import { Button } from '@components/Button';
 import { useAuth } from '@hooks/useAuth';
-import { useWorkoutStore, ScheduledWorkout } from '@hooks/useWorkoutStore';
+import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatching';
+import { useCommunityStore } from '@hooks/useCommunityStore';
+import { useProgressStore } from '@hooks/useProgressStore';
+import { MOCK_HEALTH } from '@constants/mockHealth';
 import { getActivityStyle } from '@lib/activityStyles';
+import { computePlankRank, getPlankSeconds } from '@lib/plank';
+import { computePartnerStreaks, computeStreak } from '@lib/streaks';
 import { theme } from '@styles/theme';
 
-// Target thresholds shown alongside the real numbers below — not mock data,
-// just static goals until a goal-setting feature exists.
-const WEEKLY_GOAL = 3;
+// Target thresholds shown alongside the real numbers below — not mock data.
 const PARTNERS_GOAL = 5;
 const RECENT_ACTIVITY_LIMIT = 5;
 const NEARBY_PARTNERS_LIMIT = 3;
@@ -26,25 +29,12 @@ const PLAN_WINDOW_DAYS = 7;
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
 
-// Example numbers only — steps/calories/running need Health Connect
-// (Android) / HealthKit (iOS), which aren't available in Expo Go. Replace
-// with real sensor data once the app moves to a development build.
-const MOCK_HEALTH = {
-  steps: 8432,
-  stepsGoal: 10000,
-  calories: 2140,
-  caloriesGoal: 2600,
-  runKm: 17.2,
-  runKmGoal: 25,
-};
-
 // Example numbers only — screen time needs Android Digital Wellbeing / iOS
 // Screen Time access (not available in Expo Go), and the plank challenge
 // doesn't exist as a real feature yet.
 const MOCK_WELLBEING = {
   realLifeHours: 4.2,
   screenTimeDropHours: 6.5,
-  plankRank: 37,
 };
 
 function getWeeklyEncouragement(completed: number, goal: number): string {
@@ -82,53 +72,15 @@ function formatDayAndTime(iso: string): string {
   return `${WEEKDAY_LETTERS[date.getDay()]} ${time}`;
 }
 
-// Longest run of consecutive calendar days ending at the most recent
-// check-in — simple streak definition, no "did you break it today" logic.
-function computeStreak(workouts: ScheduledWorkout[]): number {
-  if (workouts.length === 0) return 0;
-
-  const dayKeys = Array.from(
-    new Set(workouts.map((workout) => new Date(workout.scheduledAt).toDateString()))
-  ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-
-  let streak = 1;
-  for (let i = 1; i < dayKeys.length; i++) {
-    const diff = (new Date(dayKeys[i - 1]).getTime() - new Date(dayKeys[i]).getTime()) / 86400000;
-    if (diff === 1) streak++;
-    else break;
-  }
-  return streak;
-}
-
-interface PartnerStreak {
-  partnerId: string;
-  partnerName: string;
-  streak: number;
-}
-
-// Per-partner version of computeStreak, for the "ביחד ברצף" row.
-function computePartnerStreaks(completedWorkouts: ScheduledWorkout[]): PartnerStreak[] {
-  const byPartner = new Map<string, ScheduledWorkout[]>();
-  completedWorkouts.forEach((workout) => {
-    const list = byPartner.get(workout.partnerId) ?? [];
-    list.push(workout);
-    byPartner.set(workout.partnerId, list);
-  });
-
-  return Array.from(byPartner.entries())
-    .map(([partnerId, workouts]) => ({
-      partnerId,
-      partnerName: workouts[0].partnerName,
-      streak: computeStreak(workouts),
-    }))
-    .filter((entry) => entry.streak > 1)
-    .sort((a, b) => b.streak - a.streak);
-}
-
 export default function Dashboard() {
   const router = useRouter();
   const user = useAuth((state) => state.user);
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
+  // Plank rank follows the record set in the Community challenge (an example
+  // value until the first real attempt).
+  const plankBestSeconds = useCommunityStore((state) => state.plankBestSeconds);
+  const plankRank = computePlankRank(getPlankSeconds(plankBestSeconds));
+  const weeklyGoal = useProgressStore((state) => state.weeklyGoal);
 
   const now = new Date();
   const weekStart = startOfWeek(now);
@@ -201,10 +153,10 @@ export default function Dashboard() {
       hero: (
         <HeroStatCard
           value={String(workoutsThisWeek)}
-          suffix={`/${WEEKLY_GOAL}`}
+          suffix={`/${weeklyGoal}`}
           label="אימונים השבוע"
-          subtext={getWeeklyEncouragement(workoutsThisWeek, WEEKLY_GOAL)}
-          progress={workoutsThisWeek / WEEKLY_GOAL}
+          subtext={getWeeklyEncouragement(workoutsThisWeek, weeklyGoal)}
+          progress={workoutsThisWeek / weeklyGoal}
           color={theme.colors.cyan}
           icon={Dumbbell}
         />
@@ -256,12 +208,12 @@ export default function Dashboard() {
       ),
       stats: [
         {
-          value: `#${MOCK_WELLBEING.plankRank}`,
+          value: `#${plankRank}`,
           label: 'באתגר הפלאנק',
           progress: 0.6,
           color: theme.colors.cyan,
           icon: Trophy,
-          isExample: true,
+          isExample: plankBestSeconds === null,
         },
         {
           value: String(noShowsThisMonth),

@@ -16,6 +16,7 @@ export const Card: React.FC<CardProps> = ({ children, style, onPress, ...props }
     <Pressable
       style={({ pressed }) => [styles.card, pressed && onPress && styles.cardPressed, style]}
       onPress={onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
       {...props}
     >
       {children}
