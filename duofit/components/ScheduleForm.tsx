@@ -4,9 +4,11 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar, Clock, MapPin } from 'lucide-react-native';
 import { Card } from '@components/Card';
 import { Button } from '@components/Button';
+import { PLACES } from '@constants/places';
 import { theme } from '@styles/theme';
 
-const LOCATIONS = ['פארק הירקון', 'חוף גורדון', 'חדר כושר סנטרל', 'סטודיו CoreFit'];
+// The same venues as the Matches > Places map.
+const LOCATIONS = PLACES.map((place) => place.name);
 
 function defaultScheduledAt(): Date {
   const date = new Date();
@@ -111,12 +113,13 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
 const styles = StyleSheet.create({
   section: {
     marginBottom: theme.spacing.md,
+    borderRadius: theme.borderRadius.xl * 1.5,
   },
   sectionLabel: {
     width: '100%',
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.textTertiary,
+    color: theme.colors.textSecondary,
     textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     marginBottom: theme.spacing.md,
   },
@@ -130,12 +133,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.xs,
-    minHeight: 48,
+    minHeight: 52,
     backgroundColor: theme.colors.surfaceHover,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
   },
   dateTimeText: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
   },
@@ -151,13 +154,13 @@ const styles = StyleSheet.create({
     minHeight: 48,
     backgroundColor: theme.colors.surfaceHover,
     borderRadius: theme.borderRadius.full,
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
   },
   locationPillSelected: {
     backgroundColor: theme.colors.cyan,
   },
   locationText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
   },

@@ -1,10 +1,19 @@
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, MapPin, Dumbbell } from 'lucide-react-native';
-import { Card } from '@components/Card';
+import { LinearGradient } from 'expo-linear-gradient';
+import { ArrowLeft, BadgeCheck, MapPin, ShieldCheck, Star } from 'lucide-react-native';
 import { Button } from '@components/Button';
-import { findPartnerById } from '@hooks/usePartnerMatching';
+import { useChatStore } from '@hooks/useChatStore';
+import { Partner, findPartnerById } from '@hooks/usePartnerMatching';
+import { getActivityStyle } from '@lib/activityStyles';
 import { theme } from '@styles/theme';
+
+const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
+const LEVEL_LABELS: Record<Partner['fitnessLevel'], string> = {
+  Beginner: 'מתחיל',
+  Intermediate: 'בינוני',
+  Advanced: 'מתקדם',
+};
 
 export function PartnerProfileScreen() {
   const router = useRouter();
@@ -12,13 +21,14 @@ export function PartnerProfileScreen() {
     '/partner-profile',
     { partnerId: string; distanceKm: string }
   >();
+  const ensureConversation = useChatStore((state) => state.ensureConversation);
   const partner = findPartnerById(partnerId);
 
   if (!partner) {
     return (
       <View style={styles.container}>
         <Text style={styles.missingText}>השותף/ה לא נמצא/ה</Text>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
+        <Pressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="button">
           <ArrowLeft color={theme.colors.magenta} size={20} strokeWidth={2} />
           <Text style={styles.backButtonText}>חזרה</Text>
         </Pressable>
@@ -26,51 +36,99 @@ export function PartnerProfileScreen() {
     );
   }
 
+  const invite = () =>
+    router.push({
+      pathname: '/schedule-workout',
+      params: { partnerId: partner.id, partnerName: partner.name, activity: partner.activities[0] ?? 'אימון משותף' },
+    });
+
+  const message = () => {
+    ensureConversation(partner.id, partner.name);
+    router.push({ pathname: '/conversation', params: { partnerId: partner.id, partnerName: partner.name } });
+  };
+
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <Pressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="button" accessibilityLabel="חזרה">
           <ArrowLeft color={theme.colors.magenta} size={20} strokeWidth={2} />
           <Text style={styles.backButtonText}>חזרה</Text>
         </Pressable>
 
-        <View style={styles.avatarCircle}>
-          <Text style={styles.avatarInitial}>{partner.name[0]}</Text>
+        <LinearGradient
+          colors={[theme.colors.magenta, theme.colors.cyan]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.hero}
+        >
+          <Text style={styles.initial}>{partner.name[0]}</Text>
+        </LinearGradient>
+
+        <View style={styles.nameRow}>
+          <Text style={styles.name}>{`${partner.name}, ${partner.age}`}</Text>
+          {partner.verified && <BadgeCheck color={theme.colors.cyan} size={24} strokeWidth={2} />}
         </View>
-        <Text style={styles.name}>
-          {partner.name}, {partner.age}
-        </Text>
         {!!distanceKm && (
           <View style={styles.distanceRow}>
-            <MapPin color={theme.colors.textTertiary} size={16} strokeWidth={2} />
-            <Text style={styles.distanceText}>{distanceKm} ק"מ ממך</Text>
+            <MapPin color={theme.colors.textSecondary} size={16} strokeWidth={2} />
+            <Text style={styles.distanceText}>{`${distanceKm} ק"מ ממך`}</Text>
+          </View>
+        )}
+        <View style={styles.ratingPill}>
+          <Star color={theme.colors.warning} size={14} strokeWidth={2} fill={theme.colors.warning} />
+          <Text style={styles.ratingText}>{`${partner.rating.toFixed(1)} · ${partner.sessions} אימונים משותפים`}</Text>
+        </View>
+        <Text style={styles.exampleNote}>תצוגה מקדימה: דירוג ואימות לדוגמה</Text>
+
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>קצת עליי</Text>
+          <Text style={styles.cardText}>{partner.bio}</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>{`זמינות · ${partner.availableFrom}–${partner.availableTo}`}</Text>
+          <View style={styles.daysRow}>
+            {WEEKDAY_LETTERS.map((letter, index) => {
+              const available = partner.availableDays.includes(index);
+              return (
+                <View key={letter} style={[styles.dayChip, available && styles.dayChipActive]}>
+                  <Text style={[styles.dayText, available && styles.dayTextActive]}>{letter}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>רמת כושר</Text>
+          <Text style={styles.cardText}>{LEVEL_LABELS[partner.fitnessLevel]}</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>פעילויות מועדפות</Text>
+          <View style={styles.tagsRow}>
+            {partner.activities.map((activity) => {
+              const { icon: ActivityIcon, color } = getActivityStyle(activity);
+              return (
+                <View key={activity} style={styles.tag}>
+                  <ActivityIcon color={color} size={16} strokeWidth={2} />
+                  <Text style={styles.tagText}>{activity}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        {partner.verified && (
+          <View style={styles.verifiedBanner}>
+            <ShieldCheck color={theme.colors.cyan} size={20} strokeWidth={2} />
+            <Text style={styles.verifiedText}>{'טלפון ות״ז מאומתים (לדוגמה)'}</Text>
           </View>
         )}
 
-        <Card style={styles.section}>
-          <Text style={styles.sectionLabel}>קצת עליי</Text>
-          <Text style={styles.bio}>{partner.bio}</Text>
-        </Card>
-
-        <Card style={styles.section}>
-          <Text style={styles.sectionLabel}>רמת כושר</Text>
-          <Text style={styles.bio}>{partner.fitnessLevel}</Text>
-        </Card>
-
-        <Card style={styles.section}>
-          <Text style={styles.sectionLabel}>פעילויות מועדפות</Text>
-          <View style={styles.tagsRow}>
-            {partner.activities.map((activity) => (
-              <View key={activity} style={styles.tag}>
-                <Dumbbell color={theme.colors.cyan} size={16} strokeWidth={2} />
-                <Text style={styles.tagText}>{activity}</Text>
-              </View>
-            ))}
-          </View>
-        </Card>
-
         <View style={styles.ctaWrapper}>
-          <Button label="מעניין אותי" variant="primary" size="lg" onPress={() => router.back()} />
+          <Button label="הזמן לאימון" variant="primary" size="lg" onPress={invite} />
+          <Button label="שלח הודעה" variant="secondary" size="lg" onPress={message} />
         </View>
       </ScrollView>
     </View>
@@ -100,62 +158,117 @@ const styles = StyleSheet.create({
     minHeight: 48,
     alignItems: 'center',
     gap: theme.spacing.xs,
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
   },
   backButtonText: {
     color: theme.colors.magenta,
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: theme.typography.label.fontFamily,
   },
-  avatarCircle: {
-    width: 112,
-    height: 112,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.surfaceHover,
-    justifyContent: 'center',
+  hero: {
+    width: '100%',
+    height: 190,
+    borderRadius: theme.borderRadius.xl * 1.5,
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  avatarInitial: {
-    fontSize: 40,
-    fontFamily: theme.typography.h2.fontFamily,
-    color: theme.colors.cyan,
-  },
-  name: {
-    fontSize: 24,
-    fontFamily: theme.typography.h2.fontFamily,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
+    justifyContent: 'center',
   },
   distanceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.xs,
-    marginBottom: theme.spacing.xl,
+    marginTop: theme.spacing.xs,
   },
   distanceText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: theme.typography.bodySmall.fontFamily,
-    color: theme.colors.textTertiary,
+    color: theme.colors.textSecondary,
   },
-  section: {
-    width: '100%',
-    marginBottom: theme.spacing.md,
+  initial: {
+    fontSize: 88,
+    fontFamily: theme.typography.display.fontFamily,
+    color: theme.colors.text,
   },
-  sectionLabel: {
-    width: '100%',
-    fontSize: 12,
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.lg,
+  },
+  name: {
+    fontSize: 28,
+    fontFamily: theme.typography.h2.fontFamily,
+    color: theme.colors.text,
+  },
+  ratingPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    backgroundColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.full,
+    paddingVertical: theme.spacing.xs + 2,
+    paddingHorizontal: theme.spacing.md,
+    marginTop: theme.spacing.sm,
+  },
+  ratingText: {
+    fontSize: 13,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.text,
+  },
+  exampleNote: {
+    fontSize: 11,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textTertiary,
+    marginTop: theme.spacing.xs,
+    marginBottom: theme.spacing.lg,
+  },
+  card: {
+    width: '100%',
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.xl * 1.5,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+  },
+  cardLabel: {
+    width: '100%',
+    fontSize: 13,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textSecondary,
     textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
     marginBottom: theme.spacing.sm,
   },
-  bio: {
+  cardText: {
     width: '100%',
-    fontSize: 14,
+    fontSize: 16,
+    lineHeight: 24,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.text,
     textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+  },
+  daysRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.xs,
+  },
+  dayChip: {
+    flex: 1,
+    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.md,
+  },
+  dayChipActive: {
+    backgroundColor: theme.colors.cyan,
+  },
+  dayText: {
+    fontSize: 13,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textTertiary,
+  },
+  dayTextActive: {
+    color: theme.colors.black,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
   },
   tagsRow: {
     flexDirection: 'row',
@@ -166,18 +279,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.xs,
+    minHeight: 40,
     backgroundColor: theme.colors.surfaceHover,
     borderRadius: theme.borderRadius.full,
-    paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
   },
   tagText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.text,
   },
+  verifiedBanner: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    backgroundColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+  },
+  verifiedText: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.cyan,
+    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+  },
   ctaWrapper: {
     width: '100%',
-    marginTop: theme.spacing.lg,
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.md,
   },
 });
