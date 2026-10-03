@@ -6,10 +6,11 @@ import {
   ScrollView,
   Pressable,
   I18nManager,
+  Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
-import { File, Paths } from 'expo-file-system';
+import { File } from 'expo-file-system';
+import { pickImage } from '@lib/pickImage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
@@ -65,39 +66,20 @@ export const ProfileSetupScreen: React.FC = () => {
     setError(null);
 
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        setError('נדרשת הרשאת גישה לתמונות כדי לבחור תמונת פרופיל');
-        return;
-      }
+      const uri = await pickImage('avatar', { square: true });
+      if (!uri) return;
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.7,
-      });
-
-      if (!result.canceled && result.assets.length > 0) {
-        // expo-image-picker's uri points to a transient OS cache location that
-        // isn't guaranteed to survive app restarts or cache eviction — copy it
-        // into the app's document directory before persisting it via useAuth.
-        const picked = new File(result.assets[0].uri);
-        const destination = new File(Paths.document, `avatar-${Date.now()}${picked.extension}`);
-        await picked.copy(destination);
-
-        // Drop the previous copy so re-picking a few times before submitting
-        // doesn't leave orphaned files behind in the document directory.
-        if (avatar) {
-          try {
-            new File(avatar).delete();
-          } catch {
-            // Best-effort cleanup — a missing/already-deleted file isn't fatal.
-          }
+      // Drop the previous copy so re-picking a few times before submitting
+      // doesn't leave orphaned files behind in the document directory.
+      if (avatar && Platform.OS !== 'web') {
+        try {
+          new File(avatar).delete();
+        } catch {
+          // Best-effort cleanup — a missing/already-deleted file isn't fatal.
         }
-
-        setAvatar(destination.uri);
       }
+
+      setAvatar(uri);
     } catch (err) {
       logError('avatar_picker_failed', { error: String(err) });
       setError('לא הצלחנו לפתוח את גלריית התמונות');
