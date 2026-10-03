@@ -7,7 +7,7 @@ import { darkMapStyle } from '@constants/mapStyle';
 import { PartnerWithDistance, distanceKm } from '@hooks/usePartnerMatching';
 import { Coordinates, useLocation } from '@hooks/useLocation';
 import { getActivityStyle } from '@lib/activityStyles';
-import { visualLeft, visualRight } from '@lib/rtl';
+import { visualLeft, visualRight, visualRightText } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
 const REGION_DELTA = 0.07;
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: theme.typography.bodySmall.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
   },
   permissionButton: {
     minHeight: 48,
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textTertiary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.md,
   },
   preview: {

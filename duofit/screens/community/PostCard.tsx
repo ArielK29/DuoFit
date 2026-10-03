@@ -3,6 +3,7 @@ import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
 import { BadgeCheck, Flag, Heart, MessageCircle, Trash2, Trophy } from 'lucide-react-native';
 import { PostAttachment } from '@constants/community';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 export interface FeedPost {
   id: string;
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.md,
   },
   image: {

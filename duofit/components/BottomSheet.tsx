@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Modal, Pressable, StyleSheet } from 'react-native';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 interface BottomSheetProps {
   visible: boolean;
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.lg,
   },
 });

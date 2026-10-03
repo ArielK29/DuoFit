@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Minus, Plus } from 'lucide-react-native';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 interface ValueStepperProps {
   label: string;
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.sm,
   },
   row: {

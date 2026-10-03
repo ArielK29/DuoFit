@@ -10,13 +10,12 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { File, Paths } from 'expo-file-system';
+import { pickImage as pickFromLibrary } from '@lib/pickImage';
 import { Camera, X } from 'lucide-react-native';
 import { POST_ACTIVITIES } from '@constants/community';
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { theme } from '@styles/theme';
-import { visualLeft } from '@lib/rtl';
+import { visualLeft, visualRightText } from '@lib/rtl';
 
 interface ComposeModalProps {
   visible: boolean;
@@ -39,20 +38,8 @@ const ComposeContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const pickImage = async () => {
     setError(null);
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        setError('נדרשת הרשאת גישה לתמונות כדי לצרף תמונה');
-        return;
-      }
-      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 });
-      if (result.canceled || result.assets.length === 0) return;
-
-      // The picker's uri is a transient cache path — copy it into the app's
-      // document directory so the photo survives restarts (same as the avatar).
-      const picked = new File(result.assets[0].uri);
-      const destination = new File(Paths.document, `post-${new Date().getTime()}${picked.extension}`);
-      await picked.copy(destination);
-      setImageUri(destination.uri);
+      const uri = await pickFromLibrary('post');
+      if (uri) setImageUri(uri);
     } catch {
       setError('לא הצלחנו לצרף את התמונה, נסה שוב');
     }
@@ -160,7 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.md,
   },
   input: {
@@ -171,7 +158,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.md,
   },
   previewWrap: {
@@ -224,7 +211,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.magenta,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.sm,
   },
   actions: {

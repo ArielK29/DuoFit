@@ -6,15 +6,17 @@ import {
   ScrollView,
   Pressable,
   I18nManager,
+  Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
-import { File, Paths } from 'expo-file-system';
+import { File } from 'expo-file-system';
+import { pickImage } from '@lib/pickImage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { trackEvent, logError } from '@lib/analytics';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 import { useAuth, User } from '@hooks/useAuth';
 
 I18nManager.forceRTL(true);
@@ -64,39 +66,20 @@ export const ProfileSetupScreen: React.FC = () => {
     setError(null);
 
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        setError('נדרשת הרשאת גישה לתמונות כדי לבחור תמונת פרופיל');
-        return;
-      }
+      const uri = await pickImage('avatar', { square: true });
+      if (!uri) return;
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.7,
-      });
-
-      if (!result.canceled && result.assets.length > 0) {
-        // expo-image-picker's uri points to a transient OS cache location that
-        // isn't guaranteed to survive app restarts or cache eviction — copy it
-        // into the app's document directory before persisting it via useAuth.
-        const picked = new File(result.assets[0].uri);
-        const destination = new File(Paths.document, `avatar-${Date.now()}${picked.extension}`);
-        await picked.copy(destination);
-
-        // Drop the previous copy so re-picking a few times before submitting
-        // doesn't leave orphaned files behind in the document directory.
-        if (avatar) {
-          try {
-            new File(avatar).delete();
-          } catch {
-            // Best-effort cleanup — a missing/already-deleted file isn't fatal.
-          }
+      // Drop the previous copy so re-picking a few times before submitting
+      // doesn't leave orphaned files behind in the document directory.
+      if (avatar && Platform.OS !== 'web') {
+        try {
+          new File(avatar).delete();
+        } catch {
+          // Best-effort cleanup — a missing/already-deleted file isn't fatal.
         }
-
-        setAvatar(destination.uri);
       }
+
+      setAvatar(uri);
     } catch (err) {
       logError('avatar_picker_failed', { error: String(err) });
       setError('לא הצלחנו לפתוח את גלריית התמונות');
@@ -177,7 +160,7 @@ export const ProfileSetupScreen: React.FC = () => {
       fontWeight: 'normal',
       fontFamily: theme.typography.h2.fontFamily,
       color: theme.colors.text,
-      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+      ...visualRightText,
       marginBottom: theme.spacing.sm,
     },
     subtitle: {
@@ -185,7 +168,7 @@ export const ProfileSetupScreen: React.FC = () => {
       fontSize: 14,
       fontFamily: theme.typography.bodySmall.fontFamily,
       color: theme.colors.textSecondary,
-      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+      ...visualRightText,
     },
     sectionLabel: {
       width: '100%',
@@ -193,7 +176,7 @@ export const ProfileSetupScreen: React.FC = () => {
       fontWeight: 'normal',
       fontFamily: theme.typography.label.fontFamily,
       color: theme.colors.text,
-      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+      ...visualRightText,
       marginBottom: theme.spacing.sm,
       marginTop: theme.spacing.md,
     },

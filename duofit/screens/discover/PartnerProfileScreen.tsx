@@ -7,6 +7,7 @@ import { useChatStore } from '@hooks/useChatStore';
 import { Partner, findPartnerById } from '@hooks/usePartnerMatching';
 import { getActivityStyle } from '@lib/activityStyles';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
 const LEVEL_LABELS: Record<Partner['fitnessLevel'], string> = {
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.sm,
   },
   cardText: {
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
   },
   daysRow: {
     flexDirection: 'row',
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.cyan,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
   },
   ctaWrapper: {
     width: '100%',

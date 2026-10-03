@@ -7,6 +7,7 @@ import {
   TextInputProps
 } from 'react-native';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -41,7 +42,7 @@ export const Input: React.FC<InputProps> = ({
       fontWeight: 'normal',
       fontFamily: theme.typography.label.fontFamily,
       marginBottom: theme.spacing.sm,
-      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+      ...visualRightText,
     },
     inputContainer: {
       flexDirection: 'row-reverse', // RTL
@@ -67,7 +68,7 @@ export const Input: React.FC<InputProps> = ({
       fontSize: 12,
       fontFamily: theme.typography.bodySmall.fontFamily,
       marginTop: theme.spacing.xs,
-      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+      ...visualRightText,
     },
     helperText: {
       width: '100%',
@@ -75,7 +76,7 @@ export const Input: React.FC<InputProps> = ({
       fontSize: 12,
       fontFamily: theme.typography.bodySmall.fontFamily,
       marginTop: theme.spacing.xs,
-      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+      ...visualRightText,
     },
   });
 

@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react';
-import { ActivityIndicator, I18nManager, View } from 'react-native';
+import { ActivityIndicator, I18nManager, Platform, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Anton_400Regular } from '@expo-google-fonts/anton';
@@ -16,6 +16,13 @@ import { theme } from '@styles/theme';
 
 // Force RTL layout for Hebrew
 I18nManager.forceRTL(true);
+
+// Browser preview: forceRTL does nothing on the web, so set the page direction
+// directly (rows, alignment and text then mirror like they do on the phone).
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  document.documentElement.setAttribute('dir', 'rtl');
+  document.documentElement.setAttribute('lang', 'he');
+}
 
 // Keep the native splash screen up until fonts have finished loading (or
 // failed), so there's no flash-of-unstyled-content moment where UI briefly

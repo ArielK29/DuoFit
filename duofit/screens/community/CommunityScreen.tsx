@@ -12,7 +12,7 @@ import { GroupsSection } from '@screens/community/GroupsSection';
 import { FeedPost, PostCard } from '@screens/community/PostCard';
 import { PlankTimerModal } from '@screens/community/PlankTimerModal';
 import { theme } from '@styles/theme';
-import { visualLeft } from '@lib/rtl';
+import { visualLeft, visualRightText } from '@lib/rtl';
 
 function formatTimeAgo(iso: string): string {
   const minutes = Math.floor((new Date().getTime() - new Date(iso).getTime()) / 60000);
@@ -222,14 +222,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
   },
   feedTitle: {
     width: '100%',
     fontSize: 22,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.md,
   },
   chipsScroll: {

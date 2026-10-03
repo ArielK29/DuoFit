@@ -6,6 +6,7 @@ import { Card } from '@components/Card';
 import { Button } from '@components/Button';
 import { PLACES } from '@constants/places';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 // The same venues as the Matches > Places map.
 const LOCATIONS = PLACES.map((place) => place.name);
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.md,
   },
   dateTimeRow: {
