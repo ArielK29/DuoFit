@@ -6,7 +6,7 @@ Project name in Claude Design: **DuoFit-Hi-Fi-Mobile** (fidelity: High fidelity)
 A Hebrew, right-to-left fitness-buddy app: people find a real workout partner nearby, chat, schedule a workout together, check in, and track progress and streaks. Mobile only (phones). Built with React Native + Expo; the working app already exists in `duofit/`.
 
 ## The goal of this design project
-Create the **high-fidelity mobile design** for the existing app so that it matches the original design system exactly. This is **not a redesign**: the app stays as it is. Each screen gets a few **variations** (layout / hierarchy / state alternatives) built from the same tokens and components, so the owner can choose between them.
+**Be faithful to the original design and only adapt it to mobile.** Create the high-fidelity mobile design for the existing app so that it matches the original design system exactly. This is **not a redesign**: the visual language, colors, fonts, components, copy and the information on every screen stay exactly as they are. The only thing that changes is how the same design is fitted to a phone (sizing, spacing, thumb reach, small-screen behavior). Each screen gets a few **variations**, and every variation must be a faithful mobile adaptation, never a new style.
 
 ## Hard rules (do not break)
 1. **Dark mode only.** No light theme. Background `#050505`, cards `#0D0D0D`, raised `#1A1A1A`, text `#F5F5F5` (secondary `#A8A8A8`, tertiary `#8C8C8C`).
@@ -32,10 +32,11 @@ Create the **high-fidelity mobile design** for the existing app so that it match
 Design system sources: `01-DESIGN-TOKENS.json`, `02-COMPONENT-STATES.md`, `03-EDGE-CASES.md`, `04-DARK-MODE.md`, `05-MOTION-SPECS.md`, `06-RTL-ICONS-SPEC.md`, `07-RESPONSIVE-DECISION.md`, `08-DESIGN-SIGN-OFF.md`, `DESIGN.md`, `PRD.md`, `tokens/`, `logo/`, `assets/`, and the shared UI components in `duofit/components/` and `duofit/constants/`.
 
 ## What to produce
-- High-fidelity artboards on a design canvas, **three variations per screen**:
-  - **A - Faithful:** the closest match to the current app.
-  - **B - Focused:** the same content with a clearer hierarchy (one primary action per screen, calmer density).
-  - **C - Rich:** more visual emphasis (larger hero areas, stronger use of the magenta/cyan gradient), still the same tokens.
+- High-fidelity artboards on a design canvas, **three variations per screen**. All three keep the same elements, colors, fonts, components and copy; they differ only in the mobile adaptation:
+  - **A - Faithful:** exactly the current layout, fitted to the phone frame.
+  - **B - Thumb-friendly:** the same layout with the main actions placed within thumb reach (bottom area), 48px+ targets, sheets instead of full pages where the app already uses sheets.
+  - **C - Small-phone:** the same layout tuned for the smallest phones (375px wide) and large text, with spacing/line breaks adjusted so nothing is cut.
+  - Nothing in A/B/C may introduce a new visual style, color, font, icon set, or content.
 - Show the key states where they exist: empty, loading skeleton, error, filled.
 - Primary frame: **iPhone** (393 x 852). Secondary check: one **Android** frame (412 x 915) for the Home and Matches screens.
 
@@ -45,8 +46,8 @@ Design system sources: `01-DESIGN-TOKENS.json`, `02-COMPONENT-STATES.md`, `03-ED
 | Fidelity | High fidelity | The app already exists, so wireframes add nothing; the owner needs pixel-level options. |
 | Device | iPhone frame as primary, Android as a secondary check | The owner is moving to an iPhone; Android is where the app was tested so far. |
 | Scope | The 5 tab screens + login + partner profile | Those are the screens users spend their time in; secondary screens follow the same components. |
-| Variations | 3 per screen (faithful / focused / rich) | Gives real choice without leaving the design system. |
+| Variations | 3 per screen, all faithful: exact fit / thumb-friendly / small-phone | The owner asked to stay faithful and only adapt to mobile, so the options differ in mobile fit, not in style. |
 | Presentation | Design canvas with artboards side by side | Easiest way to compare variations. |
 | Interactivity | Static artboards with states, no prototype flow | Navigation already works in the real app. |
-| Style | Keep the existing tokens, fonts and components; no new colors | The brief is "match the original", not "reinvent it". |
+| Style | **Faithful to the original; only adapt to mobile.** Keep the existing tokens, fonts, components and copy; no new colors | This is the owner's explicit instruction: match the original, do not reinvent it. |
 | Content | Real Hebrew copy from the app; empty states instead of fake users | Matches the product rule: only real people. |
