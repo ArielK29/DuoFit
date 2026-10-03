@@ -10,6 +10,7 @@ import { PartnerStreakCard } from '@components/PartnerStreakCard';
 import { SuggestedPartnerCard } from '@components/SuggestedPartnerCard';
 import { NearbyPartnersRow } from '@components/NearbyPartnersRow';
 import { Button } from '@components/Button';
+import { NotificationBell } from '@components/NotificationBell';
 import { useAccountSheet } from '@hooks/useAccountSheet';
 import { useAuth } from '@hooks/useAuth';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
@@ -242,6 +243,7 @@ export default function Dashboard() {
         <View style={styles.topBar}>
           <Text style={styles.wordmark}>DuoFit</Text>
           <View style={styles.topBarLeft}>
+            <NotificationBell />
             <View style={styles.streakPill}>
               <Flame color={theme.colors.magenta} size={16} strokeWidth={2} />
               <Text style={styles.streakPillText}>{streakDays}</Text>

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useActiveChat } from '@hooks/useActiveChat';
+import { useNotificationStore } from '@hooks/useNotificationStore';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 
 export interface WorkoutInvite {
@@ -176,6 +178,17 @@ export const useChatStore = create<ChatState>()(
               [partnerId]: { ...current, messages: [...current.messages, reply] },
             },
           });
+
+          // A reply in a chat that is not open becomes an in-app notification.
+          if (useActiveChat.getState().activeId !== partnerId && reply.kind === 'text') {
+            useNotificationStore.getState().add({
+              kind: 'message',
+              title: current.partnerName,
+              body: reply.senderName ? `${reply.senderName}: ${reply.text}` : reply.text,
+              href: '/conversation',
+              params: { partnerId, partnerName: current.partnerName },
+            });
+          }
         }, AUTO_REPLY_DELAY_MS);
       },
 

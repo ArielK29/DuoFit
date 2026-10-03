@@ -1,5 +1,6 @@
 import { useAuth } from '@hooks/useAuth';
 import { useChatStore } from '@hooks/useChatStore';
+import { useNotificationStore } from '@hooks/useNotificationStore';
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { DEFAULT_WEEKLY_GOAL, useProgressStore } from '@hooks/useProgressStore';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
@@ -10,6 +11,7 @@ import { useWorkoutStore } from '@hooks/useWorkoutStore';
 function resetLocalData() {
   useWorkoutStore.setState({ scheduledWorkouts: [] });
   useChatStore.setState({ conversations: {} });
+  useNotificationStore.setState({ items: [] });
   useCommunityStore.setState({
     plankBestSeconds: null,
     joinedGroupIds: [],

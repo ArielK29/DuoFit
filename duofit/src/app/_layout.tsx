@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PostHogErrorBoundary } from 'posthog-react-native';
 import { ErrorFallback } from '@components/ErrorFallback';
 import { AccountSheet } from '@components/AccountSheet';
+import { NotificationWatcher } from '@components/NotificationWatcher';
 import { useAuth, isProfileComplete } from '@hooks/useAuth';
 import { startSessionSync } from '@lib/session';
 import { AnalyticsProvider } from '@lib/analytics';
@@ -118,9 +119,11 @@ export default function RootLayout() {
                 <Stack.Screen name="check-in" />
                 <Stack.Screen name="conversation" />
                 <Stack.Screen name="invite-to-workout" />
+                <Stack.Screen name="notifications" />
               </Stack.Protected>
             </Stack>
             {isAuthenticated && profileComplete && <AccountSheet />}
+            {isAuthenticated && profileComplete && <NotificationWatcher />}
           </PostHogErrorBoundary>
         )}
       </AnalyticsProvider>
