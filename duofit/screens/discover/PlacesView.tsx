@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, Alert, Linking, StyleSheet } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { CalendarPlus, MapPinOff, Zap } from 'lucide-react-native';
@@ -7,9 +7,11 @@ import { darkMapStyle } from '@constants/mapStyle';
 import { PartnerWithDistance, distanceKm } from '@hooks/usePartnerMatching';
 import { Coordinates, useLocation } from '@hooks/useLocation';
 import { getActivityStyle } from '@lib/activityStyles';
+import { visualRight } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
 const REGION_DELTA = 0.07;
+const MAP_LOAD_TIMEOUT_MS = 10000;
 // Partners are people, not businesses: their pins are snapped to a ~500 m grid
 // so the map never shows anyone's exact position.
 const APPROXIMATE_GRID_DEGREES = 0.005;
@@ -38,6 +40,16 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
   // layer can be hidden to keep the map readable.
   const [showPartners, setShowPartners] = useState(true);
   const [showPlaces, setShowPlaces] = useState(true);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  // If the map tiles never arrive (no internet, or the map service refuses the
+  // request) say so instead of leaving a blank black box.
+  useEffect(() => {
+    if (mapLoaded) return;
+    const timeout = setTimeout(() => setLoadFailed(true), MAP_LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timeout);
+  }, [mapLoaded]);
 
   const selected = showPartners ? partners.find((partner) => partner.id === selectedId) : undefined;
 
@@ -73,6 +85,13 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
           customMapStyle={darkMapStyle}
           showsUserLocation={status === 'granted'}
           onPress={() => setSelectedId(null)}
+          loadingEnabled
+          loadingIndicatorColor={theme.colors.cyan}
+          loadingBackgroundColor={theme.colors.surface}
+          onMapLoaded={() => {
+            setMapLoaded(true);
+            setLoadFailed(false);
+          }}
           initialRegion={{
             latitude: origin.latitude,
             longitude: origin.longitude,
@@ -106,6 +125,11 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
           })}
         </MapView>
 
+        {loadFailed && !mapLoaded && (
+          <View style={styles.loadFailed} pointerEvents="none">
+            <Text style={styles.loadFailedText}>המפה לא נטענה. בדוק חיבור לאינטרנט ונסה שוב</Text>
+          </View>
+        )}
         {showPartners && partners.length === 0 && (
           <View style={styles.emptyOverlay} pointerEvents="none">
             <Text style={styles.emptyText}>אין שותפים קרובים לפי הסינון</Text>
@@ -307,6 +331,22 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
   },
+  loadFailed: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.xl,
+  },
+  loadFailedText: {
+    fontSize: 14,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.text,
+    textAlign: 'center',
+  },
   emptyOverlay: {
     position: 'absolute',
     top: theme.spacing.md,
@@ -327,7 +367,7 @@ const styles = StyleSheet.create({
   caption: {
     position: 'absolute',
     bottom: theme.spacing.md,
-    right: theme.spacing.md,
+    ...visualRight(theme.spacing.md),
     backgroundColor: theme.colors.text,
     borderRadius: theme.borderRadius.full,
     paddingVertical: theme.spacing.sm,

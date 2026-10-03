@@ -16,6 +16,7 @@ import { Camera, X } from 'lucide-react-native';
 import { POST_ACTIVITIES } from '@constants/community';
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { theme } from '@styles/theme';
+import { visualLeft } from '@lib/rtl';
 
 interface ComposeModalProps {
   visible: boolean;
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
   removeImage: {
     position: 'absolute',
     top: theme.spacing.sm,
-    left: theme.spacing.sm,
+    ...visualLeft(theme.spacing.sm),
     width: 32,
     height: 32,
     borderRadius: theme.borderRadius.full,

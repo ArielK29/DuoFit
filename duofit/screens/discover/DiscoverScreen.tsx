@@ -19,6 +19,7 @@ import { FilterSheet } from '@components/FilterSheet';
 import { SegmentedToggle } from '@components/SegmentedToggle';
 import { SkeletonLoader } from '@components/SkeletonLoader';
 import { theme } from '@styles/theme';
+import { visualRight } from '@lib/rtl';
 
 type ViewMode = 'partners' | 'places';
 
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
   filterDot: {
     position: 'absolute',
     top: 10,
-    right: 12,
+    ...visualRight(12),
     width: 10,
     height: 10,
     borderRadius: theme.borderRadius.full,

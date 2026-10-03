@@ -13,6 +13,7 @@ import { WeightTrendCard } from '@screens/progress/WeightTrendCard';
 import { WorkoutsCard } from '@screens/progress/WorkoutsCard';
 import { buildExampleWeights, computeGoalStreakWeeks, goalProgress, toWeightPoints } from '@lib/progress';
 import { theme } from '@styles/theme';
+import { visualLeft } from '@lib/rtl';
 
 function startOfDay(iso: string): number {
   const d = new Date(iso);
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: theme.spacing.lg,
-    left: theme.spacing.lg,
+    ...visualLeft(theme.spacing.lg),
     width: 64,
     height: 64,
     borderRadius: theme.borderRadius.full,

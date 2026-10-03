@@ -14,6 +14,7 @@ import { BadgeCheck, MapPin, ShieldCheck, Sparkles, Star } from 'lucide-react-na
 import { PartnerWithDistance } from '@hooks/usePartnerMatching';
 import { getActivityStyle } from '@lib/activityStyles';
 import { theme } from '@styles/theme';
+import { visualLeft, visualRight } from '@lib/rtl';
 
 const SWIPE_THRESHOLD = 120;
 // Per 05-MOTION-SPECS.md "Partner Card Swipe": rotate 45°, translateX 200px, fade,
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
   distancePill: {
     position: 'absolute',
     top: theme.spacing.md,
-    left: theme.spacing.md,
+    ...visualLeft(theme.spacing.md),
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.xs,
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
   matchPill: {
     position: 'absolute',
     top: theme.spacing.md,
-    right: theme.spacing.md,
+    ...visualRight(theme.spacing.md),
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.xs,
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
   activityPill: {
     position: 'absolute',
     bottom: theme.spacing.md,
-    right: theme.spacing.md,
+    ...visualRight(theme.spacing.md),
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.xs,
