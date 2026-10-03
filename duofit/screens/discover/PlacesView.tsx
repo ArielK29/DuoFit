@@ -1,17 +1,35 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, Alert, Linking, StyleSheet } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { View, Text, Pressable, Alert, Linking, Platform, StyleSheet } from 'react-native';
+import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { CalendarPlus, MapPinOff, Zap } from 'lucide-react-native';
 import { PLACES, Place } from '@constants/places';
 import { darkMapStyle } from '@constants/mapStyle';
 import { PartnerWithDistance, distanceKm } from '@hooks/usePartnerMatching';
 import { Coordinates, useLocation } from '@hooks/useLocation';
 import { getActivityStyle } from '@lib/activityStyles';
-import { visualRight } from '@lib/rtl';
+import { visualLeft, visualRight } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
 const REGION_DELTA = 0.07;
 const MAP_LOAD_TIMEOUT_MS = 10000;
+// Backup base map, used only if Google's tiles never load on this device. Dark
+// OpenStreetMap tiles from CARTO (free for development and light use; a
+// production release needs a tile provider plan and the attribution below).
+const FALLBACK_TILE_URL = 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+const FALLBACK_PROBE_URL = 'https://basemaps.cartocdn.com/dark_all/0/0/0.png';
+
+async function canReach(url: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    return response.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 // Partners are people, not businesses: their pins are snapped to a ~500 m grid
 // so the map never shows anyone's exact position.
 const APPROXIMATE_GRID_DEGREES = 0.005;
@@ -42,14 +60,32 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
   const [showPlaces, setShowPlaces] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
+  const [internetOk, setInternetOk] = useState<boolean | null>(null);
+  const [fallback, setFallback] = useState(false);
 
-  // If the map tiles never arrive (no internet, or the map service refuses the
-  // request) say so instead of leaving a blank black box.
+  // If Google's tiles never arrive, find out why: no internet at all, or only
+  // the map service is unreachable. In the second case switch once to the
+  // backup tiles; either way show a plain message instead of a black box.
   useEffect(() => {
     if (mapLoaded) return;
-    const timeout = setTimeout(() => setLoadFailed(true), MAP_LOAD_TIMEOUT_MS);
+    const timeout = setTimeout(async () => {
+      setLoadFailed(true);
+      const online = await canReach(FALLBACK_PROBE_URL);
+      setInternetOk(online);
+      if (online && !fallback) {
+        setMapReady(false);
+        setFallback(true);
+      }
+    }, MAP_LOAD_TIMEOUT_MS);
     return () => clearTimeout(timeout);
-  }, [mapLoaded]);
+  }, [mapLoaded, fallback]);
+
+  const showLoadMessage = loadFailed && !mapLoaded && !(fallback && mapReady);
+  const loadMessage =
+    internetOk === false
+      ? 'אין חיבור לאינטרנט בטלפון, והמפה צריכה אינטרנט'
+      : `המפה לא נטענה (${mapReady ? 'המפה התחילה אבל האריחים לא הגיעו' : 'המפה לא התחילה'})`;
 
   const selected = showPartners ? partners.find((partner) => partner.id === selectedId) : undefined;
 
@@ -82,7 +118,10 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
         <MapView
           ref={mapRef}
           style={styles.map}
-          customMapStyle={darkMapStyle}
+          key={fallback ? 'fallback' : 'google'}
+          mapType={fallback ? 'none' : 'standard'}
+          customMapStyle={fallback ? undefined : darkMapStyle}
+          onMapReady={() => setMapReady(true)}
           showsUserLocation={status === 'granted'}
           onPress={() => setSelectedId(null)}
           loadingEnabled
@@ -99,6 +138,7 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
             longitudeDelta: REGION_DELTA,
           }}
         >
+          {fallback && <UrlTile urlTemplate={FALLBACK_TILE_URL} maximumZ={19} tileSize={256} zIndex={-1} />}
           {showPlaces &&
             PLACES.map((place) => (
             <Marker key={place.id} coordinate={place.coords} onPress={() => focusPlace(place)}>
@@ -125,9 +165,14 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
           })}
         </MapView>
 
-        {loadFailed && !mapLoaded && (
+        {showLoadMessage && (
           <View style={styles.loadFailed} pointerEvents="none">
-            <Text style={styles.loadFailedText}>המפה לא נטענה. בדוק חיבור לאינטרנט ונסה שוב</Text>
+            <Text style={styles.loadFailedText}>{loadMessage}</Text>
+          </View>
+        )}
+        {fallback && (
+          <View style={styles.attribution} pointerEvents="none">
+            <Text style={styles.attributionText}>© OpenStreetMap · © CARTO</Text>
           </View>
         )}
         {showPartners && partners.length === 0 && (
@@ -287,10 +332,15 @@ const styles = StyleSheet.create({
   },
   mapWrap: {
     height: 300,
-    borderRadius: theme.borderRadius.xl * 1.5,
-    overflow: 'hidden',
     marginBottom: theme.spacing.md,
     backgroundColor: theme.colors.surface,
+    // Known react-native-maps bug on Android: a parent with borderRadius +
+    // overflow: 'hidden' makes the map render blank (only the Google logo
+    // shows). Rounded corners are therefore iOS-only.
+    ...Platform.select({
+      ios: { borderRadius: theme.borderRadius.xl * 1.5, overflow: 'hidden' as const },
+      default: {},
+    }),
   },
   map: {
     flex: 1,
@@ -340,6 +390,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: theme.spacing.xl,
+  },
+  attribution: {
+    position: 'absolute',
+    bottom: theme.spacing.xs,
+    ...visualLeft(theme.spacing.sm),
+  },
+  attributionText: {
+    fontSize: 10,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textTertiary,
   },
   loadFailedText: {
     fontSize: 14,
