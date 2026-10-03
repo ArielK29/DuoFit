@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, Alert, Linking, StyleSheet } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { CalendarPlus, MapPinOff, Zap } from 'lucide-react-native';
@@ -7,9 +7,11 @@ import { darkMapStyle } from '@constants/mapStyle';
 import { PartnerWithDistance, distanceKm } from '@hooks/usePartnerMatching';
 import { Coordinates, useLocation } from '@hooks/useLocation';
 import { getActivityStyle } from '@lib/activityStyles';
+import { visualRight } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
 const REGION_DELTA = 0.07;
+const MAP_LOAD_TIMEOUT_MS = 10000;
 // Partners are people, not businesses: their pins are snapped to a ~500 m grid
 // so the map never shows anyone's exact position.
 const APPROXIMATE_GRID_DEGREES = 0.005;
@@ -34,8 +36,22 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
   const mapRef = useRef<MapView>(null);
   const { status } = useLocation();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Partner pins and venue pins sit close together in central Tel Aviv, so each
+  // layer can be hidden to keep the map readable.
+  const [showPartners, setShowPartners] = useState(true);
+  const [showPlaces, setShowPlaces] = useState(true);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  const selected = partners.find((partner) => partner.id === selectedId);
+  // If the map tiles never arrive (no internet, or the map service refuses the
+  // request) say so instead of leaving a blank black box.
+  useEffect(() => {
+    if (mapLoaded) return;
+    const timeout = setTimeout(() => setLoadFailed(true), MAP_LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timeout);
+  }, [mapLoaded]);
+
+  const selected = showPartners ? partners.find((partner) => partner.id === selectedId) : undefined;
 
   const focusPlace = (place: Place) => {
     setSelectedId(null);
@@ -57,6 +73,11 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
         </View>
       )}
 
+      <View style={styles.layerRow}>
+        <LayerChip label="שותפים" active={showPartners} onPress={() => setShowPartners((value) => !value)} />
+        <LayerChip label="מקומות" active={showPlaces} onPress={() => setShowPlaces((value) => !value)} />
+      </View>
+
       <View style={styles.mapWrap}>
         <MapView
           ref={mapRef}
@@ -64,6 +85,13 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
           customMapStyle={darkMapStyle}
           showsUserLocation={status === 'granted'}
           onPress={() => setSelectedId(null)}
+          loadingEnabled
+          loadingIndicatorColor={theme.colors.cyan}
+          loadingBackgroundColor={theme.colors.surface}
+          onMapLoaded={() => {
+            setMapLoaded(true);
+            setLoadFailed(false);
+          }}
           initialRegion={{
             latitude: origin.latitude,
             longitude: origin.longitude,
@@ -71,14 +99,16 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
             longitudeDelta: REGION_DELTA,
           }}
         >
-          {PLACES.map((place) => (
+          {showPlaces &&
+            PLACES.map((place) => (
             <Marker key={place.id} coordinate={place.coords} onPress={() => focusPlace(place)}>
               <View style={[styles.pin, { backgroundColor: place.color }]}>
                 <Text style={styles.pinText}>{place.trainingNow}</Text>
               </View>
             </Marker>
           ))}
-          {partners.map((partner) => {
+          {showPartners &&
+            partners.map((partner) => {
             const active = partner.id === selectedId;
             return (
               <Marker
@@ -95,7 +125,12 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
           })}
         </MapView>
 
-        {partners.length === 0 && (
+        {loadFailed && !mapLoaded && (
+          <View style={styles.loadFailed} pointerEvents="none">
+            <Text style={styles.loadFailedText}>המפה לא נטענה. בדוק חיבור לאינטרנט ונסה שוב</Text>
+          </View>
+        )}
+        {showPartners && partners.length === 0 && (
           <View style={styles.emptyOverlay} pointerEvents="none">
             <Text style={styles.emptyText}>אין שותפים קרובים לפי הסינון</Text>
           </View>
@@ -147,6 +182,18 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
     </View>
   );
 };
+
+const LayerChip: React.FC<{ label: string; active: boolean; onPress: () => void }> = ({ label, active, onPress }) => (
+  <Pressable
+    style={[styles.layerChip, active && styles.layerChipActive]}
+    onPress={onPress}
+    accessibilityRole="button"
+    accessibilityState={{ selected: active }}
+    accessibilityLabel={`${active ? 'הסתר' : 'הצג'} ${label} במפה`}
+  >
+    <Text style={[styles.layerChipText, active && styles.layerChipTextActive]}>{label}</Text>
+  </Pressable>
+);
 
 interface PartnerPreviewProps {
   partner: PartnerWithDistance;
@@ -211,6 +258,33 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.button.fontFamily,
     color: theme.colors.black,
   },
+  layerRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  layerChip: {
+    minHeight: 48,
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.xl,
+  },
+  layerChipActive: {
+    backgroundColor: theme.colors.cyan,
+    borderColor: theme.colors.cyan,
+  },
+  layerChipText: {
+    fontSize: 15,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textSecondary,
+  },
+  layerChipTextActive: {
+    color: theme.colors.black,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+  },
   mapWrap: {
     height: 300,
     borderRadius: theme.borderRadius.xl * 1.5,
@@ -222,8 +296,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pin: {
-    width: 40,
-    height: 40,
+    width: 34,
+    height: 34,
     borderRadius: theme.borderRadius.full,
     borderWidth: 3,
     borderColor: theme.colors.text,
@@ -236,8 +310,8 @@ const styles = StyleSheet.create({
     color: theme.colors.black,
   },
   partnerPin: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
     borderRadius: theme.borderRadius.full,
     backgroundColor: theme.colors.surfaceHover,
     borderWidth: 2,
@@ -246,8 +320,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   partnerPinActive: {
-    width: 40,
-    height: 40,
+    width: 38,
+    height: 38,
     backgroundColor: theme.colors.magenta,
     borderColor: theme.colors.text,
     borderWidth: 3,
@@ -256,6 +330,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
+  },
+  loadFailed: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.xl,
+  },
+  loadFailedText: {
+    fontSize: 14,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.text,
+    textAlign: 'center',
   },
   emptyOverlay: {
     position: 'absolute',
@@ -277,7 +367,7 @@ const styles = StyleSheet.create({
   caption: {
     position: 'absolute',
     bottom: theme.spacing.md,
-    right: theme.spacing.md,
+    ...visualRight(theme.spacing.md),
     backgroundColor: theme.colors.text,
     borderRadius: theme.borderRadius.full,
     paddingVertical: theme.spacing.sm,

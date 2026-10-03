@@ -12,6 +12,7 @@ import { GroupsSection } from '@screens/community/GroupsSection';
 import { FeedPost, PostCard } from '@screens/community/PostCard';
 import { PlankTimerModal } from '@screens/community/PlankTimerModal';
 import { theme } from '@styles/theme';
+import { visualLeft } from '@lib/rtl';
 
 function formatTimeAgo(iso: string): string {
   const minutes = Math.floor((new Date().getTime() - new Date(iso).getTime()) / 60000);
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: theme.spacing.lg,
-    left: theme.spacing.lg,
+    ...visualLeft(theme.spacing.lg),
     width: 64,
     height: 64,
     borderRadius: theme.borderRadius.full,

@@ -11,6 +11,7 @@ import { NewChatSheet } from '@screens/chat/NewChatSheet';
 import { ChatFilter, ChatRow, avatarColorFor, buildRows, formatListTime } from '@lib/chat';
 import { computePartnerStreaks } from '@lib/streaks';
 import { theme } from '@styles/theme';
+import { visualRight } from '@lib/rtl';
 
 const FILTER_OPTIONS: { value: ChatFilter; label: string }[] = [
   { value: 'all', label: 'הכל' },
@@ -173,10 +174,8 @@ function ChatRowItem({ row, now, onPress }: { row: ChatRow; now: Date; onPress: 
         <View style={styles.groupTile}>
           <Users color={theme.colors.text} size={28} strokeWidth={2} />
           {row.memberCount !== undefined && (
-            <View style={styles.memberBadgeLayer}>
-              <View style={styles.memberBadge}>
-                <Text style={styles.memberBadgeText}>{row.memberCount}</Text>
-              </View>
+            <View style={styles.memberBadge}>
+              <Text style={styles.memberBadgeText}>{row.memberCount}</Text>
             </View>
           )}
         </View>
@@ -317,15 +316,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  memberBadgeLayer: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    alignItems: 'flex-end',
-    justifyContent: 'flex-end',
-  },
   memberBadge: {
     minWidth: 24,
     height: 24,
@@ -334,7 +324,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
-    transform: [{ translateX: 4 }, { translateY: 4 }],
+    position: 'absolute',
+    bottom: -4,
+    ...visualRight(-4),
   },
   memberBadgeText: {
     fontSize: 12,
