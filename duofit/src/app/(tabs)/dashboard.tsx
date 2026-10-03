@@ -20,6 +20,7 @@ import { getActivityStyle } from '@lib/activityStyles';
 import { computePlankRank, getPlankSeconds } from '@lib/plank';
 import { computePartnerStreaks, computeStreak } from '@lib/streaks';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 // Target thresholds shown alongside the real numbers below — not mock data.
 const PARTNERS_GOAL = 5;
@@ -463,7 +464,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.md,
   },
   sectionHint: {
@@ -471,7 +472,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textTertiary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginTop: -theme.spacing.sm,
     marginBottom: theme.spacing.md,
   },

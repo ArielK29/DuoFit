@@ -16,7 +16,7 @@ import { Camera, X } from 'lucide-react-native';
 import { POST_ACTIVITIES } from '@constants/community';
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { theme } from '@styles/theme';
-import { visualLeft } from '@lib/rtl';
+import { visualLeft, visualRightText } from '@lib/rtl';
 
 interface ComposeModalProps {
   visible: boolean;
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.md,
   },
   input: {
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.md,
   },
   previewWrap: {
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.magenta,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.sm,
   },
   actions: {

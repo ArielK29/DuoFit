@@ -5,6 +5,7 @@ import { ScheduledWorkout } from '@hooks/useWorkoutStore';
 import { Card } from '@components/Card';
 import { Button } from '@components/Button';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 function formatUpcomingLabel(iso: string): string {
   const date = new Date(iso);
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.sm,
   },
   detailRow: {

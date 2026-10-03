@@ -15,6 +15,7 @@ import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { trackEvent, logError } from '@lib/analytics';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 import { useAuth, User } from '@hooks/useAuth';
 
 I18nManager.forceRTL(true);
@@ -177,7 +178,7 @@ export const ProfileSetupScreen: React.FC = () => {
       fontWeight: 'normal',
       fontFamily: theme.typography.h2.fontFamily,
       color: theme.colors.text,
-      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+      ...visualRightText,
       marginBottom: theme.spacing.sm,
     },
     subtitle: {
@@ -185,7 +186,7 @@ export const ProfileSetupScreen: React.FC = () => {
       fontSize: 14,
       fontFamily: theme.typography.bodySmall.fontFamily,
       color: theme.colors.textSecondary,
-      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+      ...visualRightText,
     },
     sectionLabel: {
       width: '100%',
@@ -193,7 +194,7 @@ export const ProfileSetupScreen: React.FC = () => {
       fontWeight: 'normal',
       fontFamily: theme.typography.label.fontFamily,
       color: theme.colors.text,
-      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+      ...visualRightText,
       marginBottom: theme.spacing.sm,
       marginTop: theme.spacing.md,
     },

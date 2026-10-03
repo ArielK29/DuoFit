@@ -4,6 +4,7 @@ import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { scheduleWorkoutReminder } from '@lib/notifications';
 import { ScheduleForm } from '@components/ScheduleForm';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 export function ScheduleWorkoutScreen() {
   const router = useRouter();
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.xs,
   },
   subtitle: {
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.bodySmall.fontFamily,
     color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.xl,
   },
 });

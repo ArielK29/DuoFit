@@ -13,6 +13,7 @@ import {
 import { Send } from 'lucide-react-native';
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 interface CommentsModalProps {
   postId: string | null;
@@ -124,14 +125,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
   },
   hint: {
     width: '100%',
     fontSize: 12,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textTertiary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginTop: theme.spacing.xs,
     marginBottom: theme.spacing.md,
   },
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     paddingVertical: theme.spacing.lg,
   },
   comment: {
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
   },
   inputRow: {
     flexDirection: 'row',
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
   },
   sendButton: {
     width: 48,

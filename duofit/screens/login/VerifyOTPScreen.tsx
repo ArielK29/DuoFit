@@ -13,6 +13,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button } from '@components/Button';
 import { trackEvent } from '@lib/analytics';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 I18nManager.forceRTL(true);
 
@@ -182,7 +183,7 @@ export const VerifyOTPScreen: React.FC = () => {
       fontWeight: 'normal',
       fontFamily: theme.typography.label.fontFamily,
       marginBottom: theme.spacing.sm,
-      textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+      ...visualRightText,
     },
     otpInput: {
       borderWidth: 2,

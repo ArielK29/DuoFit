@@ -7,6 +7,7 @@ import { useCommunityStore } from '@hooks/useCommunityStore';
 import { PLANK_PARTICIPANTS } from '@constants/community';
 import { buildLeaderboard, computePlankRank, formatDuration, getDaysLeftInWeek, getPlankSeconds } from '@lib/plank';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 interface ChallengeSectionProps {
   onTryRecord: () => void;
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.magenta,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.xs,
   },
   heroTitle: {
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontFamily: theme.typography.h1.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.sm,
   },
   heroBody: {
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.lg,
   },
   statsRow: {
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
   },
   rowTime: {
     fontSize: 16,

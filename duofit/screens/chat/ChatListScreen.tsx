@@ -11,7 +11,7 @@ import { NewChatSheet } from '@screens/chat/NewChatSheet';
 import { ChatFilter, ChatRow, avatarColorFor, buildRows, formatListTime } from '@lib/chat';
 import { computePartnerStreaks } from '@lib/streaks';
 import { theme } from '@styles/theme';
-import { visualRight } from '@lib/rtl';
+import { visualRight, visualRightText } from '@lib/rtl';
 
 const FILTER_OPTIONS: { value: ChatFilter; label: string }[] = [
   { value: 'all', label: 'הכל' },
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
   },
   empty: {
     fontSize: 14,
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.bodySmall.fontFamily,
     color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginTop: 2,
   },
   suggestionButton: {

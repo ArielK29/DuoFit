@@ -14,7 +14,7 @@ import { BadgeCheck, MapPin, ShieldCheck, Sparkles, Star } from 'lucide-react-na
 import { PartnerWithDistance } from '@hooks/usePartnerMatching';
 import { getActivityStyle } from '@lib/activityStyles';
 import { theme } from '@styles/theme';
-import { visualLeft, visualRight } from '@lib/rtl';
+import { visualLeft, visualRight, visualRightText } from '@lib/rtl';
 
 const SWIPE_THRESHOLD = 120;
 // Per 05-MOTION-SPECS.md "Partner Card Swipe": rotate 45°, translateX 200px, fade,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: theme.typography.body.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.md,
   },
   availabilityLabel: {
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: theme.typography.bodySmall.fontFamily,
     color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.sm,
   },
   daysRow: {

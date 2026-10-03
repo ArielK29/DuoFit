@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "duofit-web",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["--prefix", "duofit", "run", "web", "--", "--port", "8083"],
+      "port": 8083
+    }
+  ]
+}

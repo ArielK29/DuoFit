@@ -16,6 +16,7 @@ import {
   filterPartners,
 } from '@hooks/usePartnerMatching';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 interface FilterSheetProps {
   visible: boolean;
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.xs,
   },
   subtitle: {
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.bodySmall.fontFamily,
     color: theme.colors.textSecondary,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.lg,
   },
   sectionLabel: {
@@ -184,7 +185,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginTop: theme.spacing.lg,
     marginBottom: theme.spacing.sm,
   },
@@ -193,7 +194,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginTop: theme.spacing.lg,
   },
   slider: {

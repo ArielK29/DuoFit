@@ -7,6 +7,7 @@ import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { Card } from '@components/Card';
 import { Button } from '@components/Button';
 import { theme } from '@styles/theme';
+import { visualRightText } from '@lib/rtl';
 
 // Per 05-MOTION-SPECS.md "Check-in (1h) — Confirmation": checkmark animation
 // (500ms), then confirmation text slides up (300ms).
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.lg,
   },
   summaryCard: {
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: theme.typography.h3.fontFamily,
     color: theme.colors.text,
-    textAlign: 'left', // Renders visually right under this app's forced RTL (Android quirk)
+    ...visualRightText,
     marginBottom: theme.spacing.xs,
   },
   detailRow: {
