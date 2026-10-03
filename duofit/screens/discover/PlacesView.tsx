@@ -34,8 +34,12 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
   const mapRef = useRef<MapView>(null);
   const { status } = useLocation();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Partner pins and venue pins sit close together in central Tel Aviv, so each
+  // layer can be hidden to keep the map readable.
+  const [showPartners, setShowPartners] = useState(true);
+  const [showPlaces, setShowPlaces] = useState(true);
 
-  const selected = partners.find((partner) => partner.id === selectedId);
+  const selected = showPartners ? partners.find((partner) => partner.id === selectedId) : undefined;
 
   const focusPlace = (place: Place) => {
     setSelectedId(null);
@@ -57,6 +61,11 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
         </View>
       )}
 
+      <View style={styles.layerRow}>
+        <LayerChip label="שותפים" active={showPartners} onPress={() => setShowPartners((value) => !value)} />
+        <LayerChip label="מקומות" active={showPlaces} onPress={() => setShowPlaces((value) => !value)} />
+      </View>
+
       <View style={styles.mapWrap}>
         <MapView
           ref={mapRef}
@@ -71,14 +80,16 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
             longitudeDelta: REGION_DELTA,
           }}
         >
-          {PLACES.map((place) => (
+          {showPlaces &&
+            PLACES.map((place) => (
             <Marker key={place.id} coordinate={place.coords} onPress={() => focusPlace(place)}>
               <View style={[styles.pin, { backgroundColor: place.color }]}>
                 <Text style={styles.pinText}>{place.trainingNow}</Text>
               </View>
             </Marker>
           ))}
-          {partners.map((partner) => {
+          {showPartners &&
+            partners.map((partner) => {
             const active = partner.id === selectedId;
             return (
               <Marker
@@ -95,7 +106,7 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
           })}
         </MapView>
 
-        {partners.length === 0 && (
+        {showPartners && partners.length === 0 && (
           <View style={styles.emptyOverlay} pointerEvents="none">
             <Text style={styles.emptyText}>אין שותפים קרובים לפי הסינון</Text>
           </View>
@@ -147,6 +158,18 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
     </View>
   );
 };
+
+const LayerChip: React.FC<{ label: string; active: boolean; onPress: () => void }> = ({ label, active, onPress }) => (
+  <Pressable
+    style={[styles.layerChip, active && styles.layerChipActive]}
+    onPress={onPress}
+    accessibilityRole="button"
+    accessibilityState={{ selected: active }}
+    accessibilityLabel={`${active ? 'הסתר' : 'הצג'} ${label} במפה`}
+  >
+    <Text style={[styles.layerChipText, active && styles.layerChipTextActive]}>{label}</Text>
+  </Pressable>
+);
 
 interface PartnerPreviewProps {
   partner: PartnerWithDistance;
@@ -211,6 +234,33 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.button.fontFamily,
     color: theme.colors.black,
   },
+  layerRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  layerChip: {
+    minHeight: 48,
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.xl,
+  },
+  layerChipActive: {
+    backgroundColor: theme.colors.cyan,
+    borderColor: theme.colors.cyan,
+  },
+  layerChipText: {
+    fontSize: 15,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textSecondary,
+  },
+  layerChipTextActive: {
+    color: theme.colors.black,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+  },
   mapWrap: {
     height: 300,
     borderRadius: theme.borderRadius.xl * 1.5,
@@ -222,8 +272,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pin: {
-    width: 40,
-    height: 40,
+    width: 34,
+    height: 34,
     borderRadius: theme.borderRadius.full,
     borderWidth: 3,
     borderColor: theme.colors.text,
@@ -236,8 +286,8 @@ const styles = StyleSheet.create({
     color: theme.colors.black,
   },
   partnerPin: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
     borderRadius: theme.borderRadius.full,
     backgroundColor: theme.colors.surfaceHover,
     borderWidth: 2,
@@ -246,8 +296,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   partnerPinActive: {
-    width: 40,
-    height: 40,
+    width: 38,
+    height: 38,
     backgroundColor: theme.colors.magenta,
     borderColor: theme.colors.text,
     borderWidth: 3,
