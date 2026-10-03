@@ -92,7 +92,7 @@ function rankBadgeStyle(rank: number, isMe: boolean) {
   if (isMe) return { backgroundColor: 'transparent' };
   if (rank === 1) return { backgroundColor: theme.colors.warning };
   if (rank === 2) return { backgroundColor: theme.colors.textSecondary };
-  if (rank === 3) return { backgroundColor: '#CD7F32' };
+  if (rank === 3) return { backgroundColor: `${theme.colors.warning}99` };
   return { backgroundColor: theme.colors.surfaceHover };
 }
 
