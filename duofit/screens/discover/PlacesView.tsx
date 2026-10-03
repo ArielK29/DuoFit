@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, Alert, Linking, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Alert, Linking, Platform, StyleSheet } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { CalendarPlus, MapPinOff, Zap } from 'lucide-react-native';
 import { PLACES, Place } from '@constants/places';
@@ -287,10 +287,15 @@ const styles = StyleSheet.create({
   },
   mapWrap: {
     height: 300,
-    borderRadius: theme.borderRadius.xl * 1.5,
-    overflow: 'hidden',
     marginBottom: theme.spacing.md,
     backgroundColor: theme.colors.surface,
+    // Known react-native-maps bug on Android: a parent with borderRadius +
+    // overflow: 'hidden' makes the map render blank (only the Google logo
+    // shows). Rounded corners are therefore iOS-only.
+    ...Platform.select({
+      ios: { borderRadius: theme.borderRadius.xl * 1.5, overflow: 'hidden' as const },
+      default: {},
+    }),
   },
   map: {
     flex: 1,
