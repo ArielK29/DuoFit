@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect } from 'react';
 import { ActivityIndicator, I18nManager, Platform, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
@@ -10,7 +10,9 @@ import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PostHogErrorBoundary } from 'posthog-react-native';
 import { ErrorFallback } from '@components/ErrorFallback';
-import { useAuth } from '@hooks/useAuth';
+import { AccountSheet } from '@components/AccountSheet';
+import { useAuth, isProfileComplete } from '@hooks/useAuth';
+import { startSessionSync } from '@lib/session';
 import { AnalyticsProvider } from '@lib/analytics';
 import { theme } from '@styles/theme';
 
@@ -41,17 +43,23 @@ function LoadingScreen() {
 }
 
 export default function RootLayout() {
-  // zustand's `persist` middleware rehydrates from AsyncStorage asynchronously,
-  // after the first render, so we wait for it to finish before picking a screen —
-  // otherwise every launch would briefly flash the Login screen even for an
-  // already-authenticated user. useSyncExternalStore (rather than a
-  // useState+useEffect pair) reads this external, non-React-owned flag
-  // without ever needing to call setState from inside an effect body.
-  const hasHydrated = useSyncExternalStore(
-    useAuth.persist.onFinishHydration,
-    () => useAuth.persist.hasHydrated()
-  );
-  const isAuthenticated = useAuth((state) => state.isAuthenticated);
+  // The saved Supabase session is restored asynchronously on launch; wait for it
+  // before picking a screen so a signed-in user never flashes the login screen.
+  const isReady = useAuth((state) => state.isReady);
+  const user = useAuth((state) => state.user);
+  const initialize = useAuth((state) => state.initialize);
+  const hasHydrated = isReady;
+  const isAuthenticated = !!user;
+  const profileComplete = isProfileComplete(user);
+
+  useEffect(() => {
+    const stopAuth = initialize();
+    const stopSync = startSessionSync();
+    return () => {
+      stopAuth();
+      stopSync();
+    };
+  }, [initialize]);
 
   // Custom fonts referenced throughout constants/typography.ts (Anton, Heebo,
   // Space Grotesk, JetBrains Mono). Weight-specific constants are loaded
@@ -97,10 +105,13 @@ export default function RootLayout() {
             >
               <Stack.Protected guard={!isAuthenticated}>
                 <Stack.Screen name="login" />
-                <Stack.Screen name="verify-otp" />
+                <Stack.Screen name="sign-up" />
+                <Stack.Screen name="forgot-password" />
+              </Stack.Protected>
+              <Stack.Protected guard={isAuthenticated && !profileComplete}>
                 <Stack.Screen name="profile-setup" />
               </Stack.Protected>
-              <Stack.Protected guard={isAuthenticated}>
+              <Stack.Protected guard={isAuthenticated && profileComplete}>
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="partner-profile" />
                 <Stack.Screen name="schedule-workout" />
@@ -109,6 +120,7 @@ export default function RootLayout() {
                 <Stack.Screen name="invite-to-workout" />
               </Stack.Protected>
             </Stack>
+            {isAuthenticated && profileComplete && <AccountSheet />}
           </PostHogErrorBoundary>
         )}
       </AnalyticsProvider>

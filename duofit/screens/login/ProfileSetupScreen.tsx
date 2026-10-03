@@ -11,18 +11,15 @@ import {
 import { Image } from 'expo-image';
 import { File } from 'expo-file-system';
 import { pickImage } from '@lib/pickImage';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { trackEvent, logError } from '@lib/analytics';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
-import { useAuth, User } from '@hooks/useAuth';
+import { useAuth, FitnessLevel, Gender } from '@hooks/useAuth';
 
 I18nManager.forceRTL(true);
-
-type FitnessLevel = 'Beginner' | 'Intermediate' | 'Advanced';
-type Gender = 'M' | 'F' | 'Other';
 
 const FITNESS_LEVELS: { value: FitnessLevel; label: string }[] = [
   { value: 'Beginner', label: 'מתחיל' },
@@ -42,17 +39,21 @@ const ACTIVITIES = [
 
 export const ProfileSetupScreen: React.FC = () => {
   const router = useRouter();
-  const { phoneNumber = '' } = useLocalSearchParams<'/profile-setup', { phoneNumber: string }>();
-  const setUser = useAuth((state) => state.setUser);
+  const user = useAuth((state) => state.user);
+  const saveProfile = useAuth((state) => state.saveProfile);
+  const signOut = useAuth((state) => state.signOut);
+  const loading = useAuth((state) => state.isLoading);
+  const storeError = useAuth((state) => state.error);
 
-  const [name, setName] = useState('');
-  const [bio, setBio] = useState('');
-  const [gender, setGender] = useState<Gender | null>(null);
-  const [fitnessLevel, setFitnessLevel] = useState<FitnessLevel | null>(null);
-  const [activities, setActivities] = useState<string[]>([]);
+  // The account (and its name) already exists; this form completes the profile.
+  const [name, setName] = useState(user?.name ?? '');
+  const [bio, setBio] = useState(user?.bio ?? '');
+  const [gender, setGender] = useState<Gender | null>(user?.gender ?? null);
+  const [fitnessLevel, setFitnessLevel] = useState<FitnessLevel | null>(user?.fitnessLevel ?? null);
+  const [activities, setActivities] = useState<string[]>(user?.favoriteActivities ?? []);
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [localError, setError] = useState<string | null>(null);
+  const error = localError ?? storeError;
 
   const toggleActivity = (activity: string) => {
     setActivities((prev) =>
@@ -86,21 +87,11 @@ export const ProfileSetupScreen: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError(null);
 
-    if (!phoneNumber) {
-      // Defensive guard, not a user-facing validation: the user never types a
-      // phone number on this screen, so this should never happen now that
-      // this route always receives it as a param from the OTP-verification
-      // step. If it's ever missing, don't persist a User with no identity —
-      // bounce back to Login instead.
-      router.replace('/login');
-      return;
-    }
-
     if (!name.trim()) {
-      setError('הזן שם מלא');
+      setError('הזן שם');
       return;
     }
     if (!gender) {
@@ -116,30 +107,19 @@ export const ProfileSetupScreen: React.FC = () => {
       return;
     }
 
-    setLoading(true);
+    const ok = await saveProfile({
+      name,
+      bio,
+      gender,
+      fitnessLevel,
+      favoriteActivities: activities,
+      localAvatarUri: avatar,
+    });
 
-    // Simulate API call — persistence happens locally via useAuth (zustand + AsyncStorage).
-    // Real backend sync is tracked separately (out of scope here).
-    setTimeout(() => {
-      setLoading(false);
-
-      const user: User = {
-        id: `local-${Date.now()}`,
-        phoneNumber,
-        name: name.trim(),
-        bio: bio.trim() || undefined,
-        avatar,
-        gender,
-        fitnessLevel,
-        favoriteActivities: activities,
-        createdAt: new Date().toISOString(),
-      };
-
-      setUser(user);
+    if (ok) {
       trackEvent('profile_completed');
-
       router.replace('/discover');
-    }, 1000);
+    }
   };
 
   const styles = StyleSheet.create({
@@ -412,6 +392,16 @@ export const ProfileSetupScreen: React.FC = () => {
             onPress={handleSubmit}
           />
         </View>
+
+        <Pressable
+          onPress={() => signOut()}
+          style={{ minHeight: 48, justifyContent: 'center', alignItems: 'center', marginTop: theme.spacing.sm }}
+          accessibilityRole="button"
+        >
+          <Text style={{ color: theme.colors.textSecondary, fontSize: 14, fontFamily: theme.typography.label.fontFamily }}>
+            {`התחבר עם חשבון אחר (${user?.email ?? ''})`}
+          </Text>
+        </Pressable>
       </ScrollView>
     </View>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useAuth, User } from '@hooks/useAuth';
+import { useAuth, User, FitnessLevel } from '@hooks/useAuth';
 import { useLocation, Coordinates } from '@hooks/useLocation';
 
 export type Gender = 'M' | 'F';
@@ -10,7 +10,7 @@ export interface Partner {
   age: number;
   gender: Gender;
   bio: string;
-  fitnessLevel: User['fitnessLevel'];
+  fitnessLevel: FitnessLevel;
   activities: string[];
   coords: Coordinates;
   // Example data — no review, verification or availability system exists
@@ -209,8 +209,8 @@ export interface PartnerWithDistance extends Partner {
 // level, and distance. Clamped so it always reads as a plausible percentage.
 function computeMatchPercent(partner: Partner, distance: number, user: User | null): number {
   const shared = partner.activities.filter((activity) => user?.favoriteActivities.includes(activity)).length;
-  const levels: User['fitnessLevel'][] = ['Beginner', 'Intermediate', 'Advanced'];
-  const levelGap = user
+  const levels: FitnessLevel[] = ['Beginner', 'Intermediate', 'Advanced'];
+  const levelGap = user?.fitnessLevel
     ? Math.abs(levels.indexOf(user.fitnessLevel) - levels.indexOf(partner.fitnessLevel))
     : 1;
 

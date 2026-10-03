@@ -1,8 +1,9 @@
 import { Redirect } from 'expo-router';
-import { useAuth } from '@hooks/useAuth';
+import { useAuth, isProfileComplete } from '@hooks/useAuth';
 
 export default function Index() {
-  const isAuthenticated = useAuth((state) => state.isAuthenticated);
+  const user = useAuth((state) => state.user);
 
-  return <Redirect href={isAuthenticated ? '/discover' : '/login'} />;
+  if (!user) return <Redirect href="/login" />;
+  return <Redirect href={isProfileComplete(user) ? '/discover' : '/profile-setup'} />;
 }
