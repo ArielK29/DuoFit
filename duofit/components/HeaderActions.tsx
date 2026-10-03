@@ -1,13 +1,14 @@
 import React from 'react';
 import { View, Text, Pressable, Alert, Linking, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { useAccountSheet } from '@hooks/useAccountSheet';
 import { useAuth } from '@hooks/useAuth';
 import { theme } from '@styles/theme';
 
-export const UserAvatar: React.FC = () => {
+export const UserAvatar: React.FC<{ onPress?: () => void }> = ({ onPress }) => {
   const user = useAuth((state) => state.user);
 
-  return (
+  const circle = (
     <View style={styles.avatar}>
       {user?.avatar ? (
         <Image source={{ uri: user.avatar }} style={styles.avatarImage} contentFit="cover" />
@@ -15,6 +16,13 @@ export const UserAvatar: React.FC = () => {
         <Text style={styles.avatarInitial}>{user?.name?.[0] ?? '?'}</Text>
       )}
     </View>
+  );
+
+  if (!onPress) return circle;
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="החשבון שלי">
+      {circle}
+    </Pressable>
   );
 };
 
@@ -29,14 +37,18 @@ function confirmEmergencyCall() {
 // SOS + avatar cluster from the FitMatch headers (the avatar can be swapped
 // for another action, e.g. the Chat tab's "new chat" button). SOS is a real action: after
 // a confirmation it opens the phone dialer with the emergency number.
-export const HeaderActions: React.FC<{ trailing?: React.ReactNode }> = ({ trailing }) => (
+export const HeaderActions: React.FC<{ trailing?: React.ReactNode }> = ({ trailing }) => {
+  const openAccount = useAccountSheet((state) => state.open);
+
+  return (
   <View style={styles.row}>
     <Pressable style={styles.sosButton} onPress={confirmEmergencyCall} accessibilityLabel="חירום">
       <Text style={styles.sosText}>SOS</Text>
     </Pressable>
-    {trailing ?? <UserAvatar />}
+    {trailing ?? <UserAvatar onPress={openAccount} />}
   </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   row: {

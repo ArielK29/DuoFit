@@ -1,201 +1,87 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  I18nManager,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
-import { Logo } from '@components/Logo';
+import { useAuth } from '@hooks/useAuth';
+import { isValidEmail } from '@lib/authErrors';
 import { trackEvent } from '@lib/analytics';
-import { theme } from '@styles/theme';
-
-// Ensure RTL layout
-I18nManager.forceRTL(true);
-
-// Demo/testing hook: this phone number simulates a network failure so the
-// connection-error state (03-EDGE-CASES.md) can be exercised without a real
-// backend — SMS/OTP sending is simulated and tracked separately in issue #15.
-const SIMULATED_NETWORK_FAILURE_PHONE = '0500000000';
+import { AuthLayout, authStyles } from '@screens/login/AuthLayout';
 
 export const LoginScreen: React.FC = () => {
   const router = useRouter();
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const signIn = useAuth((state) => state.signIn);
+  const isLoading = useAuth((state) => state.isLoading);
+  const storeError = useAuth((state) => state.error);
+  const setError = useAuth((state) => state.setError);
 
-  const validatePhone = (phone: string): boolean => {
-    // Israeli mobile format: 05X-XXXXXXX (10 digits total, starting with "05")
-    const digitsOnly = phone.replace(/[\s\-()]/g, '');
-    return /^05\d{8}$/.test(digitsOnly);
-  };
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [localError, setLocalError] = useState<string | null>(null);
 
-  const handlePhoneChange = (text: string) => {
-    setPhoneNumber(text);
-    // Clear error on next keystroke, per 03-EDGE-CASES.md.
-    if (error) {
-      setError(null);
-    }
-  };
+  // Start every visit with a clean error (the store keeps the last one).
+  useEffect(() => {
+    setError(null);
+  }, [setError]);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    setLocalError(null);
     setError(null);
 
-    if (!phoneNumber.trim()) {
-      setError('הזן מספר טלפון'); // Enter phone number
+    if (!isValidEmail(email)) {
+      setLocalError('הזן כתובת אימייל תקינה');
+      return;
+    }
+    if (!password) {
+      setLocalError('הזן סיסמה');
       return;
     }
 
-    if (!validatePhone(phoneNumber)) {
-      setError('מספר טלפון לא תקין'); // Invalid phone number
-      return;
-    }
-
-    setLoading(true);
-
-    const digitsOnly = phoneNumber.replace(/[\s\-()]/g, '');
-
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-
-      if (digitsOnly === SIMULATED_NETWORK_FAILURE_PHONE) {
-        Alert.alert(
-          'בעיה בחיבור',
-          'לא הצלחנו להתחבר לשרת. בדוק את ה-Wi-Fi שלך',
-          [
-            { text: 'צא', style: 'cancel' },
-            { text: 'נסה שוב', onPress: handleLogin },
-          ]
-        );
-        return;
-      }
-
-      trackEvent('signup_started');
-      trackEvent('otp_sent');
-
-      Alert.alert('הצלחה', `קוד OTP נשלח ל-${phoneNumber}`);
-      router.push({ pathname: '/verify-otp', params: { phoneNumber } });
-    }, 1500);
+    const ok = await signIn(email, password);
+    if (ok) trackEvent('login_succeeded');
+    // On success the root layout moves the user on (profile setup or the app).
   };
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.bg,
-      paddingHorizontal: theme.spacing.lg,
-    },
-    scrollContent: {
-      flexGrow: 1,
-      justifyContent: 'center',
-      paddingVertical: theme.spacing.xl,
-    },
-    header: {
-      alignItems: 'center',
-      marginBottom: theme.spacing.xxl,
-    },
-    logoWrapper: {
-      marginBottom: theme.spacing.md,
-    },
-    subtitle: {
-      fontSize: 16,
-      fontFamily: theme.typography.body.fontFamily,
-      color: theme.colors.textSecondary,
-      textAlign: 'center',
-      marginBottom: theme.spacing.md,
-    },
-    description: {
-      fontSize: 14,
-      fontFamily: theme.typography.bodySmall.fontFamily,
-      color: theme.colors.textTertiary,
-      textAlign: 'center',
-      lineHeight: 20,
-    },
-    form: {
-      marginVertical: theme.spacing.xl,
-    },
-    inputWrapper: {
-      marginBottom: theme.spacing.lg,
-    },
-    buttonContainer: {
-      marginTop: theme.spacing.xl,
-    },
-    errorText: {
-      color: theme.colors.error,
-      textAlign: 'center',
-      marginVertical: theme.spacing.md,
-      fontSize: 14,
-      fontFamily: theme.typography.bodySmall.fontFamily,
-    },
-    divider: {
-      height: 1,
-      backgroundColor: theme.colors.surfaceHover,
-      marginVertical: theme.spacing.lg,
-    },
-    footer: {
-      textAlign: 'center',
-      marginTop: theme.spacing.xl,
-    },
-    footerText: {
-      color: theme.colors.textTertiary,
-      fontSize: 12,
-      lineHeight: 18,
-      fontFamily: theme.typography.label.fontFamily,
-    },
-  });
+  const error = localError ?? storeError;
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoWrapper}>
-            <Logo size={220} />
-          </View>
-          <Text style={styles.subtitle}>למצוא את בן הזוג הבא שלך</Text>
-          <Text style={styles.description}>
-            התחברות מדויקת כדי לקבל OTP קוד בטלפון שלך
-          </Text>
-        </View>
+    <AuthLayout subtitle="למצוא את בן הזוג הבא שלך" description="התחבר עם האימייל והסיסמה שלך">
+      <Input
+        label="אימייל"
+        placeholder="name@example.com"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
+        autoComplete="email"
+        disabled={isLoading}
+      />
+      <Input
+        label="סיסמה"
+        placeholder="הסיסמה שלך"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoCapitalize="none"
+        autoComplete="current-password"
+        disabled={isLoading}
+        onSubmitEditing={handleLogin}
+      />
 
-        {/* Form */}
-        <View style={styles.form}>
-          <View style={styles.inputWrapper}>
-            <Input
-              label="מספר טלפון"
-              placeholder="050-123-4567"
-              value={phoneNumber}
-              onChangeText={handlePhoneChange}
-              keyboardType="phone-pad"
-              disabled={loading}
-              error={error ?? undefined}
-            />
-          </View>
+      {error && <Text style={authStyles.errorText}>{error}</Text>}
 
-          <View style={styles.buttonContainer}>
-            <Button
-              label={loading ? 'שליחה...' : 'קבל קוד OTP'}
-              variant="primary"
-              size="lg"
-              loading={loading}
-              disabled={loading}
-              onPress={handleLogin}
-            />
-          </View>
-        </View>
+      <View style={authStyles.buttons}>
+        <Button label="התחבר" variant="primary" size="lg" loading={isLoading} disabled={isLoading} onPress={handleLogin} />
+      </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            בלחיצה על "קבל קוד OTP" אתה מסכים{'\n'}לתנאי השירות שלנו
-          </Text>
-        </View>
-      </ScrollView>
-    </View>
+      <Pressable style={authStyles.linkRow} onPress={() => router.push('/forgot-password')} accessibilityRole="link">
+        <Text style={authStyles.linkText}>שכחתי סיסמה</Text>
+      </Pressable>
+      <Pressable style={authStyles.linkRow} onPress={() => router.push('/sign-up')} accessibilityRole="link">
+        <Text style={authStyles.linkText}>אין לך חשבון? הירשם</Text>
+      </Pressable>
+    </AuthLayout>
   );
 };
 

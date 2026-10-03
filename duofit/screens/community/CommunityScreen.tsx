@@ -12,6 +12,7 @@ import { GroupsSection } from '@screens/community/GroupsSection';
 import { FeedPost, PostCard } from '@screens/community/PostCard';
 import { PlankTimerModal } from '@screens/community/PlankTimerModal';
 import { theme } from '@styles/theme';
+import { DEMO_DATA } from '@lib/demo';
 import { visualLeft, visualRightText } from '@lib/rtl';
 
 function formatTimeAgo(iso: string): string {
@@ -88,14 +89,18 @@ export function CommunityScreen() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.title}>קהילה</Text>
-            <Text style={styles.subtitle}>{`${MEMBER_COUNT.toLocaleString('he-IL')} מתאמנים בתל אביב והסביבה`}</Text>
+            <Text style={styles.subtitle}>
+              {MEMBER_COUNT === null ? 'הקהילה של DuoFit' : `${MEMBER_COUNT.toLocaleString('he-IL')} מתאמנים בתל אביב והסביבה`}
+            </Text>
           </View>
           <HeaderActions />
         </View>
 
-        <View style={styles.previewPill}>
-          <Text style={styles.previewPillText}>תצוגה מקדימה — פוסטים, קבוצות ודירוג לדוגמה</Text>
-        </View>
+        {DEMO_DATA && (
+          <View style={styles.previewPill}>
+            <Text style={styles.previewPillText}>תצוגה מקדימה — פוסטים, קבוצות ודירוג לדוגמה</Text>
+          </View>
+        )}
 
         <Pressable style={styles.composer} onPress={() => setComposeVisible(true)} accessibilityLabel="כתוב פוסט">
           <UserAvatar />
@@ -127,7 +132,9 @@ export function CommunityScreen() {
         </ScrollView>
 
         {visiblePosts.length === 0 ? (
-          <Text style={styles.emptyFeed}>אין פוסטים בקטגוריה הזו כרגע</Text>
+          <Text style={styles.emptyFeed}>
+            {activeFilter === 'הכל' ? 'עוד אין פוסטים. היה הראשון לשתף איך היה האימון' : 'אין פוסטים בקטגוריה הזו כרגע'}
+          </Text>
         ) : (
           visiblePosts.map((post) => (
             <PostCard

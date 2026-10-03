@@ -3,6 +3,8 @@
 // shown (and counted in the tab badge) until opened, then they become normal
 // chats in useChatStore. The Chat tab is labeled "תצוגה מקדימה" because of it.
 
+import { DEMO_DATA } from '@lib/demo';
+
 export type SeedWhen = { minutesAgo: number } | { daysAgo: number; hour: number; minute: number };
 
 export interface ExampleMessage {
@@ -24,7 +26,7 @@ export interface ExampleConversation {
   messages: ExampleMessage[];
 }
 
-export const EXAMPLE_CONVERSATIONS: ExampleConversation[] = [
+const DEMO_CONVERSATIONS: ExampleConversation[] = [
   {
     id: 'example-push-day',
     name: 'צפון ת"א · Push Day',
@@ -84,3 +86,6 @@ export const EXAMPLE_CONVERSATIONS: ExampleConversation[] = [
     ],
   },
 ];
+
+// Invented conversations are demo-only (see lib/demo.ts).
+export const EXAMPLE_CONVERSATIONS: ExampleConversation[] = DEMO_DATA ? DEMO_CONVERSATIONS : [];

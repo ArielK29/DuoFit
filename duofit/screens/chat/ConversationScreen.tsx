@@ -11,9 +11,13 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Send, CalendarPlus, Calendar, Clock, MapPin, Check, X } from 'lucide-react-native';
+import { useActiveChat } from '@hooks/useActiveChat';
 import { useChatStore, AUTO_REPLY_DELAY_MS, ChatMessage } from '@hooks/useChatStore';
 import { notifyInviteAnswered } from '@lib/notifications';
 import { theme } from '@styles/theme';
+
+// One-tap answers for the things people say most when arranging a workout.
+const QUICK_REPLIES = ['מתאים לי 💪', 'בוא נקבע', 'איפה נפגשים?', 'אני מאחר/ת 10 דקות', 'תודה!'];
 
 export function ConversationScreen() {
   const router = useRouter();
@@ -38,6 +42,12 @@ export function ConversationScreen() {
   const messages = conversation?.messages ?? [];
   const isGroup = Boolean(conversation?.isGroup);
 
+  // Tell the notification logic which chat is on screen.
+  useEffect(() => {
+    useActiveChat.getState().setActive(partnerId);
+    return () => useActiveChat.getState().setActive(null);
+  }, [partnerId]);
+
   // Everything in an open chat counts as read, including replies that arrive
   // while it is on screen.
   useEffect(() => {
@@ -48,14 +58,16 @@ export function ConversationScreen() {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [messages.length, isPartnerTyping]);
 
-  const handleSend = () => {
-    const text = inputText.trim();
+  const sendText = (raw: string) => {
+    const text = raw.trim();
     if (!text) return;
     sendMessage(partnerId, partnerName, text);
     setInputText('');
     setIsPartnerTyping(true);
     setTimeout(() => setIsPartnerTyping(false), AUTO_REPLY_DELAY_MS);
   };
+
+  const handleSend = () => sendText(inputText);
 
   const handleRespondToInvite = (messageId: string, accept: boolean) => {
     respondToInvite(partnerId, messageId, accept);
@@ -109,6 +121,28 @@ export function ConversationScreen() {
           </View>
         )}
       </ScrollView>
+
+      {inputText.length === 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          style={styles.quickRepliesScroll}
+          contentContainerStyle={styles.quickReplies}
+        >
+          {QUICK_REPLIES.map((reply) => (
+            <Pressable
+              key={reply}
+              style={styles.quickReply}
+              onPress={() => sendText(reply)}
+              accessibilityRole="button"
+              accessibilityLabel={`שלח: ${reply}`}
+            >
+              <Text style={styles.quickReplyText}>{reply}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
 
       <View style={styles.composer}>
         <TextInput
@@ -212,6 +246,28 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.cyan,
     textAlign: 'right',
+  },
+  quickRepliesScroll: {
+    flexGrow: 0,
+  },
+  quickReplies: {
+    gap: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+  },
+  quickReply: {
+    minHeight: 48,
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  quickReplyText: {
+    fontSize: 15,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.text,
   },
   messagesList: {
     flexGrow: 1,

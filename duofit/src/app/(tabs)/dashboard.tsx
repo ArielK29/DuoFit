@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { Check, Dumbbell, Flame, Footprints, LogOut, PhoneOff, Route, Trophy, Users, X, Zap } from 'lucide-react-native';
+import { Check, Dumbbell, Flame, Footprints, PhoneOff, Route, Trophy, Users, X, Zap } from 'lucide-react-native';
 import { StatCarousel, StatPage } from '@components/StatCarousel';
 import { HeroStatCard } from '@components/HeroStatCard';
 import { WeekStrip } from '@components/WeekStrip';
@@ -10,6 +10,8 @@ import { PartnerStreakCard } from '@components/PartnerStreakCard';
 import { SuggestedPartnerCard } from '@components/SuggestedPartnerCard';
 import { NearbyPartnersRow } from '@components/NearbyPartnersRow';
 import { Button } from '@components/Button';
+import { NotificationBell } from '@components/NotificationBell';
+import { useAccountSheet } from '@hooks/useAccountSheet';
 import { useAuth } from '@hooks/useAuth';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatching';
@@ -80,7 +82,8 @@ export default function Dashboard() {
   // Plank rank follows the record set in the Community challenge (an example
   // value until the first real attempt).
   const plankBestSeconds = useCommunityStore((state) => state.plankBestSeconds);
-  const plankRank = computePlankRank(getPlankSeconds(plankBestSeconds));
+  const plankSeconds = getPlankSeconds(plankBestSeconds);
+  const plankRank = plankSeconds === null ? null : computePlankRank(plankSeconds);
   const weeklyGoal = useProgressStore((state) => state.weeklyGoal);
 
   const now = new Date();
@@ -209,12 +212,12 @@ export default function Dashboard() {
       ),
       stats: [
         {
-          value: `#${plankRank}`,
+          value: plankRank === null ? '—' : `#${plankRank}`,
           label: 'באתגר הפלאנק',
           progress: 0.6,
           color: theme.colors.cyan,
           icon: Trophy,
-          isExample: plankBestSeconds === null,
+          isExample: plankBestSeconds === null && plankSeconds !== null,
         },
         {
           value: String(noShowsThisMonth),
@@ -240,17 +243,23 @@ export default function Dashboard() {
         <View style={styles.topBar}>
           <Text style={styles.wordmark}>DuoFit</Text>
           <View style={styles.topBarLeft}>
+            <NotificationBell />
             <View style={styles.streakPill}>
               <Flame color={theme.colors.magenta} size={16} strokeWidth={2} />
               <Text style={styles.streakPillText}>{streakDays}</Text>
             </View>
-            <View style={styles.avatar}>
+            <Pressable
+              style={styles.avatar}
+              onPress={() => useAccountSheet.getState().open()}
+              accessibilityRole="button"
+              accessibilityLabel="החשבון שלי"
+            >
               {user?.avatar ? (
                 <Image source={{ uri: user.avatar }} style={styles.avatarImage} contentFit="cover" />
               ) : (
                 <Text style={styles.avatarInitial}>{user?.name?.[0] ?? '?'}</Text>
               )}
-            </View>
+            </Pressable>
           </View>
         </View>
 
@@ -374,18 +383,6 @@ export default function Dashboard() {
           )}
         </View>
 
-        {__DEV__ && (
-          <Pressable
-            onPress={() => {
-              useAuth.getState().logout();
-              router.replace('/login');
-            }}
-            style={styles.backButton}
-          >
-            <LogOut color={theme.colors.magenta} size={20} strokeWidth={2} />
-            <Text style={styles.backButtonText}>התנתק (לבדיקות)</Text>
-          </Pressable>
-        )}
       </ScrollView>
     </View>
   );

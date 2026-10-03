@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useAuth, User } from '@hooks/useAuth';
+import { useAuth, User, FitnessLevel } from '@hooks/useAuth';
 import { useLocation, Coordinates } from '@hooks/useLocation';
+import { DEMO_DATA } from '@lib/demo';
 
 export type Gender = 'M' | 'F';
 
@@ -10,7 +11,7 @@ export interface Partner {
   age: number;
   gender: Gender;
   bio: string;
-  fitnessLevel: User['fitnessLevel'];
+  fitnessLevel: FitnessLevel;
   activities: string[];
   coords: Coordinates;
   // Example data — no review, verification or availability system exists
@@ -24,7 +25,7 @@ export interface Partner {
 }
 
 // Mock candidate pool (no backend yet — see issue #15).
-const MOCK_PARTNERS: Partner[] = [
+const DEMO_PARTNERS: Partner[] = [
   {
     id: 'p6',
     name: 'יונתן',
@@ -155,6 +156,10 @@ const MOCK_PARTNERS: Partner[] = [
   },
 ];
 
+// Invented people exist only in demo mode (see lib/demo.ts); real partners will
+// come from the database.
+const MOCK_PARTNERS: Partner[] = DEMO_DATA ? DEMO_PARTNERS : [];
+
 // The whole mock pool, for screens that need partners outside the swipe deck
 // (Chat: start a conversation, suggest a group).
 export const PARTNER_POOL = MOCK_PARTNERS;
@@ -209,8 +214,8 @@ export interface PartnerWithDistance extends Partner {
 // level, and distance. Clamped so it always reads as a plausible percentage.
 function computeMatchPercent(partner: Partner, distance: number, user: User | null): number {
   const shared = partner.activities.filter((activity) => user?.favoriteActivities.includes(activity)).length;
-  const levels: User['fitnessLevel'][] = ['Beginner', 'Intermediate', 'Advanced'];
-  const levelGap = user
+  const levels: FitnessLevel[] = ['Beginner', 'Intermediate', 'Advanced'];
+  const levelGap = user?.fitnessLevel
     ? Math.abs(levels.indexOf(user.fitnessLevel) - levels.indexOf(partner.fitnessLevel))
     : 1;
 

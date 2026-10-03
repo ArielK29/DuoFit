@@ -15,6 +15,7 @@ interface NewChatSheetProps {
 // "New chat" (the pencil button): pick anyone from the example partner pool.
 export const NewChatSheet: React.FC<NewChatSheetProps> = ({ visible, onPick, onClose }) => (
   <BottomSheet visible={visible} title="שיחה חדשה" onClose={onClose}>
+    {PARTNER_POOL.length === 0 && <Text style={styles.empty}>עוד אין שותפים להתכתב איתם. הם יופיעו כאן כשיצטרפו</Text>}
     <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
       {PARTNER_POOL.map((partner) => (
         <Pressable
@@ -40,6 +41,13 @@ export const NewChatSheet: React.FC<NewChatSheetProps> = ({ visible, onPick, onC
 );
 
 const styles = StyleSheet.create({
+  empty: {
+    fontSize: 14,
+    fontFamily: theme.typography.body.fontFamily,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    paddingVertical: theme.spacing.xl,
+  },
   list: {
     maxHeight: 420,
   },

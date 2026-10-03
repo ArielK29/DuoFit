@@ -58,3 +58,4 @@ logs/
 
 # nCode course rehearsal repos (own git history each, not part of DuoFit)
 /nCode-Exercises/
+.claude/launch.json
