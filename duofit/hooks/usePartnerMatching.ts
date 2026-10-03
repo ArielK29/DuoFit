@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth, User, FitnessLevel } from '@hooks/useAuth';
 import { useLocation, Coordinates } from '@hooks/useLocation';
+import { DEMO_DATA } from '@lib/demo';
 
 export type Gender = 'M' | 'F';
 
@@ -24,7 +25,7 @@ export interface Partner {
 }
 
 // Mock candidate pool (no backend yet — see issue #15).
-const MOCK_PARTNERS: Partner[] = [
+const DEMO_PARTNERS: Partner[] = [
   {
     id: 'p6',
     name: 'יונתן',
@@ -154,6 +155,10 @@ const MOCK_PARTNERS: Partner[] = [
     availableTo: '22:00',
   },
 ];
+
+// Invented people exist only in demo mode (see lib/demo.ts); real partners will
+// come from the database.
+const MOCK_PARTNERS: Partner[] = DEMO_DATA ? DEMO_PARTNERS : [];
 
 // The whole mock pool, for screens that need partners outside the swipe deck
 // (Chat: start a conversation, suggest a group).

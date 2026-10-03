@@ -11,6 +11,9 @@ import { theme } from '@styles/theme';
 export const GroupsSection: React.FC = () => {
   const [showAll, setShowAll] = useState(false);
 
+  // Groups are created by real people; until that exists there is nothing to show.
+  if (GROUPS.length === 0) return null;
+
   return (
     <View style={styles.wrap}>
       <View style={styles.header}>

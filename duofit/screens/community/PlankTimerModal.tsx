@@ -75,7 +75,7 @@ const PlankTimerContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <Text style={styles.resultText}>
               {result.isNewBest
                 ? `שיא חדש! ${formatDuration(result.seconds)}`
-                : `${formatDuration(result.seconds)} — השיא שלך נשאר ${formatDuration(getPlankSeconds(best))}`}
+                : `${formatDuration(result.seconds)} — השיא שלך נשאר ${formatDuration(getPlankSeconds(best) ?? 0)}`}
             </Text>
           </View>
         )}

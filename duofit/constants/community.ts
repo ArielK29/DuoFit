@@ -1,3 +1,4 @@
+import { DEMO_DATA } from '@lib/demo';
 import { theme } from '@styles/theme';
 
 // Everything here is example data — DuoFit has no backend, user directory or
@@ -5,7 +6,8 @@ import { theme } from '@styles/theme';
 // of it. The user's own actions (likes, joins, posts, plank record) are real
 // and live in useCommunityStore.
 
-export const MEMBER_COUNT = 3214;
+// null = unknown (no backend yet): the screen then shows no number at all.
+export const MEMBER_COUNT: number | null = DEMO_DATA ? 3214 : null;
 
 export const FEED_FILTERS = ['הכל', 'כוח', 'ריצה', 'קליסטניקס', 'כדורסל'];
 export const POST_ACTIVITIES = FEED_FILTERS.slice(1);
@@ -29,7 +31,7 @@ export interface CommunityPost {
   comments: number;
 }
 
-export const SEED_POSTS: CommunityPost[] = [
+const DEMO_POSTS: CommunityPost[] = [
   {
     id: 'post-maya',
     authorName: 'מאיה שרון',
@@ -110,7 +112,7 @@ export interface CommunityGroup {
   members: number;
 }
 
-export const GROUPS: CommunityGroup[] = [
+const DEMO_GROUPS: CommunityGroup[] = [
   { id: 'group-run', name: 'ריצת בוקר בטיילת', activity: 'ריצה', members: 42 },
   { id: 'group-calisthenics', name: 'קליסטניקס בירקון', activity: 'קליסטניקס', members: 67 },
   { id: 'group-women-strength', name: 'כוח לנשים תל אביב', activity: 'כוח', members: 31 },
@@ -119,8 +121,8 @@ export const GROUPS: CommunityGroup[] = [
 ];
 
 // Weekly plank challenge (example leaderboard + participant count).
-export const PLANK_PARTICIPANTS = 1284;
-export const EXAMPLE_PLANK_BEST_SECONDS = 165; // 2:45, shown until the first real attempt
+export const PLANK_PARTICIPANTS = DEMO_DATA ? 1284 : 1; // outside demo mode: just you
+export const EXAMPLE_PLANK_BEST_SECONDS = 165; // 2:45, demo mode only, until the first real attempt
 
 export interface LeaderboardEntry {
   name: string;
@@ -128,10 +130,14 @@ export interface LeaderboardEntry {
   seconds: number;
 }
 
-export const PLANK_LEADERBOARD: LeaderboardEntry[] = [
+const DEMO_LEADERBOARD: LeaderboardEntry[] = [
   { name: 'איתי ברק', avatarColor: theme.colors.magenta, seconds: 372 },
   { name: 'מאיה שרון', avatarColor: theme.colors.cyan, seconds: 348 },
   { name: 'עומר דהן', avatarColor: theme.colors.warning, seconds: 324 },
   { name: 'שיר מזרחי', avatarColor: theme.colors.cyan, seconds: 301 },
   { name: 'רועי כהן', avatarColor: theme.colors.warning, seconds: 287 },
 ];
+
+export const SEED_POSTS: CommunityPost[] = DEMO_DATA ? DEMO_POSTS : [];
+export const GROUPS: CommunityGroup[] = DEMO_DATA ? DEMO_GROUPS : [];
+export const PLANK_LEADERBOARD: LeaderboardEntry[] = DEMO_DATA ? DEMO_LEADERBOARD : [];

@@ -1,3 +1,4 @@
+import { DEMO_DATA } from '@lib/demo';
 import {
   EXAMPLE_PLANK_BEST_SECONDS,
   PLANK_LEADERBOARD,
@@ -21,8 +22,9 @@ export function getDaysLeftInWeek(now: Date): number {
   return 6 - now.getDay(); // week ends Saturday (getDay: 0 = Sunday)
 }
 
-export function getPlankSeconds(bestSeconds: number | null): number {
-  return bestSeconds ?? EXAMPLE_PLANK_BEST_SECONDS;
+// null = nothing to show yet (outside demo mode there is no made-up starting record).
+export function getPlankSeconds(bestSeconds: number | null): number | null {
+  return bestSeconds ?? (DEMO_DATA ? EXAMPLE_PLANK_BEST_SECONDS : null);
 }
 
 export function computePlankRank(seconds: number): number {

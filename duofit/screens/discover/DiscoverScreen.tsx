@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, Share, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MessageCircle, SearchX, SlidersHorizontal, X, Zap } from 'lucide-react-native';
 import {
@@ -19,6 +19,7 @@ import { FilterSheet } from '@components/FilterSheet';
 import { SegmentedToggle } from '@components/SegmentedToggle';
 import { SkeletonLoader } from '@components/SkeletonLoader';
 import { theme } from '@styles/theme';
+import { DEMO_DATA } from '@lib/demo';
 import { visualRight } from '@lib/rtl';
 
 type ViewMode = 'partners' | 'places';
@@ -90,6 +91,9 @@ export function DiscoverScreen() {
         : [...prev.activities, activity],
     }));
 
+  // No one has signed up near you yet (real users only; see lib/demo.ts).
+  const noPartnersYet = allPartners.length === 0;
+
   const ageChipActive = filters.maxAge === QUICK_AGE;
   const radiusChipActive = filters.radiusKm === QUICK_RADIUS_KM;
 
@@ -106,9 +110,11 @@ export function DiscoverScreen() {
               <SlidersHorizontal color={theme.colors.text} size={20} strokeWidth={2} />
               {!isDefault(filters) && <View style={styles.filterDot} />}
             </Pressable>
-            <View style={styles.previewPill}>
-              <Text style={styles.previewPillText}>תצוגה מקדימה</Text>
-            </View>
+            {DEMO_DATA && (
+              <View style={styles.previewPill}>
+                <Text style={styles.previewPillText}>תצוגה מקדימה</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -156,9 +162,17 @@ export function DiscoverScreen() {
                     </View>
                   }
                   headline="אין שותפים קרובים"
-                  subheading="נסה להרחיב את הסינון או לנסות שוב מאוחר יותר"
-                  ctaLabel={isDefault(filters) ? 'רענן חיפוש' : 'נקה סינון'}
+                  subheading={
+                    noPartnersYet
+                      ? 'DuoFit רק התחילה. הזמן חברים להצטרף ותמצאו אחד את השני'
+                      : 'נסה להרחיב את הסינון או לנסות שוב מאוחר יותר'
+                  }
+                  ctaLabel={noPartnersYet ? 'הזמן חברים' : isDefault(filters) ? 'רענן חיפוש' : 'נקה סינון'}
                   onCtaPress={() => {
+                    if (noPartnersYet) {
+                      Share.share({ message: 'אני מחפש שותף לאימונים ב-DuoFit. בוא להתאמן ביחד!' });
+                      return;
+                    }
                     setFilters(DEFAULT_FILTERS);
                     refresh();
                   }}

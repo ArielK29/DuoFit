@@ -11,6 +11,7 @@ import { NewChatSheet } from '@screens/chat/NewChatSheet';
 import { ChatFilter, ChatRow, avatarColorFor, buildRows, formatListTime } from '@lib/chat';
 import { computePartnerStreaks } from '@lib/streaks';
 import { theme } from '@styles/theme';
+import { DEMO_DATA } from '@lib/demo';
 import { visualRight, visualRightText } from '@lib/rtl';
 
 const FILTER_OPTIONS: { value: ChatFilter; label: string }[] = [
@@ -107,9 +108,11 @@ export function ChatListScreen() {
           />
         </View>
 
-        <View style={styles.previewPill}>
-          <Text style={styles.previewPillText}>תצוגה מקדימה — חלק מהשיחות לדוגמה</Text>
-        </View>
+        {DEMO_DATA && (
+          <View style={styles.previewPill}>
+            <Text style={styles.previewPillText}>תצוגה מקדימה — חלק מהשיחות לדוגמה</Text>
+          </View>
+        )}
 
         <SegmentedToggle options={FILTER_OPTIONS} value={filter} onChange={setFilter} />
 
@@ -126,7 +129,7 @@ export function ChatListScreen() {
 
         {visibleRows.length === 0 ? (
           <Text style={styles.empty}>
-            {query !== '' ? 'לא נמצאו שיחות שמתאימות לחיפוש' : filter === 'groups' ? 'עוד אין לך קבוצות. הצטרף לקבוצה בקהילה' : 'אין שיחות להצגה'}
+            {query !== '' ? 'לא נמצאו שיחות שמתאימות לחיפוש' : filter === 'groups' ? 'עוד אין לך קבוצות. הצטרף לקבוצה בקהילה' : 'עדיין אין שיחות. מצא שותף בלשונית ההתאמות והתחל לדבר'}
           </Text>
         ) : (
           visibleRows.map((row) => <ChatRowItem key={row.id} row={row} now={now} onPress={() => openRow(row)} />)

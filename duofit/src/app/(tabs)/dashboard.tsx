@@ -81,7 +81,8 @@ export default function Dashboard() {
   // Plank rank follows the record set in the Community challenge (an example
   // value until the first real attempt).
   const plankBestSeconds = useCommunityStore((state) => state.plankBestSeconds);
-  const plankRank = computePlankRank(getPlankSeconds(plankBestSeconds));
+  const plankSeconds = getPlankSeconds(plankBestSeconds);
+  const plankRank = plankSeconds === null ? null : computePlankRank(plankSeconds);
   const weeklyGoal = useProgressStore((state) => state.weeklyGoal);
 
   const now = new Date();
@@ -210,12 +211,12 @@ export default function Dashboard() {
       ),
       stats: [
         {
-          value: `#${plankRank}`,
+          value: plankRank === null ? '—' : `#${plankRank}`,
           label: 'באתגר הפלאנק',
           progress: 0.6,
           color: theme.colors.cyan,
           icon: Trophy,
-          isExample: plankBestSeconds === null,
+          isExample: plankBestSeconds === null && plankSeconds !== null,
         },
         {
           value: String(noShowsThisMonth),

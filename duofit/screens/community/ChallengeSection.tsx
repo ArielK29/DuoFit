@@ -7,6 +7,7 @@ import { useCommunityStore } from '@hooks/useCommunityStore';
 import { PLANK_PARTICIPANTS } from '@constants/community';
 import { buildLeaderboard, computePlankRank, formatDuration, getDaysLeftInWeek, getPlankSeconds } from '@lib/plank';
 import { theme } from '@styles/theme';
+import { DEMO_DATA } from '@lib/demo';
 import { visualRightText } from '@lib/rtl';
 
 interface ChallengeSectionProps {
@@ -27,7 +28,7 @@ export const ChallengeSection: React.FC<ChallengeSectionProps> = ({ onTryRecord 
   const best = useCommunityStore((state) => state.plankBestSeconds);
 
   const seconds = getPlankSeconds(best);
-  const rows = buildLeaderboard(seconds, 'אתה');
+  const rows = seconds === null ? [] : buildLeaderboard(seconds, 'אתה');
   const daysLeft = getDaysLeftInWeek(new Date());
 
   return (
@@ -45,8 +46,10 @@ export const ChallengeSection: React.FC<ChallengeSectionProps> = ({ onTryRecord 
           style={StyleSheet.absoluteFill}
         />
         <Text style={styles.kicker}>אתגר אזורי · תל אביב</Text>
-        <Text style={styles.heroTitle}>אתגר הפלאנק של תל אביב</Text>
-        <Text style={styles.heroBody}>הפלאנק הכי ארוך בשבוע. מנצחי השכונה מקבלים חודש Pro.</Text>
+        <Text style={styles.heroTitle}>{DEMO_DATA ? 'אתגר הפלאנק של תל אביב' : 'אתגר הפלאנק השבועי'}</Text>
+        <Text style={styles.heroBody}>
+          {DEMO_DATA ? 'הפלאנק הכי ארוך בשבוע. מנצחי השכונה מקבלים חודש Pro.' : 'הפלאנק הכי ארוך שלך השבוע. נסה לשבור את השיא.'}
+        </Text>
 
         <View style={styles.statsRow}>
           <View style={styles.stat}>
@@ -54,11 +57,11 @@ export const ChallengeSection: React.FC<ChallengeSectionProps> = ({ onTryRecord 
             <Text style={styles.statLabel}>משתתפים</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{formatDuration(seconds)}</Text>
-            <Text style={styles.statLabel}>{best === null ? 'השיא שלך (לדוגמה)' : 'השיא שלך'}</Text>
+            <Text style={styles.statValue}>{seconds === null ? '—' : formatDuration(seconds)}</Text>
+            <Text style={styles.statLabel}>{best === null && seconds !== null ? 'השיא שלך (לדוגמה)' : 'השיא שלך'}</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{`#${computePlankRank(seconds)}`}</Text>
+            <Text style={styles.statValue}>{seconds === null ? '—' : `#${computePlankRank(seconds)}`}</Text>
             <Text style={styles.statLabel}>המקום שלך</Text>
           </View>
         </View>
@@ -69,6 +72,7 @@ export const ChallengeSection: React.FC<ChallengeSectionProps> = ({ onTryRecord 
         </Pressable>
       </View>
 
+      {rows.length > 0 && (
       <View style={styles.board}>
         {rows.map((row, index) => (
           <View key={`${row.rank}-${row.name}`} style={[styles.row, index > 0 && styles.rowDivider, row.isMe && styles.rowMe]}>
@@ -85,6 +89,7 @@ export const ChallengeSection: React.FC<ChallengeSectionProps> = ({ onTryRecord 
           </View>
         ))}
       </View>
+      )}
     </View>
   );
 };
