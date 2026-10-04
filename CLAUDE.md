@@ -206,6 +206,24 @@ Closes #42
 
 ---
 
+## Security Scanning (Snyk)
+
+The Snyk MCP server is configured for Claude Code (`snyk mcp`, tools `snyk_code_scan`, `snyk_sca_scan`, `snyk_iac_scan`, `snyk_auth`, `snyk_trust`). Run it from the git root; the app is in `duofit/`.
+
+**When to scan:**
+- **Code scan (`snyk_code_scan`)**: after writing or changing first-party code that handles auth, sessions, user input, URLs/deep links, file or image uploads, Supabase queries, storage, or anything that reads secrets. Fix findings of severity high or above before opening the PR; mention medium/low ones in the PR.
+- **Dependency scan (`snyk_sca_scan`)**: whenever `duofit/package.json` or `package-lock.json` changes (new package or upgrade), and before every release. Install packages with `npx expo install` and re-scan.
+- **IaC scan (`snyk_iac_scan`)**: only if infrastructure files are added (Docker, Terraform, CI configs). There are none today.
+- Re-scan after fixing, and repeat until no new high/critical findings remain.
+
+**Rules:**
+- Never put secrets in the repo. Only the publishable Supabase key and the PostHog key are allowed in `duofit/.env.local` (git-ignored); `duofit/.env.example` documents them. Never use the `service_role` key in the app.
+- Do not "fix" dependency findings with `npm audit fix --force`: it proposes downgrading Expo and breaks the app. Upgrade through Expo SDK-compatible versions (`npx expo install --fix`) and re-test.
+- If a finding is a false positive or only affects dev tooling (Metro, Expo CLI), record it in the PR description instead of silencing it silently.
+- First-time setup on a machine: run `snyk auth` (browser login), then `snyk_trust` for the repo folder.
+
+---
+
 ## Contact & Support
 - **Questions:** Check CLAUDE.md first, then design specs
 - **Design Spec:** Refer to files 01-08 in root
