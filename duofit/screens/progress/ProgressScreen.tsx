@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Plus } from 'lucide-react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { Button } from '@components/Button';
 import { HeaderActions } from '@components/HeaderActions';
+import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { useProgressStore, EXAMPLE_GOAL_WEIGHT } from '@hooks/useProgressStore';
 import { RunsCard } from '@screens/progress/RunsCard';
@@ -12,8 +12,8 @@ import { StreakCard, WeightCard } from '@screens/progress/SummaryCards';
 import { WeightTrendCard } from '@screens/progress/WeightTrendCard';
 import { WorkoutsCard } from '@screens/progress/WorkoutsCard';
 import { buildExampleWeights, computeGoalStreakWeeks, goalProgress, toWeightPoints } from '@lib/progress';
+import { useLayout } from '@lib/useLayout';
 import { theme } from '@styles/theme';
-import { visualLeft } from '@lib/rtl';
 
 function startOfDay(iso: string): number {
   const d = new Date(iso);
@@ -21,7 +21,7 @@ function startOfDay(iso: string): number {
 }
 
 export function ProgressScreen() {
-  const router = useRouter();
+  const { isSmall } = useLayout();
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
   const { weeklyGoal, goalWeight, weightLog } = useProgressStore();
   const { setWeeklyGoal, logWeight } = useProgressStore.getState();
@@ -47,13 +47,6 @@ export function ProgressScreen() {
   const startKg = weightPoints[0].kg;
   const currentKg = weightPoints[weightPoints.length - 1].kg;
 
-  const openQuickActions = () =>
-    Alert.alert('מה להוסיף?', undefined, [
-      { text: 'רשום משקל', onPress: () => setWeightSheetVisible(true) },
-      { text: 'מצא שותף לאימון', onPress: () => router.push('/discover') },
-      { text: 'ביטול', style: 'cancel' },
-    ]);
-
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -66,13 +59,14 @@ export function ProgressScreen() {
           <Text style={styles.previewPillText}>תצוגה מקדימה — צעדים וריצות לדוגמה</Text>
         </View>
 
-        <View style={styles.summaryRow}>
+        <View style={[styles.summaryRow, isSmall && styles.summaryColumn]}>
           <WeightCard
             kg={currentKg}
             goalKg={goalKg}
             progress={goalProgress(startKg, currentKg, goalKg)}
             isExample={isExampleWeight}
             onLog={() => setWeightSheetVisible(true)}
+            showLogButton={false}
           />
           <StreakCard weeks={streakWeeks} activeDays={activeDays} />
         </View>
@@ -83,9 +77,12 @@ export function ProgressScreen() {
         <RunsCard />
       </ScrollView>
 
-      <Pressable style={styles.fab} onPress={openQuickActions} accessibilityLabel="הוסף">
-        <Plus color={theme.colors.black} size={30} strokeWidth={2.5} />
-      </Pressable>
+      {/* Logging a weight is the main action here, so it sits in the thumb zone. */}
+      <StickyActionBar>
+        <View style={styles.stickyAction}>
+          <Button label="רשום משקל" variant="primary" size="lg" onPress={() => setWeightSheetVisible(true)} />
+        </View>
+      </StickyActionBar>
 
       <WeightSheet
         visible={weightSheetVisible}
@@ -112,7 +109,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: theme.spacing.xl,
-    paddingBottom: 112, // room for the floating "+" button
+    paddingBottom: STICKY_BAR_CLEARANCE,
   },
   header: {
     flexDirection: 'row',
@@ -145,16 +142,11 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
     marginBottom: theme.spacing.md,
   },
-  fab: {
-    position: 'absolute',
-    bottom: theme.spacing.lg,
-    ...visualLeft(theme.spacing.lg),
-    width: 64,
-    height: 64,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.magenta,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 6,
+  // Small phones stack the weight and streak cards so neither is squeezed.
+  summaryColumn: {
+    flexDirection: 'column',
+  },
+  stickyAction: {
+    flex: 1,
   },
 });

@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: theme.spacing.xl,
-    paddingBottom: 112, // room for the floating "+" button
+    paddingBottom: 120, // room for the floating "+" button
   },
   header: {
     flexDirection: 'row',
@@ -276,8 +276,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: theme.spacing.lg,
     ...visualLeft(theme.spacing.lg),
-    width: 64,
-    height: 64,
+    width: 72,
+    height: 72,
     borderRadius: theme.borderRadius.full,
     backgroundColor: theme.colors.magenta,
     justifyContent: 'center',

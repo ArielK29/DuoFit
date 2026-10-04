@@ -12,7 +12,7 @@ import { ChatFilter, ChatRow, avatarColorFor, buildRows, formatListTime } from '
 import { computePartnerStreaks } from '@lib/streaks';
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
-import { visualRight, visualRightText } from '@lib/rtl';
+import { visualLeft, visualRight, visualRightText } from '@lib/rtl';
 
 const FILTER_OPTIONS: { value: ChatFilter; label: string }[] = [
   { value: 'all', label: 'הכל' },
@@ -99,13 +99,7 @@ export function ChatListScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.title}>צ'אטים</Text>
-          <HeaderActions
-            trailing={
-              <Pressable style={styles.newChatButton} onPress={() => setNewChatVisible(true)} accessibilityLabel="שיחה חדשה">
-                <PenSquare color={theme.colors.text} size={22} strokeWidth={2} />
-              </Pressable>
-            }
-          />
+          <HeaderActions trailing={null} />
         </View>
 
         {DEMO_DATA && (
@@ -152,6 +146,11 @@ export function ChatListScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* New chat sits in the thumb zone (bottom corner) instead of the header. */}
+      <Pressable style={styles.fab} onPress={() => setNewChatVisible(true)} accessibilityLabel="שיחה חדשה">
+        <PenSquare color={theme.colors.black} size={26} strokeWidth={2} />
+      </Pressable>
 
       <NewChatSheet visible={newChatVisible} onPick={startChat} onClose={() => setNewChatVisible(false)} />
     </View>
@@ -225,7 +224,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.xxl,
+    paddingBottom: 112, // room for the new-chat button
   },
   header: {
     flexDirection: 'row',
@@ -238,15 +237,17 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.h1.fontFamily,
     color: theme.colors.text,
   },
-  newChatButton: {
-    width: 48,
-    height: 48,
+  fab: {
+    position: 'absolute',
+    bottom: theme.spacing.lg,
+    ...visualLeft(theme.spacing.lg),
+    width: 64,
+    height: 64,
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.surfaceHover,
+    backgroundColor: theme.colors.magenta,
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 6,
   },
   previewPill: {
     alignSelf: 'flex-end',

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { Logo } from '@components/Logo';
+import { useLayout } from '@lib/useLayout';
 import { theme } from '@styles/theme';
 
 interface AuthLayoutProps {
@@ -10,18 +11,23 @@ interface AuthLayoutProps {
 }
 
 // Shared frame for the sign-in / sign-up / forgot-password screens.
-export const AuthLayout: React.FC<AuthLayoutProps> = ({ subtitle, description, children }) => (
-  <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-    <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-      <View style={styles.header}>
-        <Logo size={180} />
-        <Text style={styles.subtitle}>{subtitle}</Text>
-        {description && <Text style={styles.description}>{description}</Text>}
-      </View>
-      {children}
-    </ScrollView>
-  </KeyboardAvoidingView>
-);
+export const AuthLayout: React.FC<AuthLayoutProps> = ({ subtitle, description, children }) => {
+  // Small phones (375px wide) get a smaller logo so the form stays above the keyboard.
+  const { isSmall } = useLayout();
+
+  return (
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
+          <Logo size={isSmall ? 140 : 180} />
+          <Text style={styles.subtitle}>{subtitle}</Text>
+          {description && <Text style={styles.description}>{description}</Text>}
+        </View>
+        {children}
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+};
 
 export const authStyles = StyleSheet.create({
   errorText: {

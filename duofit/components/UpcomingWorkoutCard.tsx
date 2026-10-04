@@ -39,6 +39,8 @@ interface UpcomingWorkoutCardProps {
   partnerStreak?: number;
   onCheckInPress: () => void;
   onMessagePress: () => void;
+  // The "I finished" button can live in a sticky bar at the bottom of the screen instead.
+  showCheckIn?: boolean;
 }
 
 // "Next workout" card, per the FitMatch reference layout — restyled with
@@ -50,6 +52,7 @@ export const UpcomingWorkoutCard: React.FC<UpcomingWorkoutCardProps> = ({
   partnerStreak,
   onCheckInPress,
   onMessagePress,
+  showCheckIn = true,
 }) => {
   const openLocation = () => {
     const query = encodeURIComponent(workout.location);
@@ -89,9 +92,11 @@ export const UpcomingWorkoutCard: React.FC<UpcomingWorkoutCardProps> = ({
         <Pressable style={styles.iconButton} onPress={openLocation} accessibilityLabel="ניווט למיקום">
           <Navigation color={theme.colors.textSecondary} size={18} strokeWidth={2} />
         </Pressable>
-        <View style={styles.ctaWrapper}>
-          <Button label="סיימתי את האימון" variant="primary" onPress={onCheckInPress} />
-        </View>
+        {showCheckIn && (
+          <View style={styles.ctaWrapper}>
+            <Button label="סיימתי את האימון" variant="primary" onPress={onCheckInPress} />
+          </View>
+        )}
       </View>
     </Card>
   );

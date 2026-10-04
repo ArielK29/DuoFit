@@ -11,6 +11,7 @@ import { SuggestedPartnerCard } from '@components/SuggestedPartnerCard';
 import { NearbyPartnersRow } from '@components/NearbyPartnersRow';
 import { Button } from '@components/Button';
 import { NotificationBell } from '@components/NotificationBell';
+import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { useAccountSheet } from '@hooks/useAccountSheet';
 import { useAuth } from '@hooks/useAuth';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
@@ -275,6 +276,7 @@ export default function Dashboard() {
           <UpcomingWorkoutCard
             workout={upcomingWorkout}
             partnerStreak={upcomingPartnerStreak}
+            showCheckIn={false}
             onCheckInPress={() => router.push({ pathname: '/check-in', params: { workoutId: upcomingWorkout.id } })}
             onMessagePress={() =>
               router.push({
@@ -384,6 +386,19 @@ export default function Dashboard() {
         </View>
 
       </ScrollView>
+
+      {upcomingWorkout && (
+        <StickyActionBar>
+          <View style={styles.stickyAction}>
+            <Button
+              label="סיימתי את האימון"
+              variant="primary"
+              size="lg"
+              onPress={() => router.push({ pathname: '/check-in', params: { workoutId: upcomingWorkout.id } })}
+            />
+          </View>
+        </StickyActionBar>
+      )}
     </View>
   );
 }
@@ -395,7 +410,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   scrollContent: {
-    paddingVertical: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: STICKY_BAR_CLEARANCE,
+  },
+  stickyAction: {
+    flex: 1,
   },
   topBar: {
     flexDirection: 'row',
