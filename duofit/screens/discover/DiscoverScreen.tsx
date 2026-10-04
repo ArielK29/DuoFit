@@ -18,6 +18,7 @@ import { EmptyState } from '@components/EmptyState';
 import { FilterSheet } from '@components/FilterSheet';
 import { SegmentedToggle } from '@components/SegmentedToggle';
 import { SkeletonLoader } from '@components/SkeletonLoader';
+import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
 import { visualRight } from '@lib/rtl';
@@ -94,12 +95,18 @@ export function DiscoverScreen() {
   // No one has signed up near you yet (real users only; see lib/demo.ts).
   const noPartnersYet = allPartners.length === 0;
 
+  // Swipe / invite / message sit in a bar pinned above the tab bar (thumb zone).
+  const showActions = viewMode === 'partners' && !isLoading && !isEmpty && !!currentPartner;
+
   const ageChipActive = filters.maxAge === QUICK_AGE;
   const radiusChipActive = filters.radiusKm === QUICK_RADIUS_KM;
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, showActions && { paddingBottom: STICKY_BAR_CLEARANCE }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.title}>התאמות</Text>
@@ -193,26 +200,6 @@ export function DiscoverScreen() {
                     })
                   }
                 />
-                <View style={styles.actionsRow}>
-                  <Pressable
-                    style={styles.circleButton}
-                    onPress={() => cardRef.current?.swipeLeft()}
-                    accessibilityLabel="לא מתאים"
-                  >
-                    <X color={theme.colors.magenta} size={26} strokeWidth={2.5} />
-                  </Pressable>
-                  <Pressable
-                    style={styles.inviteButton}
-                    onPress={() => cardRef.current?.swipeRight()}
-                    accessibilityLabel="הזמן לאימון"
-                  >
-                    <Zap color={theme.colors.black} size={20} strokeWidth={2} />
-                    <Text style={styles.inviteText}>הזמן לאימון</Text>
-                  </Pressable>
-                  <Pressable style={styles.circleButton} onPress={openChat} accessibilityLabel="שלח הודעה">
-                    <MessageCircle color={theme.colors.text} size={24} strokeWidth={2} />
-                  </Pressable>
-                </View>
               </>
             )}
           </>
@@ -227,6 +214,29 @@ export function DiscoverScreen() {
           </View>
         )}
       </ScrollView>
+
+      {showActions && (
+        <StickyActionBar>
+            <Pressable
+              style={styles.circleButton}
+              onPress={() => cardRef.current?.swipeLeft()}
+              accessibilityLabel="לא מתאים"
+            >
+              <X color={theme.colors.magenta} size={26} strokeWidth={2.5} />
+            </Pressable>
+            <Pressable
+              style={styles.inviteButton}
+              onPress={() => cardRef.current?.swipeRight()}
+              accessibilityLabel="הזמן לאימון"
+            >
+              <Zap color={theme.colors.black} size={20} strokeWidth={2} />
+              <Text style={styles.inviteText}>הזמן לאימון</Text>
+            </Pressable>
+            <Pressable style={styles.circleButton} onPress={openChat} accessibilityLabel="שלח הודעה">
+              <MessageCircle color={theme.colors.text} size={24} strokeWidth={2} />
+            </Pressable>
+        </StickyActionBar>
+      )}
 
       <FilterSheet
         visible={sheetVisible}

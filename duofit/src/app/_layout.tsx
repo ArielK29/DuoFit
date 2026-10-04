@@ -8,6 +8,7 @@ import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk';
 import { JetBrainsMono_400Regular, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono';
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PostHogErrorBoundary } from 'posthog-react-native';
 import { ErrorFallback } from '@components/ErrorFallback';
 import { AccountSheet } from '@components/AccountSheet';
@@ -40,6 +41,46 @@ function LoadingScreen() {
     <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }}>
       <ActivityIndicator color={theme.colors.cyan} size="large" />
     </View>
+  );
+}
+
+// The navigator lives in its own component so it can read the device's safe-area
+// insets (status bar / Dynamic Island on top, home indicator on the bottom).
+// Every screen gets the top inset as padding, so headers never sit under the
+// status bar. Non-tab screens also keep clear of the home indicator; the tab bar
+// handles its own bottom inset (see (tabs)/_layout.tsx).
+function AppStack({ isAuthenticated, profileComplete }: { isAuthenticated: boolean; profileComplete: boolean }) {
+  const insets = useSafeAreaInsets();
+  const screenStyle = { backgroundColor: theme.colors.bg, paddingTop: insets.top, paddingBottom: insets.bottom };
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: screenStyle,
+        // 05-MOTION-SPECS.md: screens fade in while sliding up, 300ms ease-out.
+        animation: 'fade_from_bottom',
+        animationDuration: 300,
+      }}
+    >
+      <Stack.Protected guard={!isAuthenticated}>
+        <Stack.Screen name="login" />
+        <Stack.Screen name="sign-up" />
+        <Stack.Screen name="forgot-password" />
+      </Stack.Protected>
+      <Stack.Protected guard={isAuthenticated && !profileComplete}>
+        <Stack.Screen name="profile-setup" />
+      </Stack.Protected>
+      <Stack.Protected guard={isAuthenticated && profileComplete}>
+        <Stack.Screen name="(tabs)" options={{ contentStyle: { ...screenStyle, paddingBottom: 0 } }} />
+        <Stack.Screen name="partner-profile" />
+        <Stack.Screen name="schedule-workout" />
+        <Stack.Screen name="check-in" />
+        <Stack.Screen name="conversation" />
+        <Stack.Screen name="invite-to-workout" />
+        <Stack.Screen name="notifications" />
+      </Stack.Protected>
+    </Stack>
   );
 }
 
@@ -95,33 +136,7 @@ export default function RootLayout() {
           <LoadingScreen />
         ) : (
           <PostHogErrorBoundary fallback={ErrorFallback}>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: theme.colors.bg },
-                // 05-MOTION-SPECS.md: screens fade in while sliding up, 300ms ease-out.
-                animation: 'fade_from_bottom',
-                animationDuration: 300,
-              }}
-            >
-              <Stack.Protected guard={!isAuthenticated}>
-                <Stack.Screen name="login" />
-                <Stack.Screen name="sign-up" />
-                <Stack.Screen name="forgot-password" />
-              </Stack.Protected>
-              <Stack.Protected guard={isAuthenticated && !profileComplete}>
-                <Stack.Screen name="profile-setup" />
-              </Stack.Protected>
-              <Stack.Protected guard={isAuthenticated && profileComplete}>
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="partner-profile" />
-                <Stack.Screen name="schedule-workout" />
-                <Stack.Screen name="check-in" />
-                <Stack.Screen name="conversation" />
-                <Stack.Screen name="invite-to-workout" />
-                <Stack.Screen name="notifications" />
-              </Stack.Protected>
-            </Stack>
+            <AppStack isAuthenticated={isAuthenticated} profileComplete={profileComplete} />
             {isAuthenticated && profileComplete && <AccountSheet />}
             {isAuthenticated && profileComplete && <NotificationWatcher />}
           </PostHogErrorBoundary>

@@ -41,9 +41,11 @@ interface WeightCardProps {
   progress: number; // 0..1
   isExample: boolean;
   onLog: () => void;
+  // The log button can live in a sticky bar at the bottom of the screen instead.
+  showLogButton?: boolean;
 }
 
-export const WeightCard: React.FC<WeightCardProps> = ({ kg, goalKg, progress, isExample, onLog }) => (
+export const WeightCard: React.FC<WeightCardProps> = ({ kg, goalKg, progress, isExample, onLog, showLogButton = true }) => (
   <View style={[styles.card, styles.weightCard]}>
     <View style={styles.weightBody}>
       <Text style={styles.weightLabel}>{isExample ? 'המשקל שלך · לדוגמה' : 'המשקל שלך'}</Text>
@@ -54,10 +56,12 @@ export const WeightCard: React.FC<WeightCardProps> = ({ kg, goalKg, progress, is
       <Text style={styles.goalLabel}>יעד</Text>
       <Text style={styles.goalValue}>{`${formatKg(goalKg).replace('.0', '')} ק"ג`}</Text>
     </View>
-    <Pressable style={styles.logButton} onPress={onLog} accessibilityLabel="רשום משקל">
-      <Text style={styles.logText}>רשום משקל</Text>
-      <ChevronLeft color={theme.colors.black} size={20} strokeWidth={2.5} />
-    </Pressable>
+    {showLogButton && (
+      <Pressable style={styles.logButton} onPress={onLog} accessibilityLabel="רשום משקל">
+        <Text style={styles.logText}>רשום משקל</Text>
+        <ChevronLeft color={theme.colors.black} size={20} strokeWidth={2.5} />
+      </Pressable>
+    )}
   </View>
 );
 

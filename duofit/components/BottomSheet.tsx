@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Modal, Pressable, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 
@@ -12,20 +13,25 @@ interface BottomSheetProps {
 
 // Slide-up sheet. Children are mounted only while visible, so any local state
 // inside them resets every time the sheet opens.
-export const BottomSheet: React.FC<BottomSheetProps> = ({ visible, title, onClose, children }) => (
-  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-    {visible && (
-      <View style={styles.root}>
-        <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="סגור" />
-        <View style={styles.sheet}>
-          <View style={styles.handle} />
-          <Text style={styles.title}>{title}</Text>
-          {children}
+export const BottomSheet: React.FC<BottomSheetProps> = ({ visible, title, onClose, children }) => {
+  // Keep the sheet content clear of the home indicator.
+  const bottomInset = useSafeAreaInsets().bottom;
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      {visible && (
+        <View style={styles.root}>
+          <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="סגור" />
+          <View style={[styles.sheet, { paddingBottom: theme.spacing.xl + bottomInset }]}>
+            <View style={styles.handle} />
+            <Text style={styles.title}>{title}</Text>
+            {children}
+          </View>
         </View>
-      </View>
-    )}
-  </Modal>
-);
+      )}
+    </Modal>
+  );
+};
 
 const styles = StyleSheet.create({
   root: {

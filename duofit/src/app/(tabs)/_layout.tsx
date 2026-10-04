@@ -1,10 +1,13 @@
 import { Tabs } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, Search, MessageSquare, Globe, BarChart3 } from 'lucide-react-native';
 import { useUnreadCount } from '@hooks/useUnreadCount';
 import { theme } from '@styles/theme';
 
 export default function TabsLayout() {
   const unreadCount = useUnreadCount();
+  // Keep the tab bar clear of the home indicator on notched phones.
+  const bottomInset = useSafeAreaInsets().bottom;
 
   return (
     <Tabs
@@ -15,8 +18,8 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.surfaceHover,
-          height: 64,
-          paddingBottom: 8,
+          height: 56 + Math.max(bottomInset, 8),
+          paddingBottom: Math.max(bottomInset, 8),
           paddingTop: 8,
         },
         tabBarLabelStyle: {
