@@ -224,6 +224,32 @@ The Snyk MCP server is configured for Claude Code (`snyk mcp`, tools `snyk_code_
 
 ---
 
+## Database, Permissions & RLS (Supabase)
+
+Official Supabase skills are installed in `.claude/skills/` (`supabase`, `supabase-postgres-best-practices`; pinned in `skills-lock.json`). **Read the `supabase` skill before any task that touches the database, auth, storage, policies or migrations.** Project ref: `wtheyjuqpidgrgehplgw`.
+
+**Every new table (hard rule):**
+1. `alter table ... enable row level security;` in the same migration that creates it. No exceptions, including lookup tables.
+2. Write explicit policies per command (`select`, `insert`, `update`, `delete`) with `to authenticated`. Never `to public`, never `auth.role()`.
+3. Own-data pattern: `using ((select auth.uid()) = user_id)`; `update` needs both `using` and `with check`; `insert` needs `with check`. An `update` also needs a `select` policy or it silently changes 0 rows.
+4. Data shared between users (partners, chats, groups) gets its own deliberate policy that exposes only the needed columns/rows (membership check), never a blanket `using (true)`.
+5. No `anon` access unless a feature truly needs it. Revoke `all` from `anon` on new tables, and `truncate, references, trigger` from `authenticated`.
+6. Never base authorization on `user_metadata` (user-editable); use `app_metadata` or a roles table with RLS.
+7. Avoid `security definer` functions in `public`; if unavoidable, keep `search_path = ''`, check `auth.uid()` inside, and `revoke execute ... from public, anon, authenticated`. Views use `security_invoker = true`.
+8. Storage: policies are per bucket and per user folder (`(storage.foldername(name))[1] = (select auth.uid())::text`); upsert needs insert + select + update. Set size and mime limits on the bucket.
+9. Add length/format `check` constraints for user-supplied text.
+
+**Before merging any database change:**
+- Save the SQL under `supabase/migrations/` (named like the one applied) and apply it with the Supabase MCP.
+- Run `get_advisors` (security) and fix every finding.
+- Extend and run `supabase/tests/rls_smoke_test.sql` (it rolls itself back); every line must say good/ok/expected value.
+- Run a Snyk scan (see above) if app code changed.
+- Never use the `service_role` key in the app. Never paste keys in chat or the repo.
+
+**Currently covered:** `profiles` (own row only, length limits), `storage` bucket `avatars` (own folder, 5 MB, jpeg/png/webp). Everything else (workouts, chats, community, progress, notifications) is still on-device; moving it to Supabase is tracked in the "[Backend] Move user data to Supabase with RLS" issue.
+
+---
+
 ## Contact & Support
 - **Questions:** Check CLAUDE.md first, then design specs
 - **Design Spec:** Refer to files 01-08 in root
