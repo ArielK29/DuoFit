@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Share, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MessageCircle, SearchX, SlidersHorizontal, X, Zap } from 'lucide-react-native';
 import {
@@ -21,6 +21,7 @@ import { SkeletonLoader } from '@components/SkeletonLoader';
 import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
+import { shareInvite } from '@lib/shareInvite';
 import { visualRight } from '@lib/rtl';
 
 type ViewMode = 'partners' | 'places';
@@ -177,7 +178,7 @@ export function DiscoverScreen() {
                   ctaLabel={noPartnersYet ? 'הזמן חברים' : isDefault(filters) ? 'רענן חיפוש' : 'נקה סינון'}
                   onCtaPress={() => {
                     if (noPartnersYet) {
-                      Share.share({ message: 'אני מחפש שותף לאימונים ב-DuoFit. בוא להתאמן ביחד!' });
+                      shareInvite('אני מחפש שותף לאימונים ב-DuoFit. בוא להתאמן ביחד!');
                       return;
                     }
                     setFilters(DEFAULT_FILTERS);

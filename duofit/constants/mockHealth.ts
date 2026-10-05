@@ -24,6 +24,6 @@ export interface MockRun {
 
 export const MOCK_RUNS: MockRun[] = [
   { daysAgo: 2, km: 5.2, duration: '26:40', pace: '5:08', company: 'לבד' },
-  { daysAgo: 4, km: 4, duration: '21:05', pace: '5:16', company: 'עם שיר ועוד 6' },
-  { daysAgo: 7, km: 8, duration: '43:30', pace: '5:26', company: 'עם נועה' },
+  { daysAgo: 4, km: 4, duration: '21:05', pace: '5:16', company: 'עם קבוצה' },
+  { daysAgo: 7, km: 8, duration: '43:30', pace: '5:26', company: 'עם שותף' },
 ];

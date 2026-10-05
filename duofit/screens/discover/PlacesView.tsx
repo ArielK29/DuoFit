@@ -7,6 +7,7 @@ import { darkMapStyle } from '@constants/mapStyle';
 import { PartnerWithDistance, distanceKm } from '@hooks/usePartnerMatching';
 import { Coordinates, useLocation } from '@hooks/useLocation';
 import { getActivityStyle } from '@lib/activityStyles';
+import { DEMO_DATA } from '@lib/demo';
 import { visualLeft, visualRight, visualRightText } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
@@ -143,7 +144,7 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
             PLACES.map((place) => (
             <Marker key={place.id} coordinate={place.coords} onPress={() => focusPlace(place)}>
               <View style={[styles.pin, { backgroundColor: place.color }]}>
-                <Text style={styles.pinText}>{place.trainingNow}</Text>
+                {DEMO_DATA && <Text style={styles.pinText}>{place.trainingNow}</Text>}
               </View>
             </Marker>
           ))}
@@ -180,9 +181,11 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
             <Text style={styles.emptyText}>אין שותפים קרובים לפי הסינון</Text>
           </View>
         )}
-        <View style={styles.caption} pointerEvents="none">
-          <Text style={styles.captionText}>מספר = מתאמני DuoFit שם עכשיו (לדוגמה)</Text>
-        </View>
+        {DEMO_DATA && (
+          <View style={styles.caption} pointerEvents="none">
+            <Text style={styles.captionText}>מספר = מתאמני DuoFit שם עכשיו (לדוגמה)</Text>
+          </View>
+        )}
       </View>
 
       {selected ? (
@@ -204,7 +207,7 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
             style={styles.card}
             onPress={() => focusPlace(place)}
             accessibilityRole="button"
-            accessibilityLabel={`${place.name}, ${place.type}, ${distance.toFixed(1)} ק"מ, ${place.trainingNow} מתאמנים עכשיו`}
+            accessibilityLabel={`${place.name}, ${place.type}, ${distance.toFixed(1)} ק"מ${DEMO_DATA ? `, ${place.trainingNow} מתאמנים עכשיו` : ''}`}
           >
             <Pressable
               style={styles.calendarButton}
@@ -216,7 +219,7 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
             <View style={styles.cardText}>
               <Text style={styles.placeName}>{place.name}</Text>
               <Text style={styles.placeMeta}>{`${place.type} · ${distance.toFixed(1)} ק"מ`}</Text>
-              <Text style={styles.placeNow}>{place.trainingNow} מתאמנים עכשיו</Text>
+              {DEMO_DATA && <Text style={styles.placeNow}>{place.trainingNow} מתאמנים עכשיו</Text>}
             </View>
             <View style={[styles.iconTile, { backgroundColor: place.color }]}>
               <Icon color={theme.colors.black} size={24} strokeWidth={2} />
