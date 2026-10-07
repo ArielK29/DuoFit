@@ -246,7 +246,16 @@ Official Supabase skills are installed in `.claude/skills/` (`supabase`, `supaba
 - Run a Snyk scan (see above) if app code changed.
 - Never use the `service_role` key in the app. Never paste keys in chat or the repo.
 
-**Currently covered:** `profiles` (own row only, length limits), `storage` bucket `avatars` (own folder, 5 MB, jpeg/png/webp). Everything else (workouts, chats, community, progress, notifications) is still on-device; moving it to Supabase is tracked in the "[Backend] Move user data to Supabase with RLS" issue.
+**Currently covered (all with RLS, migrations in `supabase/migrations/`, tests in `supabase/tests/`):**
+- `profiles`: own row, plus other members' COMPLETE profiles through column-level grants (discovery).
+- `storage` bucket `avatars`: own folder, 5 MB, jpeg/png/webp.
+- `conversations`, `messages`, `conversation_reads`: 1:1 chat between members, invitation answered by the recipient only, anti-spam limits, Realtime delivery.
+- `progress_settings`, `weight_entries`: own rows only (goals, plank record, weight log).
+- Edge Function `delete-account` (`supabase/functions/delete-account`): in-app account deletion; the service role key lives only there.
+
+Still on-device: scheduled workouts (accepted invitations become local workouts on both phones), community posts/comments/groups, notifications. Moving the rest is tracked in the "[Backend] Move user data to Supabase with RLS" issue; community needs report/block and image storage first.
+
+Any new table needs its own test file or extension of the existing ones; run all of `supabase/tests/*.sql` after changing policies.
 
 ---
 

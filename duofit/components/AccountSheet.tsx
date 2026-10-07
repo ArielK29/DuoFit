@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Alert, Platform, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { BottomSheet } from '@components/BottomSheet';
 import { Button } from '@components/Button';
@@ -14,10 +14,33 @@ export const AccountSheet: React.FC = () => {
   const close = useAccountSheet((state) => state.close);
   const user = useAuth((state) => state.user);
   const signOut = useAuth((state) => state.signOut);
+  const deleteAccount = useAuth((state) => state.deleteAccount);
+  const isLoading = useAuth((state) => state.isLoading);
+  const error = useAuth((state) => state.error);
 
   const handleSignOut = async () => {
     close();
     await signOut();
+  };
+
+  const runDelete = async () => {
+    const deleted = await deleteAccount();
+    if (deleted) close();
+  };
+
+  // Two steps on purpose: deleting is permanent.
+  const confirmDelete = () => {
+    const title = 'למחוק את החשבון?';
+    const message =
+      'המחיקה סופית ואי אפשר לשחזר אותה. יימחקו הפרופיל, התמונה, ההתקדמות וכל השיחות שלך, גם אצל השותפים.';
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm(`${title}\n\n${message}`)) runDelete();
+      return;
+    }
+    Alert.alert(title, message, [
+      { text: 'ביטול', style: 'cancel' },
+      { text: 'מחק לצמיתות', style: 'destructive', onPress: runDelete },
+    ]);
   };
 
   return (
@@ -37,11 +60,25 @@ export const AccountSheet: React.FC = () => {
       </View>
       <Text style={styles.note}>הנתונים שלך שמורים בחשבון הזה. כשתתנתק, הנתונים המקומיים במכשיר יימחקו.</Text>
       <Button label="התנתק" variant="secondary" size="lg" onPress={handleSignOut} />
+      <View style={styles.deleteWrap}>
+        {!!error && <Text style={styles.error}>{error}</Text>}
+        <Button label="מחק את החשבון שלי" variant="danger" size="lg" loading={isLoading} disabled={isLoading} onPress={confirmDelete} />
+      </View>
     </BottomSheet>
   );
 };
 
 const styles = StyleSheet.create({
+  deleteWrap: {
+    marginTop: theme.spacing.xl,
+  },
+  error: {
+    color: theme.colors.error,
+    fontSize: 14,
+    fontFamily: theme.typography.bodySmall.fontFamily,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
