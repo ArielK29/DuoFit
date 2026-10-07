@@ -50,8 +50,13 @@ export type CheckInResult = 'ok' | 'window' | 'failed';
 // The server stamps the time and refuses a check-in outside "3 hours before ... 24 hours after".
 export async function checkInRemote(id: string, iAmHost: boolean): Promise<CheckInResult> {
   const column = iAmHost ? 'host_checked_in_at' : 'guest_checked_in_at';
-  const { error } = await supabase.from('workouts').update({ [column]: new Date().toISOString() }).eq('id', id);
-  if (!error) return 'ok';
+  const { data, error } = await supabase
+    .from('workouts')
+    .update({ [column]: new Date().toISOString() })
+    .eq('id', id)
+    .select('id');
+  // No row back means the workout no longer exists on the server (for example the partner left).
+  if (!error) return data && data.length > 0 ? 'ok' : 'failed';
   if (error.message?.includes('check-in is open')) return 'window';
   if (error.message?.includes('already checked in')) return 'ok';
   return 'failed';

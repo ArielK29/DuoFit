@@ -39,6 +39,8 @@ interface ScheduleFormProps {
 // (ScheduleWorkoutScreen) and chat workout invites (InviteToWorkoutScreen).
 export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConfirm }) => {
   const [scheduledAt, setScheduledAt] = useState(defaultScheduledAt);
+  // The server accepts workouts from now until 90 days ahead.
+  const [pickerBounds] = useState(() => ({ min: new Date(), max: new Date(Date.now() + 89 * 24 * 3600 * 1000) }));
   const [location, setLocation] = useState<string | null>(null);
   const [activePicker, setActivePicker] = useState<'date' | 'time' | null>(null);
 
@@ -93,6 +95,8 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
         <DateTimePicker
           value={scheduledAt}
           mode={activePicker}
+          minimumDate={pickerBounds.min}
+          maximumDate={pickerBounds.max}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handlePickerChange}
         />

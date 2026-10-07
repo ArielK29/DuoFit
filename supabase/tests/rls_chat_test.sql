@@ -50,7 +50,7 @@ begin
     res := res || '6 u1 sends a 2001-char message: blocked (good)' || E'\n';
   end;
   insert into public.messages (conversation_id, kind, invite)
-    values (conv, 'invite', '{"activity":"ריצה","location":"פארק","scheduledAt":"2026-12-01T10:00:00Z","status":"pending"}'::jsonb)
+    values (conv, 'invite', jsonb_build_object('activity', 'ריצה', 'location', 'פארק', 'scheduledAt', (now() + interval '30 days')::text, 'status', 'pending'))
     returning id into inv;
   res := res || '7 u1 sends a workout invitation: ok' || E'\n';
   begin
@@ -62,7 +62,7 @@ begin
   end;
   begin
     insert into public.messages (conversation_id, kind, invite)
-      values (conv, 'invite', '{"activity":"x","location":"y","scheduledAt":"2026-12-01T10:00:00Z","status":"accepted"}'::jsonb);
+      values (conv, 'invite', jsonb_build_object('activity', 'x', 'location', 'y', 'scheduledAt', (now() + interval '30 days')::text, 'status', 'accepted'));
     res := res || '8a u1 forges an already-accepted invitation: ALLOWED (BAD)' || E'\n';
   exception when others then
     res := res || '8a u1 forges an already-accepted invitation: blocked (good)' || E'\n';
@@ -118,7 +118,7 @@ begin
   -- u1 cannot accept their own invitation
   reset role;
   insert into public.messages (conversation_id, sender_id, kind, invite)
-    values (conv, u1, 'invite', '{"activity":"כוח","location":"חדר כושר","scheduledAt":"2026-12-02T10:00:00Z","status":"pending"}'::jsonb)
+    values (conv, u1, 'invite', jsonb_build_object('activity', 'כוח', 'location', 'חדר כושר', 'scheduledAt', (now() + interval '31 days')::text, 'status', 'pending'))
     returning id into msg;
   perform set_config('request.jwt.claims', json_build_object('sub', u1, 'role', 'authenticated')::text, true);
   set local role authenticated;

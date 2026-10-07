@@ -13,7 +13,7 @@ import { clearRemoteChatCache } from '@lib/remoteChat';
 // session ends), wipe it, so the next person to sign in on this phone never sees
 // the previous person's workouts, chats, posts or weight.
 function resetLocalData() {
-  useWorkoutStore.setState({ scheduledWorkouts: [] });
+  useWorkoutStore.setState({ scheduledWorkouts: [], remindedIds: [] });
   usePartnerStore.getState().reset();
   useFeedStore.getState().reset();
   usePlankBoard.getState().reset();

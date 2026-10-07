@@ -81,7 +81,13 @@ export const useWorkoutStore = create<WorkoutState>()(
         try {
           const workouts = await fetchWorkouts(me);
           if (useAuth.getState().user?.id !== me) return; // signed out while loading
-          set({ scheduledWorkouts: workouts });
+          // A check-in that was confirmed while this list was loading must not flicker back.
+          const confirmedHere = new Set(get().scheduledWorkouts.filter((item) => item.checkedIn).map((item) => item.id));
+          set({
+            scheduledWorkouts: workouts.map((item) =>
+              !item.checkedIn && confirmedHere.has(item.id) ? { ...item, checkedIn: true } : item
+            ),
+          });
 
           // One local reminder per upcoming workout, the first time this phone learns about it.
           const reminded = new Set(get().remindedIds);

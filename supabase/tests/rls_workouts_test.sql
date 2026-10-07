@@ -51,9 +51,13 @@ begin
   exception when others then
     res := res || '5 b inserts a workout directly: blocked (good)' || E'\n';
   end;
-  delete from public.workouts where id = m1;
-  get diagnostics n = row_count;
-  res := res || '6 b deletes a workout (expect 0 rows or blocked): ' || n || E'\n';
+  begin
+    delete from public.workouts where id = m1;
+    get diagnostics n = row_count;
+    res := res || '6 b deletes a workout (expect denied or 0 rows): ' || n || E'\n';
+  exception when others then
+    res := res || '6 b deletes a workout: denied (good)' || E'\n';
+  end;
   begin
     update public.workouts set host_checked_in_at = now() where id = m1;
     res := res || '7 b checks in as the host: ALLOWED (BAD)' || E'\n';
@@ -80,6 +84,32 @@ begin
     res := res || '11 b checks in 48 hours early: ALLOWED (BAD)' || E'\n';
   exception when others then
     res := res || '11 b checks in 48 hours early: blocked (good)' || E'\n';
+  end;
+
+  -- odd invitations are refused when they are sent
+  reset role;
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  begin
+    insert into public.messages (conversation_id, kind, invite) values
+      (conv, 'invite', jsonb_build_object('activity', 'x', 'location', 'y', 'scheduledAt', 'infinity', 'status', 'pending'));
+    res := res || '11b a invites for infinity: ALLOWED (BAD)' || E'\n';
+  exception when others then
+    res := res || '11b a invites for infinity: blocked (good)' || E'\n';
+  end;
+  begin
+    insert into public.messages (conversation_id, kind, invite) values
+      (conv, 'invite', jsonb_build_object('activity', 'x', 'location', 'y', 'scheduledAt', (now() - interval '3 days')::text, 'status', 'pending'));
+    res := res || '11c a invites for 3 days ago: ALLOWED (BAD)' || E'\n';
+  exception when others then
+    res := res || '11c a invites for 3 days ago: blocked (good)' || E'\n';
+  end;
+  begin
+    insert into public.messages (conversation_id, kind, invite) values
+      (conv, 'invite', jsonb_build_object('activity', 'x', 'location', 'y', 'scheduledAt', (now() + interval '120 days')::text, 'status', 'pending'));
+    res := res || '11d a invites for 120 days ahead: ALLOWED (BAD)' || E'\n';
+  exception when others then
+    res := res || '11d a invites for 120 days ahead: blocked (good)' || E'\n';
   end;
 
   -- a sees the same workout and checks in
