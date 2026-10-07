@@ -70,6 +70,8 @@ export interface AuthState {
   signUp: (email: string, password: string, displayName: string) => Promise<{ needsEmailConfirmation: boolean } | null>;
   signIn: (email: string, password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
+  // Permanently deletes the account and all of its data (App Store requirement).
+  deleteAccount: () => Promise<boolean>;
   sendPasswordReset: (email: string) => Promise<boolean>;
   resendConfirmation: (email: string) => Promise<boolean>;
   saveProfile: (update: ProfileUpdate) => Promise<boolean>;
@@ -151,6 +153,21 @@ export const useAuth = create<AuthState>()((set, get) => ({
   signOut: async () => {
     await supabase.auth.signOut();
     set({ user: null, isAuthenticated: false, error: null });
+  },
+
+  // The server function checks who is calling from the session token and removes the picture files and
+  // the account; the database then cascades to every row that belongs to the member.
+  deleteAccount: async () => {
+    set({ isLoading: true, error: null });
+    const { error } = await supabase.functions.invoke('delete-account', { body: { confirm: true } });
+    if (error) {
+      set({ isLoading: false, error: 'לא הצלחנו למחוק את החשבון. נסה שוב בעוד רגע' });
+      return false;
+    }
+    // The account no longer exists on the server: end the session on this phone only.
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+    set({ user: null, isAuthenticated: false, isLoading: false, error: null });
+    return true;
   },
 
   sendPasswordReset: async (email) => {
