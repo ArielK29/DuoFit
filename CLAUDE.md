@@ -251,9 +251,10 @@ Official Supabase skills are installed in `.claude/skills/` (`supabase`, `supaba
 - `storage` bucket `avatars`: own folder, 5 MB, jpeg/png/webp.
 - `conversations`, `messages`, `conversation_reads`: 1:1 chat between members, invitation answered by the recipient only, anti-spam limits, Realtime delivery.
 - `progress_settings`, `weight_entries`: own rows only (goals, plank record, weight log).
+- `posts`, `comments`, `post_likes`, `user_blocks`, `content_reports` + storage bucket `post-images`: community feed for signed-in members. Block hides both ways, a report hides for the reporter at once and for everybody after 3 reports (helper functions in the non-exposed `private` schema), anti-spam limits, own-folder image policies.
 - Edge Function `delete-account` (`supabase/functions/delete-account`): in-app account deletion; the service role key lives only there.
 
-Still on-device: scheduled workouts (accepted invitations become local workouts on both phones), community posts/comments/groups, notifications. Moving the rest is tracked in the "[Backend] Move user data to Supabase with RLS" issue; community needs report/block and image storage first.
+Still on-device: scheduled workouts (accepted invitations become local workouts on both phones), community groups and the plank leaderboard, notifications. Moving the rest is tracked in the "[Backend] Move user data to Supabase with RLS" issue; community needs report/block and image storage first.
 
 Any new table needs its own test file or extension of the existing ones; run all of `supabase/tests/*.sql` after changing policies.
 

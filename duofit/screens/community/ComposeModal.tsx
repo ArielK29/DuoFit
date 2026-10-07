@@ -14,6 +14,8 @@ import { pickImage as pickFromLibrary } from '@lib/pickImage';
 import { Camera, X } from 'lucide-react-native';
 import { POST_ACTIVITIES } from '@constants/community';
 import { useCommunityStore } from '@hooks/useCommunityStore';
+import { useFeedStore } from '@hooks/useFeedStore';
+import { DEMO_DATA } from '@lib/demo';
 import { theme } from '@styles/theme';
 import { visualLeft, visualRightText } from '@lib/rtl';
 
@@ -34,6 +36,8 @@ const ComposeContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [activity, setActivity] = useState(POST_ACTIVITIES[0]);
   const [imageUri, setImageUri] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const createPost = useFeedStore((state) => state.createPost);
 
   const pickImage = async () => {
     setError(null);
@@ -45,12 +49,20 @@ const ComposeContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     }
   };
 
-  const canPost = text.trim().length > 0;
+  const canPost = text.trim().length > 0 && !sending;
 
-  const publish = () => {
+  const publish = async () => {
     if (!canPost) return;
-    addPost({ text: text.trim(), activity, imageUri });
-    onClose();
+    if (DEMO_DATA) {
+      addPost({ text: text.trim(), activity, imageUri });
+      onClose();
+      return;
+    }
+    // Real members: the post goes to the shared feed; the sheet closes only after it was saved.
+    setSending(true);
+    const saved = await createPost({ body: text.trim(), activity, localImageUri: imageUri });
+    setSending(false);
+    if (saved) onClose();
   };
 
   return (
@@ -67,7 +79,7 @@ const ComposeContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           placeholder="ספר לקהילה על האימון, שיא חדש או שותף שעזר לך"
           placeholderTextColor={theme.colors.textTertiary}
           multiline
-          maxLength={280}
+          maxLength={DEMO_DATA ? 280 : 500}
           textAlignVertical="top"
         />
 
@@ -102,7 +114,7 @@ const ComposeContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             disabled={!canPost}
             accessibilityRole="button"
           >
-            <Text style={[styles.publishText, !canPost && styles.publishTextDisabled]}>פרסם</Text>
+            <Text style={[styles.publishText, !canPost && styles.publishTextDisabled]}>{sending ? 'מפרסם...' : 'פרסם'}</Text>
           </Pressable>
           <Pressable style={styles.cameraButton} onPress={pickImage} accessibilityLabel="צרף תמונה">
             <Camera color={theme.colors.text} size={22} strokeWidth={2} />

@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Alert, Platform, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { BottomSheet } from '@components/BottomSheet';
 import { Button } from '@components/Button';
 import { useAccountSheet } from '@hooks/useAccountSheet';
 import { useAuth } from '@hooks/useAuth';
+import { useFeedStore } from '@hooks/useFeedStore';
+import { DEMO_DATA } from '@lib/demo';
 import { visualRightText } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
@@ -17,6 +19,13 @@ export const AccountSheet: React.FC = () => {
   const deleteAccount = useAuth((state) => state.deleteAccount);
   const isLoading = useAuth((state) => state.isLoading);
   const error = useAuth((state) => state.error);
+  const blocked = useFeedStore((state) => state.blocked);
+  const unblock = useFeedStore((state) => state.unblock);
+
+  // The list of blocked members is loaded with the community feed; make sure it is there.
+  useEffect(() => {
+    if (visible && !DEMO_DATA && !useFeedStore.getState().loaded) useFeedStore.getState().load();
+  }, [visible]);
 
   const handleSignOut = async () => {
     close();
@@ -60,6 +69,17 @@ export const AccountSheet: React.FC = () => {
       </View>
       <Text style={styles.note}>הנתונים שלך שמורים בחשבון הזה. כשתתנתק, הנתונים המקומיים במכשיר יימחקו.</Text>
       <Button label="התנתק" variant="secondary" size="lg" onPress={handleSignOut} />
+      {!DEMO_DATA && blocked.length > 0 && (
+        <View style={styles.blockedWrap}>
+          <Text style={styles.blockedTitle}>חברים חסומים</Text>
+          {blocked.map((member) => (
+            <View key={member.id} style={styles.blockedRow}>
+              <Button label="בטל חסימה" variant="secondary" size="md" onPress={() => unblock(member.id)} />
+              <Text style={styles.blockedName}>{member.name}</Text>
+            </View>
+          ))}
+        </View>
+      )}
       <View style={styles.deleteWrap}>
         {!!error && <Text style={styles.error}>{error}</Text>}
         <Button label="מחק את החשבון שלי" variant="danger" size="lg" loading={isLoading} disabled={isLoading} onPress={confirmDelete} />
@@ -69,6 +89,31 @@ export const AccountSheet: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  blockedWrap: {
+    marginTop: theme.spacing.xl,
+  },
+  blockedTitle: {
+    width: '100%',
+    fontSize: 16,
+    fontFamily: theme.typography.h3.fontFamily,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.sm,
+    ...visualRightText,
+  },
+  blockedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  blockedName: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: theme.typography.body.fontFamily,
+    color: theme.colors.textSecondary,
+    ...visualRightText,
+  },
   deleteWrap: {
     marginTop: theme.spacing.xl,
   },

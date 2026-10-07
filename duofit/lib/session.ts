@@ -5,6 +5,7 @@ import { useCommunityStore } from '@hooks/useCommunityStore';
 import { DEFAULT_WEEKLY_GOAL, useProgressStore } from '@hooks/useProgressStore';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { usePartnerStore } from '@hooks/usePartnerStore';
+import { useFeedStore } from '@hooks/useFeedStore';
 import { clearRemoteChatCache } from '@lib/remoteChat';
 
 // Everything below is stored on the device. When the user signs out (or the
@@ -13,6 +14,7 @@ import { clearRemoteChatCache } from '@lib/remoteChat';
 function resetLocalData() {
   useWorkoutStore.setState({ scheduledWorkouts: [] });
   usePartnerStore.getState().reset();
+  useFeedStore.getState().reset();
   useChatStore.setState({ conversations: {}, appliedInvites: [] });
   clearRemoteChatCache();
   useNotificationStore.setState({ items: [] });

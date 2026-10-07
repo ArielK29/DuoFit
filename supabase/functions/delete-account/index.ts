@@ -7,7 +7,8 @@
 //  - the request must explicitly say { "confirm": true }.
 //
 // What it removes: the profile picture files in storage, then the auth user. The database does the rest by
-// cascading: profile, conversations and their messages, read markers, weight log, goals and plank record.
+// cascading: profile, conversations and their messages, read markers, weight log, goals and plank record,
+// community posts, comments, likes, blocks and reports.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
@@ -47,12 +48,15 @@ Deno.serve(async (req: Request) => {
 
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
-  // 1. Profile picture files (storage files are not removed by the database cascade).
-  const { data: files, error: listError } = await admin.storage.from('avatars').list(userId, { limit: 1000 });
-  if (listError) return reply(500, { error: 'could not list files' });
-  if (files && files.length > 0) {
-    const { error: removeError } = await admin.storage.from('avatars').remove(files.map((file) => `${userId}/${file.name}`));
-    if (removeError) return reply(500, { error: 'could not remove files' });
+  // 1. The member's picture files: profile pictures and community post pictures (storage files are not
+  //    removed by the database cascade). A member can have at most 500 posts, so one page of 1000 is enough.
+  for (const bucket of ['avatars', 'post-images']) {
+    const { data: files, error: listError } = await admin.storage.from(bucket).list(userId, { limit: 1000 });
+    if (listError) return reply(500, { error: 'could not list files' });
+    if (files && files.length > 0) {
+      const { error: removeError } = await admin.storage.from(bucket).remove(files.map((file) => `${userId}/${file.name}`));
+      if (removeError) return reply(500, { error: 'could not remove files' });
+    }
   }
 
   // 2. The account itself; the database cascades to all of the member's rows.
