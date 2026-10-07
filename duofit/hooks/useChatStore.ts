@@ -8,6 +8,7 @@ import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { useAuth } from '@hooks/useAuth';
 import { DEMO_DATA } from '@lib/demo';
 import { newId } from '@lib/uuid';
+import { groupIdFromKey, isGroupKey, sendGroupMessage } from '@lib/remoteGroups';
 import { notifyInviteAnswered } from '@lib/notifications';
 import {
   MessageRow,
@@ -30,7 +31,7 @@ export interface WorkoutInvite {
 }
 
 export type ChatMessage =
-  | { id: string; senderId: 'me' | 'partner'; sentAt: string; kind: 'text'; text: string; senderName?: string; pending?: boolean }
+  | { id: string; senderId: 'me' | 'partner'; sentAt: string; kind: 'text'; text: string; senderName?: string; senderUserId?: string; pending?: boolean }
   | { id: string; senderId: 'me' | 'partner'; sentAt: string; kind: 'invite'; invite: WorkoutInvite; pending?: boolean };
 
 export interface Conversation {
@@ -65,6 +66,9 @@ interface ChatState {
   hydrateRemote: () => Promise<void>;
   applyRemoteInsert: (row: MessageRow) => void;
   applyRemoteUpdate: (row: MessageRow) => void;
+  // Real groups: the chat of a joined group is placed in the list / receives live messages.
+  setGroupConversation: (key: string, name: string, memberCount: number, messages: ChatMessage[]) => void;
+  applyGroupMessage: (key: string, name: string, message: ChatMessage) => void;
 
   ensureConversation: (partnerId: string, partnerName: string) => void;
   openSeeded: (seed: ConversationSeed) => void;
@@ -218,6 +222,42 @@ export const useChatStore = create<ChatState>()(
         }
       },
 
+      setGroupConversation: (key, name, memberCount, messages) => {
+        const existing = get().conversations[key];
+        const pending = (existing?.messages ?? []).filter(
+          (message) => message.pending && !messages.some((item) => item.id === message.id)
+        );
+        const newest = messages.length > 0 ? messages[messages.length - 1].sentAt : new Date().toISOString();
+        set({
+          conversations: {
+            ...get().conversations,
+            [key]: {
+              partnerId: key,
+              partnerName: name,
+              isGroup: true,
+              memberCount,
+              messages: [...messages, ...pending],
+              // The first time a group appears its history counts as read; later loads keep the marker.
+              lastReadAt: existing?.lastReadAt ?? newest,
+            },
+          },
+        });
+      },
+
+      applyGroupMessage: (key, name, message) => {
+        const existing = get().conversations[key];
+        if (!existing) {
+          set({
+            conversations: {
+              ...get().conversations,
+              [key]: { partnerId: key, partnerName: name, isGroup: true, messages: [], lastReadAt: new Date().toISOString() },
+            },
+          });
+        }
+        putMessage(key, name, message);
+        if (message.senderId !== 'me' && useActiveChat.getState().activeId === key) get().markRead(key);
+      },
+
       applyRemoteUpdate: (row) => {
         const me = myId();
         if (!me || !row.invite) return;
@@ -329,6 +369,18 @@ export const useChatStore = create<ChatState>()(
           if (!me) return;
           // Shown at once (marked "sending"), then replaced by the saved message. Nobody answers for the other person.
           const id = newId();
+          if (isGroupKey(partnerId)) {
+            putMessage(partnerId, partnerName, { id, senderId: 'me', kind: 'text', text, sentAt: new Date().toISOString(), pending: true });
+            sendGroupMessage(id, groupIdFromKey(partnerId), text)
+              .then((row) =>
+                putMessage(partnerId, partnerName, { id: row.id, senderId: 'me', kind: 'text', text: row.body, sentAt: row.created_at })
+              )
+              .catch(() => {
+                dropMessage(partnerId, id);
+                notifyFailure();
+              });
+            return;
+          }
           putMessage(partnerId, partnerName, { id, senderId: 'me', kind: 'text', text, sentAt: new Date().toISOString(), pending: true });
           ensureRemoteConversation(me, partnerId)
             .then((cid) => sendRemoteText(cid, id, text))

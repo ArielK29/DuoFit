@@ -10,10 +10,14 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Send, CalendarPlus, Calendar, Clock, MapPin, Check, X } from 'lucide-react-native';
+import { ArrowLeft, Send, CalendarPlus, Calendar, Clock, MapPin, Check, X, LogOut } from 'lucide-react-native';
 import { useActiveChat } from '@hooks/useActiveChat';
 import { useChatStore, AUTO_REPLY_DELAY_MS, ChatMessage } from '@hooks/useChatStore';
 import { notifyInviteAnswered } from '@lib/notifications';
+import { useGroupStore } from '@hooks/useGroupStore';
+import { useFeedStore } from '@hooks/useFeedStore';
+import { askChoice } from '@lib/askChoice';
+import { groupIdFromKey } from '@lib/remoteGroups';
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
 
@@ -73,6 +77,38 @@ export function ConversationScreen() {
 
   const handleSend = () => sendText(inputText);
 
+  // Real group chats: leave the group, and report / block somebody else's message.
+  const handleLeaveGroup = () =>
+    askChoice('עזיבת הקבוצה', `לעזוב את "${partnerName}"? הצ'אט יוסר מהרשימה שלך.`, [
+      {
+        label: 'עזוב קבוצה',
+        destructive: true,
+        onPress: async () => {
+          await useGroupStore.getState().leave(groupIdFromKey(partnerId));
+          router.back();
+        },
+      },
+    ]);
+
+  const handleMessageMenu = (message: Extract<ChatMessage, { kind: 'text' }>) => {
+    const author = message.senderName ?? 'חבר/ה';
+    askChoice('דיווח או חסימה', `ההודעה של ${author}. דיווח מסתיר אותה ממך מיד. חסימה מסתירה את כל מה שהאדם הזה כותב.`, [
+      { label: 'דווח והסתר', destructive: true, onPress: () => useGroupStore.getState().reportMessage(message.id) },
+      ...(message.senderUserId
+        ? [
+            {
+              label: `חסום את ${author}`,
+              destructive: true,
+              onPress: async () => {
+                await useFeedStore.getState().block(message.senderUserId as string);
+                await useGroupStore.getState().load();
+              },
+            },
+          ]
+        : []),
+    ]);
+  };
+
   const handleRespondToInvite = (messageId: string, accept: boolean) => {
     respondToInvite(partnerId, messageId, accept);
     // Demo only. In a real chat the SENDER of the invitation is notified when the answer arrives.
@@ -92,7 +128,13 @@ export function ConversationScreen() {
           )}
         </View>
         {isGroup ? (
-          <View style={styles.iconButton} />
+          DEMO_DATA ? (
+            <View style={styles.iconButton} />
+          ) : (
+            <Pressable style={styles.iconButton} onPress={handleLeaveGroup} accessibilityLabel="עזוב קבוצה">
+              <LogOut color={theme.colors.textSecondary} size={20} strokeWidth={2} />
+            </Pressable>
+          )
         ) : (
           <Pressable
             style={styles.iconButton}
@@ -109,15 +151,19 @@ export function ConversationScreen() {
           message.kind === 'invite' ? (
             <InviteCard key={message.id} message={message} onRespond={handleRespondToInvite} />
           ) : (
-            <View
+            <Pressable
               key={message.id}
               style={[styles.bubble, message.senderId === 'me' ? styles.bubbleMine : styles.bubblePartner]}
+              disabled={DEMO_DATA || !isGroup || message.senderId === 'me'}
+              onPress={() => handleMessageMenu(message)}
+              accessibilityRole={isGroup && !DEMO_DATA && message.senderId !== 'me' ? 'button' : undefined}
+              accessibilityHint={isGroup && !DEMO_DATA && message.senderId !== 'me' ? 'דיווח או חסימה' : undefined}
             >
               {message.senderName && <Text style={styles.senderName}>{message.senderName}</Text>}
               <Text style={[styles.bubbleText, message.senderId === 'me' && styles.bubbleTextMine]}>
                 {message.text}
               </Text>
-            </View>
+            </Pressable>
           )
         )}
         {isPartnerTyping && (
@@ -151,7 +197,7 @@ export function ConversationScreen() {
 
       <View style={styles.composer}>
         <TextInput
-          maxLength={2000}
+          maxLength={isGroup ? 1000 : 2000}
           style={styles.input}
           value={inputText}
           onChangeText={setInputText}
