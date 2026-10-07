@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
 import { CheckCircle2, Calendar, Clock, MapPin } from 'lucide-react-native';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
+import { notifyFailure } from '@lib/notifyFailure';
 import { Card } from '@components/Card';
 import { Button } from '@components/Button';
 import { theme } from '@styles/theme';
@@ -21,12 +22,26 @@ export function CheckInScreen() {
   const checkIn = useWorkoutStore((state) => state.checkIn);
 
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [checkingIn, setCheckingIn] = useState(false);
+  const [windowMessage, setWindowMessage] = useState<string | null>(null);
   const checkmarkScale = useSharedValue(0);
   const confirmationOpacity = useSharedValue(0);
   const confirmationTranslateY = useSharedValue(16);
 
-  const handleCheckIn = () => {
-    checkIn(workoutId);
+  const handleCheckIn = async () => {
+    if (checkingIn) return;
+    setCheckingIn(true);
+    setWindowMessage(null);
+    const result = await checkIn(workoutId);
+    setCheckingIn(false);
+    if (result === 'window') {
+      setWindowMessage('אפשר לאשר הגעה החל מ-3 שעות לפני תחילת האימון ועד יום אחרי');
+      return;
+    }
+    if (result === 'failed') {
+      notifyFailure();
+      return;
+    }
     checkmarkScale.value = withTiming(1, { duration: CHECKMARK_DURATION_MS }, (finished) => {
       if (finished) runOnJS(setShowConfirmation)(true);
     });
@@ -85,7 +100,10 @@ export function CheckInScreen() {
 
       <View style={styles.checkInArea}>
         {!workout.checkedIn ? (
-          <Button label="אשר הגעה" variant="primary" size="lg" onPress={handleCheckIn} />
+          <>
+            {!!windowMessage && <Text style={styles.windowMessage}>{windowMessage}</Text>}
+            <Button label="אשר הגעה" variant="primary" size="lg" loading={checkingIn} disabled={checkingIn} onPress={handleCheckIn} />
+          </>
         ) : (
           <>
             <Animated.View style={checkmarkStyle}>
@@ -116,6 +134,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
     alignItems: 'center',
+  },
+  windowMessage: {
+    width: '100%',
+    fontSize: 14,
+    fontFamily: theme.typography.bodySmall.fontFamily,
+    color: theme.colors.warning,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
   },
   missingText: {
     color: theme.colors.textSecondary,

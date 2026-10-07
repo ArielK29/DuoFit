@@ -128,20 +128,12 @@ export const useChatStore = create<ChatState>()(
         });
       };
 
-      // An accepted invitation becomes a scheduled workout on this phone, once. Old invitations
-      // (already in the past) are only marked as handled, so signing in again does not refill the list.
-      const applyAcceptance = (partnerId: string, partnerName: string, messageId: string, invite: WorkoutInvite) => {
+      // An accepted invitation becomes ONE shared workout on the server (the database creates it from the
+      // invitation); this phone only has to load it. Handled once per invitation.
+      const applyAcceptance = (_partnerId: string, _partnerName: string, messageId: string, _invite: WorkoutInvite) => {
         if (get().appliedInvites.includes(messageId)) return;
         set({ appliedInvites: [...get().appliedInvites, messageId] });
-        const startsAt = new Date(invite.scheduledAt).getTime();
-        if (Number.isNaN(startsAt) || startsAt < Date.now() - 24 * 3600 * 1000) return;
-        useWorkoutStore.getState().scheduleWorkout({
-          partnerId,
-          partnerName,
-          activity: invite.activity,
-          location: invite.location,
-          scheduledAt: invite.scheduledAt,
-        });
+        useWorkoutStore.getState().hydrate();
       };
 
       const notifyIncoming = (partnerId: string, partnerName: string, message: ChatMessage) => {

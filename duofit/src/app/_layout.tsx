@@ -15,6 +15,7 @@ import { AccountSheet } from '@components/AccountSheet';
 import { NotificationWatcher } from '@components/NotificationWatcher';
 import { ChatSync } from '@components/ChatSync';
 import { ProgressSync } from '@components/ProgressSync';
+import { WorkoutSync } from '@components/WorkoutSync';
 import { useAuth, isProfileComplete } from '@hooks/useAuth';
 import { startSessionSync } from '@lib/session';
 import { AnalyticsProvider } from '@lib/analytics';
@@ -143,6 +144,7 @@ export default function RootLayout() {
             {isAuthenticated && profileComplete && <NotificationWatcher />}
             {isAuthenticated && profileComplete && <ChatSync />}
             {isAuthenticated && profileComplete && <ProgressSync />}
+            {isAuthenticated && profileComplete && <WorkoutSync />}
           </PostHogErrorBoundary>
         )}
       </AnalyticsProvider>
