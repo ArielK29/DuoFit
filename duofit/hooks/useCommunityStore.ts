@@ -4,6 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GROUPS } from '@constants/community';
 import { PARTNER_POOL } from '@hooks/usePartnerMatching';
 import { useChatStore } from '@hooks/useChatStore';
+import { DEMO_DATA } from '@lib/demo';
+import { notifyFailure } from '@lib/notifyFailure';
+import { saveRemoteSettings } from '@lib/remoteProgress';
 
 export interface UserPost {
   id: string;
@@ -56,6 +59,12 @@ export const useCommunityStore = create<CommunityState>()(
         const best = get().plankBestSeconds;
         if (best !== null && seconds <= best) return false;
         set({ plankBestSeconds: seconds });
+        if (!DEMO_DATA) {
+          saveRemoteSettings({ plank_best_seconds: Math.round(seconds) }).catch(() => {
+            set({ plankBestSeconds: best });
+            notifyFailure();
+          });
+        }
         return true;
       },
 
