@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useChatStore } from '@hooks/useChatStore';
 import { ScheduleForm } from '@components/ScheduleForm';
+import { DEMO_DATA } from '@lib/demo';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 
@@ -21,6 +22,10 @@ export function InviteToWorkoutScreen() {
       location,
       scheduledAt: scheduledAt.toISOString(),
     });
+    if (!DEMO_DATA) {
+      router.replace({ pathname: '/conversation', params: { partnerId, partnerName } });
+      return;
+    }
     router.back();
   };
 

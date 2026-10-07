@@ -15,6 +15,7 @@ import { useActiveChat } from '@hooks/useActiveChat';
 import { useChatStore, AUTO_REPLY_DELAY_MS, ChatMessage } from '@hooks/useChatStore';
 import { notifyInviteAnswered } from '@lib/notifications';
 import { theme } from '@styles/theme';
+import { DEMO_DATA } from '@lib/demo';
 
 // One-tap answers for the things people say most when arranging a workout.
 const QUICK_REPLIES = ['מתאים לי 💪', 'בוא נקבע', 'איפה נפגשים?', 'אני מאחר/ת 10 דקות', 'תודה!'];
@@ -63,15 +64,19 @@ export function ConversationScreen() {
     if (!text) return;
     sendMessage(partnerId, partnerName, text);
     setInputText('');
-    setIsPartnerTyping(true);
-    setTimeout(() => setIsPartnerTyping(false), AUTO_REPLY_DELAY_MS);
+    if (DEMO_DATA) {
+      // Demo mode only: the invented partner "types" a canned reply.
+      setIsPartnerTyping(true);
+      setTimeout(() => setIsPartnerTyping(false), AUTO_REPLY_DELAY_MS);
+    }
   };
 
   const handleSend = () => sendText(inputText);
 
   const handleRespondToInvite = (messageId: string, accept: boolean) => {
     respondToInvite(partnerId, messageId, accept);
-    notifyInviteAnswered(partnerName, accept);
+    // Demo only. In a real chat the SENDER of the invitation is notified when the answer arrives.
+    if (DEMO_DATA) notifyInviteAnswered(partnerName, accept);
   };
 
   return (
@@ -146,6 +151,7 @@ export function ConversationScreen() {
 
       <View style={styles.composer}>
         <TextInput
+          maxLength={2000}
           style={styles.input}
           value={inputText}
           onChangeText={setInputText}
@@ -186,7 +192,9 @@ function InviteCard({ message, onRespond }: InviteCardProps) {
         <Text style={styles.inviteText}>{invite.location}</Text>
       </View>
 
-      {invite.status === 'pending' ? (
+      {invite.status === 'pending' && !DEMO_DATA && message.senderId === 'me' ? (
+        <Text style={styles.inviteStatus}>ממתין לתשובה</Text>
+      ) : invite.status === 'pending' ? (
         <View style={styles.inviteActions}>
           <Pressable style={[styles.inviteButton, styles.inviteDecline]} onPress={() => onRespond(message.id, false)}>
             <X color={theme.colors.textSecondary} size={16} strokeWidth={2} />

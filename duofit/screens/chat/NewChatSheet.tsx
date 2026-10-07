@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { BadgeCheck } from 'lucide-react-native';
 import { BottomSheet } from '@components/BottomSheet';
 import { PARTNER_POOL } from '@hooks/usePartnerMatching';
+import { usePartnerStore } from '@hooks/usePartnerStore';
+import { DEMO_DATA } from '@lib/demo';
 import { avatarColorFor } from '@lib/chat';
 import { theme } from '@styles/theme';
 
@@ -13,11 +15,20 @@ interface NewChatSheetProps {
 }
 
 // "New chat" (the pencil button): pick anyone from the example partner pool.
-export const NewChatSheet: React.FC<NewChatSheetProps> = ({ visible, onPick, onClose }) => (
+export const NewChatSheet: React.FC<NewChatSheetProps> = ({ visible, onPick, onClose }) => {
+  const realPartners = usePartnerStore((state) => state.partners);
+  const loadPartners = usePartnerStore((state) => state.load);
+  const people = DEMO_DATA ? PARTNER_POOL : realPartners;
+
+  useEffect(() => {
+    if (visible && !DEMO_DATA) loadPartners();
+  }, [visible, loadPartners]);
+
+  return (
   <BottomSheet visible={visible} title="שיחה חדשה" onClose={onClose}>
-    {PARTNER_POOL.length === 0 && <Text style={styles.empty}>עוד אין שותפים להתכתב איתם. הם יופיעו כאן כשיצטרפו</Text>}
+    {people.length === 0 && <Text style={styles.empty}>עוד אין שותפים להתכתב איתם. הם יופיעו כאן כשיצטרפו</Text>}
     <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-      {PARTNER_POOL.map((partner) => (
+      {people.map((partner) => (
         <Pressable
           key={partner.id}
           style={styles.row}
@@ -38,7 +49,8 @@ export const NewChatSheet: React.FC<NewChatSheetProps> = ({ visible, onPick, onC
       ))}
     </ScrollView>
   </BottomSheet>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   empty: {

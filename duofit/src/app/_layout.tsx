@@ -13,6 +13,7 @@ import { PostHogErrorBoundary } from 'posthog-react-native';
 import { ErrorFallback } from '@components/ErrorFallback';
 import { AccountSheet } from '@components/AccountSheet';
 import { NotificationWatcher } from '@components/NotificationWatcher';
+import { ChatSync } from '@components/ChatSync';
 import { useAuth, isProfileComplete } from '@hooks/useAuth';
 import { startSessionSync } from '@lib/session';
 import { AnalyticsProvider } from '@lib/analytics';
@@ -139,6 +140,7 @@ export default function RootLayout() {
             <AppStack isAuthenticated={isAuthenticated} profileComplete={profileComplete} />
             {isAuthenticated && profileComplete && <AccountSheet />}
             {isAuthenticated && profileComplete && <NotificationWatcher />}
+            {isAuthenticated && profileComplete && <ChatSync />}
           </PostHogErrorBoundary>
         )}
       </AnalyticsProvider>

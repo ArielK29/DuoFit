@@ -22,7 +22,6 @@ import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionB
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
 import { shareInvite } from '@lib/shareInvite';
-import { showInvitesComingSoon } from '@lib/comingSoon';
 import { visualRight } from '@lib/rtl';
 
 type ViewMode = 'partners' | 'places';
@@ -60,7 +59,7 @@ export function DiscoverScreen() {
     const { id, name, activities } = currentPartner;
     interested();
     if (!DEMO_DATA) {
-      showInvitesComingSoon();
+      router.push({ pathname: '/invite-to-workout', params: { partnerId: id, partnerName: name } });
       return;
     }
     router.push({
@@ -77,7 +76,7 @@ export function DiscoverScreen() {
 
   const invitePartner = (partner: PartnerWithDistance) =>
     !DEMO_DATA
-      ? showInvitesComingSoon()
+      ? router.push({ pathname: '/invite-to-workout', params: { partnerId: partner.id, partnerName: partner.name } })
       : router.push({
       pathname: '/schedule-workout',
       params: { partnerId: partner.id, partnerName: partner.name, activity: partner.activities[0] ?? 'אימון משותף' },
@@ -85,10 +84,6 @@ export function DiscoverScreen() {
 
   const openChat = () => {
     if (!currentPartner) return;
-    if (!DEMO_DATA) {
-      showInvitesComingSoon();
-      return;
-    }
     ensureConversation(currentPartner.id, currentPartner.name);
     router.push({
       pathname: '/conversation',

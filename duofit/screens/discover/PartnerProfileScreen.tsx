@@ -10,7 +10,6 @@ import { getActivityStyle } from '@lib/activityStyles';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 import { DEMO_DATA } from '@lib/demo';
-import { showInvitesComingSoon } from '@lib/comingSoon';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
 const LEVEL_LABELS: Record<Partner['fitnessLevel'], string> = {
@@ -42,17 +41,13 @@ export function PartnerProfileScreen() {
 
   const invite = () =>
     !DEMO_DATA
-      ? showInvitesComingSoon()
+      ? router.push({ pathname: '/invite-to-workout', params: { partnerId: partner.id, partnerName: partner.name } })
       : router.push({
       pathname: '/schedule-workout',
       params: { partnerId: partner.id, partnerName: partner.name, activity: partner.activities[0] ?? 'אימון משותף' },
     });
 
   const message = () => {
-    if (!DEMO_DATA) {
-      showInvitesComingSoon();
-      return;
-    }
     ensureConversation(partner.id, partner.name);
     router.push({ pathname: '/conversation', params: { partnerId: partner.id, partnerName: partner.name } });
   };
