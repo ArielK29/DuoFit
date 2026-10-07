@@ -228,6 +228,12 @@ export const useChatStore = create<ChatState>()(
           (message) => message.pending && !messages.some((item) => item.id === message.id)
         );
         const newest = messages.length > 0 ? messages[messages.length - 1].sentAt : new Date().toISOString();
+        // Messages that arrived (live, or just confirmed after sending) while this list was being fetched stay.
+        const fetched = new Set(messages.map((item) => item.id));
+        const newer = (existing?.messages ?? []).filter(
+          (message) => !message.pending && !fetched.has(message.id) && new Date(message.sentAt).getTime() > new Date(newest).getTime()
+        );
+        const merged = [...messages, ...newer].sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
         set({
           conversations: {
             ...get().conversations,
@@ -236,7 +242,7 @@ export const useChatStore = create<ChatState>()(
               partnerName: name,
               isGroup: true,
               memberCount,
-              messages: [...messages, ...pending],
+              messages: [...merged, ...pending],
               // The first time a group appears its history counts as read; later loads keep the marker.
               lastReadAt: existing?.lastReadAt ?? newest,
             },

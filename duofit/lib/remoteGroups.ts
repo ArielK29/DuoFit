@@ -47,6 +47,29 @@ export async function fetchGroups(): Promise<RemoteGroup[]> {
   }));
 }
 
+// The member's own groups by id (the directory above is limited to the newest 100, an older joined group must still load).
+export async function fetchGroupsByIds(ids: string[]): Promise<RemoteGroup[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase.from('groups').select('id, name, activity, member_count').in('id', ids);
+  if (error) throw error;
+  return (data ?? []).map((row: { id: string; name: string; activity: string; member_count: number }) => ({
+    id: row.id,
+    name: row.name,
+    activity: row.activity,
+    memberCount: row.member_count,
+  }));
+}
+
+// A plain Hebrew reason for the limits the server enforces (null: no specific reason).
+export function groupErrorMessage(error: unknown): string | null {
+  const text = (error as { message?: string } | null)?.message ?? '';
+  if (text.includes('full')) return 'הקבוצה מלאה (עד 200 חברים)';
+  if (text.includes('at most 3 groups')) return 'אפשר ליצור עד 3 קבוצות בשבוע';
+  if (text.includes('at most 20 groups')) return 'אפשר להיות בעד 20 קבוצות';
+  if (text.includes('too many messages')) return 'יותר מדי הודעות. נסה שוב בעוד רגע';
+  return null;
+}
+
 export async function fetchMyGroupIds(me: string): Promise<string[]> {
   const { data, error } = await supabase.from('group_members').select('group_id').eq('user_id', me);
   if (error) throw error;
