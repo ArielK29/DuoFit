@@ -11,10 +11,15 @@
     "description": "Fitness Buddy Matching App · Hebrew-First · React Native + Expo",
     "ios": {
       "supportsTablet": false,
-      "userInterfaceStyle": "dark"
+      "userInterfaceStyle": "dark",
+      "bundleIdentifier": "com.arielk29.duofit",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "userInterfaceStyle": "dark",
+      "package": "com.arielk29.duofit",
       "adaptiveIcon": {
         "backgroundColor": "#050505",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
@@ -39,6 +44,13 @@
           "photosPermission": "כדי לבחור תמונת פרופיל, DuoFit זקוק לגישה לתמונות שלך."
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "DuoFit משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך."
+        }
+      ],
+      "expo-notifications",
       "expo-font",
       "expo-router",
       "expo-localization",
