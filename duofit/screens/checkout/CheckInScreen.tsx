@@ -5,6 +5,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 
 import { CheckCircle2, Calendar, Clock, MapPin } from 'lucide-react-native';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { notifyFailure } from '@lib/notifyFailure';
+import { askChoice } from '@lib/askChoice';
 import { Card } from '@components/Card';
 import { Button } from '@components/Button';
 import { theme } from '@styles/theme';
@@ -20,6 +21,7 @@ export function CheckInScreen() {
   const { workoutId = '' } = useLocalSearchParams<'/check-in', { workoutId: string }>();
   const workout = useWorkoutStore((state) => state.scheduledWorkouts.find((item) => item.id === workoutId));
   const checkIn = useWorkoutStore((state) => state.checkIn);
+  const cancelWorkout = useWorkoutStore((state) => state.cancelWorkout);
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [checkingIn, setCheckingIn] = useState(false);
@@ -46,6 +48,19 @@ export function CheckInScreen() {
       if (finished) runOnJS(setShowConfirmation)(true);
     });
   };
+
+  const handleCancel = () =>
+    askChoice('ביטול אימון', 'האימון יבוטל גם אצל השותף. אפשר לקבוע אימון חדש בהזמנה חדשה.', [
+      {
+        label: 'בטל אימון',
+        destructive: true,
+        onPress: async () => {
+          const cancelled = await cancelWorkout(workoutId);
+          if (cancelled) router.replace('/dashboard');
+          else notifyFailure();
+        },
+      },
+    ]);
 
   useEffect(() => {
     if (!showConfirmation) return;
@@ -103,6 +118,11 @@ export function CheckInScreen() {
           <>
             {!!windowMessage && <Text style={styles.windowMessage}>{windowMessage}</Text>}
             <Button label="אשר הגעה" variant="primary" size="lg" loading={checkingIn} disabled={checkingIn} onPress={handleCheckIn} />
+            {scheduledDate.getTime() > Date.now() && (
+              <Pressable style={styles.cancelButton} onPress={handleCancel} accessibilityLabel="בטל אימון">
+                <Text style={styles.cancelText}>בטל אימון</Text>
+              </Pressable>
+            )}
           </>
         ) : (
           <>
@@ -134,6 +154,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
     alignItems: 'center',
+  },
+  cancelButton: {
+    minHeight: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: theme.spacing.sm,
+  },
+  cancelText: {
+    fontSize: 15,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textSecondary,
   },
   windowMessage: {
     width: '100%',
