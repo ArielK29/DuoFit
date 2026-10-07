@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useActiveChat } from '@hooks/useActiveChat';
 import { useNotificationStore } from '@hooks/useNotificationStore';
-import { Alert, Platform } from 'react-native';
+import { notifyFailure } from '@lib/notifyFailure';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { useAuth } from '@hooks/useAuth';
 import { DEMO_DATA } from '@lib/demo';
@@ -142,15 +142,6 @@ export const useChatStore = create<ChatState>()(
           location: invite.location,
           scheduledAt: invite.scheduledAt,
         });
-      };
-
-      const notifyFailure = () => {
-        const text = 'הפעולה לא הושלמה. בדוק את החיבור ונסה שוב';
-        if (Platform.OS === 'web') {
-          if (typeof window !== 'undefined') window.alert(text);
-          return;
-        }
-        Alert.alert('משהו השתבש', text);
       };
 
       const notifyIncoming = (partnerId: string, partnerName: string, message: ChatMessage) => {
