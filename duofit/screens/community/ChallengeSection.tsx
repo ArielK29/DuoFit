@@ -1,11 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Timer } from 'lucide-react-native';
 import { useAuth } from '@hooks/useAuth';
 import { useCommunityStore } from '@hooks/useCommunityStore';
+import { usePlankBoard } from '@hooks/usePlankBoard';
 import { PLANK_PARTICIPANTS } from '@constants/community';
-import { buildLeaderboard, computePlankRank, formatDuration, getDaysLeftInWeek, getPlankSeconds } from '@lib/plank';
+import {
+  buildLeaderboard,
+  computePlankRank,
+  formatDuration,
+  getDaysLeftInWeek,
+  getPlankSeconds,
+  LeaderboardRow,
+} from '@lib/plank';
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
 import { visualRightText } from '@lib/rtl';
@@ -27,8 +35,30 @@ export const ChallengeSection: React.FC<ChallengeSectionProps> = ({ onTryRecord 
   const user = useAuth((state) => state.user);
   const best = useCommunityStore((state) => state.plankBestSeconds);
 
+  const board = usePlankBoard((state) => state.board);
+  useEffect(() => {
+    if (!DEMO_DATA) usePlankBoard.getState().load();
+  }, []);
+
   const seconds = getPlankSeconds(best);
-  const rows = seconds === null ? [] : buildLeaderboard(seconds, 'אתה');
+  // Demo: example leaderboard around the member's time. Real members: this week's real leaderboard.
+  let rows: LeaderboardRow[] = [];
+  if (DEMO_DATA) {
+    rows = seconds === null ? [] : buildLeaderboard(seconds, 'אתה');
+  } else if (board) {
+    rows = board.top.map((row, index) => ({
+      name: row.userId === user?.id ? 'אתה' : row.name,
+      avatarColor: theme.colors.cyan,
+      seconds: row.seconds,
+      rank: index + 1,
+      isMe: row.userId === user?.id,
+    }));
+    if (board.mine && !rows.some((row) => row.isMe)) {
+      rows.push({ name: 'אתה', avatarColor: '', seconds: board.mine.seconds, rank: board.mine.rank, isMe: true });
+    }
+  }
+  const participants = DEMO_DATA ? PLANK_PARTICIPANTS : (board?.participants ?? 0);
+  const rank = DEMO_DATA ? (seconds === null ? null : computePlankRank(seconds)) : (board?.mine?.rank ?? null);
   const daysLeft = getDaysLeftInWeek(new Date());
 
   return (
@@ -53,7 +83,7 @@ export const ChallengeSection: React.FC<ChallengeSectionProps> = ({ onTryRecord 
 
         <View style={styles.statsRow}>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{PLANK_PARTICIPANTS.toLocaleString('he-IL')}</Text>
+            <Text style={styles.statValue}>{participants.toLocaleString('he-IL')}</Text>
             <Text style={styles.statLabel}>משתתפים</Text>
           </View>
           <View style={styles.stat}>
@@ -61,7 +91,7 @@ export const ChallengeSection: React.FC<ChallengeSectionProps> = ({ onTryRecord 
             <Text style={styles.statLabel}>{best === null && seconds !== null ? 'השיא שלך (לדוגמה)' : 'השיא שלך'}</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{seconds === null ? '—' : `#${computePlankRank(seconds)}`}</Text>
+            <Text style={styles.statValue}>{rank === null ? '—' : `#${rank}`}</Text>
             <Text style={styles.statLabel}>המקום שלך</Text>
           </View>
         </View>
