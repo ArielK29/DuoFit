@@ -25,6 +25,29 @@ export interface AppNotification {
 
 const MAX_ITEMS = 100;
 
+// Server writes that failed (offline): tried again on the next sync, so "read" and "cleared" are not lost.
+const pendingRead = new Set<string>();
+let pendingClear = false;
+let lastClearAt = 0;
+
+export function lastNotificationClearAt(): number {
+  return lastClearAt;
+}
+
+export async function flushPendingNotificationWrites(): Promise<void> {
+  const me = useAuth.getState().user?.id;
+  if (!me) return;
+  if (pendingClear) {
+    await clearRemote(me);
+    pendingClear = false;
+  }
+  if (pendingRead.size > 0) {
+    const ids = [...pendingRead];
+    await markReadRemote(ids);
+    ids.forEach((id) => pendingRead.delete(id));
+  }
+}
+
 interface NotificationState {
   items: AppNotification[];
 
@@ -62,7 +85,8 @@ export const useNotificationStore = create<NotificationState>()(
         const byRemote = new Map(incoming.map((item) => [item.remoteId, item]));
         const kept = get()
           .items.filter((item) => !item.remoteId || byRemote.has(item.remoteId))
-          .map((item) => (item.remoteId ? { ...item, read: byRemote.get(item.remoteId)?.read ?? item.read } : item));
+          // Read on this phone OR on the server counts as read (a late answer must not flip it back).
+          .map((item) => (item.remoteId ? { ...item, read: item.read || (byRemote.get(item.remoteId)?.read ?? false) } : item));
         const known = new Set(kept.map((item) => item.remoteId).filter(Boolean));
         const fresh: AppNotification[] = incoming
           .filter((item) => !known.has(item.remoteId))
@@ -74,19 +98,29 @@ export const useNotificationStore = create<NotificationState>()(
       markRead: (id) => {
         const item = get().items.find((entry) => entry.id === id);
         set({ items: get().items.map((entry) => (entry.id === id ? { ...entry, read: true } : entry)) });
-        if (!DEMO_DATA && item?.remoteId && !item.read) markReadRemote([item.remoteId]).catch(() => {});
+        if (!DEMO_DATA && item?.remoteId && !item.read) {
+          const remoteId = item.remoteId;
+          markReadRemote([remoteId]).catch(() => pendingRead.add(remoteId));
+        }
       },
       markAllRead: () => {
         const unreadRemote = get()
           .items.filter((entry) => entry.remoteId && !entry.read)
           .map((entry) => entry.remoteId as string);
         set({ items: get().items.map((entry) => ({ ...entry, read: true })) });
-        if (!DEMO_DATA) markReadRemote(unreadRemote).catch(() => {});
+        if (!DEMO_DATA && unreadRemote.length > 0) {
+          markReadRemote(unreadRemote).catch(() => unreadRemote.forEach((id) => pendingRead.add(id)));
+        }
       },
       clear: () => {
         set({ items: [] });
+        lastClearAt = Date.now();
         const me = useAuth.getState().user?.id;
-        if (!DEMO_DATA && me) clearRemote(me).catch(() => {});
+        if (!DEMO_DATA && me) {
+          clearRemote(me).catch(() => {
+            pendingClear = true;
+          });
+        }
       },
     }),
     {
