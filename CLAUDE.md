@@ -258,7 +258,7 @@ Official Supabase skills are installed in `.claude/skills/` (`supabase`, `supaba
 - `posts`, `comments`, `post_likes`, `user_blocks`, `content_reports` + storage bucket `post-images`: community feed for signed-in members. Block hides both ways, a report hides for the reporter at once and for everybody after 3 reports (helper functions in the non-exposed `private` schema), anti-spam limits, own-folder image policies.
 - Edge Function `delete-account` (`supabase/functions/delete-account`): in-app account deletion; the service role key lives only there.
 
-Everything the app stores for members is now on the server except the demo data. Moving the rest is tracked in the "[Backend] Move user data to Supabase with RLS" issue; community needs report/block and image storage first.
+Everything the app stores for members is now on the server except the demo data.
 
 Any new table needs its own test file or extension of the existing ones; run all of `supabase/tests/*.sql` after changing policies.
 
