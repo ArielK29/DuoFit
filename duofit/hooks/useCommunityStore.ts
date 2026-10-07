@@ -7,6 +7,8 @@ import { useChatStore } from '@hooks/useChatStore';
 import { DEMO_DATA } from '@lib/demo';
 import { notifyFailure } from '@lib/notifyFailure';
 import { saveRemoteSettings } from '@lib/remoteProgress';
+import { saveWeeklyPlank } from '@lib/remotePlank';
+import { usePlankBoard } from '@hooks/usePlankBoard';
 
 export interface UserPost {
   id: string;
@@ -57,6 +59,12 @@ export const useCommunityStore = create<CommunityState>()(
 
       recordPlank: (seconds) => {
         const best = get().plankBestSeconds;
+        // Every attempt counts for this week's leaderboard (the server keeps the better time).
+        if (!DEMO_DATA) {
+          saveWeeklyPlank(seconds)
+            .then(() => usePlankBoard.getState().load())
+            .catch(() => notifyFailure());
+        }
         if (best !== null && seconds <= best) return false;
         set({ plankBestSeconds: seconds });
         if (!DEMO_DATA) {
