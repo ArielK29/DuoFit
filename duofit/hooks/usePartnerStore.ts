@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '@lib/supabase';
+import { useAuth } from '@hooks/useAuth';
 import type { Partner } from '@hooks/usePartnerMatching';
 import type { FitnessLevel } from '@hooks/useAuth';
 
@@ -47,11 +48,14 @@ export const usePartnerStore = create<PartnerStoreState>()((set, get) => ({
   error: null,
 
   load: async () => {
-    if (get().isLoading) return;
+    const me = useAuth.getState().user?.id;
+    if (!me || get().isLoading) return;
     set({ isLoading: true, error: null });
+    // A member's own row is readable too (owner policy), so it is excluded here: nobody is their own partner.
     const { data, error } = await supabase
       .from('profiles')
       .select(COLUMNS)
+      .neq('id', me)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE);
     if (error) {

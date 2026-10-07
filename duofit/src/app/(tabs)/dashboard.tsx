@@ -25,7 +25,6 @@ import { computePartnerStreaks, computeStreak } from '@lib/streaks';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 import { DEMO_DATA } from '@lib/demo';
-import { showInvitesComingSoon } from '@lib/comingSoon';
 
 // Target thresholds shown alongside the real numbers below — not mock data.
 const PARTNERS_GOAL = 5;
@@ -150,7 +149,7 @@ export default function Dashboard() {
     });
   const invitePartner = (partner: PartnerWithDistance) =>
     !DEMO_DATA
-      ? showInvitesComingSoon()
+      ? router.push({ pathname: '/invite-to-workout', params: { partnerId: partner.id, partnerName: partner.name } })
       : router.push({
       pathname: '/schedule-workout',
       params: { partnerId: partner.id, partnerName: partner.name, activity: partner.activities[0] ?? 'אימון משותף' },

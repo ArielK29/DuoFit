@@ -28,7 +28,7 @@ export const useWorkoutStore = create<WorkoutState>()(
       scheduleWorkout: (workout) => {
         const created: ScheduledWorkout = {
           ...workout,
-          id: `${Date.now()}`,
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           checkedIn: false,
         };
         set({ scheduledWorkouts: [...get().scheduledWorkouts, created] });
