@@ -150,6 +150,7 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
           ))}
           {showPartners &&
             partners.map((partner) => {
+            if (!partner.coords) return null; // members without a known location have no pin
             const active = partner.id === selectedId;
             return (
               <Marker
@@ -259,10 +260,10 @@ const PartnerPreview: React.FC<PartnerPreviewProps> = ({ partner, onOpen, onInvi
           <Text style={styles.previewAvatarText}>{partner.name[0]}</Text>
         </View>
         <View style={styles.previewText}>
-          <Text style={styles.previewName}>{`${partner.name}, ${partner.age}`}</Text>
+          <Text style={styles.previewName}>{partner.age !== undefined ? `${partner.name}, ${partner.age}` : partner.name}</Text>
           <View style={styles.previewMetaRow}>
             <ActivityIcon color={theme.colors.textSecondary} size={14} strokeWidth={2} />
-            <Text style={styles.previewMeta}>{`${partner.activities.join(' · ')} · ${partner.distanceKm.toFixed(1)} ק"מ`}</Text>
+            <Text style={styles.previewMeta}>{partner.distanceKm !== null ? `${partner.activities.join(' · ')} · ${partner.distanceKm.toFixed(1)} ק"מ` : partner.activities.join(' · ')}</Text>
           </View>
           <Text style={styles.previewMatch}>{`${partner.matchPercent}% התאמה`}</Text>
         </View>

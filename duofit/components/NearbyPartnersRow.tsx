@@ -21,10 +21,12 @@ export const NearbyPartnersRow: React.FC<NearbyPartnersRowProps> = ({ partners, 
             <Text style={styles.avatarInitial}>{partner.name[0]}</Text>
           </View>
           <Text style={styles.name}>{partner.name}</Text>
-          <View style={styles.metaRow}>
-            <MapPin color={theme.colors.textTertiary} size={11} strokeWidth={2} />
-            <Text style={styles.meta}>{`${partner.distanceKm.toFixed(1)} ק"מ`}</Text>
-          </View>
+          {partner.distanceKm !== null && (
+            <View style={styles.metaRow}>
+              <MapPin color={theme.colors.textTertiary} size={11} strokeWidth={2} />
+              <Text style={styles.meta}>{`${partner.distanceKm.toFixed(1)} ק"מ`}</Text>
+            </View>
+          )}
           <Text style={styles.activity} numberOfLines={1}>
             {partner.activities[0]}
           </Text>

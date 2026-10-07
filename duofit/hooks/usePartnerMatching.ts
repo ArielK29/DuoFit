@@ -2,26 +2,29 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth, User, FitnessLevel } from '@hooks/useAuth';
 import { useLocation, Coordinates } from '@hooks/useLocation';
 import { DEMO_DATA } from '@lib/demo';
+import { usePartnerStore } from '@hooks/usePartnerStore';
 
 export type Gender = 'M' | 'F';
 
 export interface Partner {
   id: string;
   name: string;
-  age: number;
-  gender: Gender;
+  gender: Gender | 'Other';
   bio: string;
   fitnessLevel: FitnessLevel;
   activities: string[];
-  coords: Coordinates;
-  // Example data — no review, verification or availability system exists
-  // yet (#15). The Discover screen is labeled "תצוגה מקדימה" because of it.
-  verified: boolean;
-  rating: number;
-  sessions: number;
-  availableDays: number[]; // 0 = Sunday
-  availableFrom: string;
-  availableTo: string;
+  avatar?: string;
+  // Real members only have the fields above. Everything below exists only for the
+  // invented demo partners (age, location, rating, verification, availability);
+  // the screens hide what is missing instead of making it up.
+  age?: number;
+  coords?: Coordinates;
+  verified?: boolean;
+  rating?: number;
+  sessions?: number;
+  availableDays?: number[]; // 0 = Sunday
+  availableFrom?: string;
+  availableTo?: string;
 }
 
 // Mock candidate pool (no backend yet — see issue #15).
@@ -206,13 +209,14 @@ export const TEL_AVIV_CENTER: Coordinates = { latitude: 32.0809, longitude: 34.7
 const LOCAL_RADIUS_KM = 10;
 
 export interface PartnerWithDistance extends Partner {
-  distanceKm: number;
+  // null when the partner has no known location (real members, for now).
+  distanceKm: number | null;
   matchPercent: number;
 }
 
 // Compatibility score from real data: shared activities, similar fitness
 // level, and distance. Clamped so it always reads as a plausible percentage.
-function computeMatchPercent(partner: Partner, distance: number, user: User | null): number {
+function computeMatchPercent(partner: Partner, distance: number | null, user: User | null): number {
   const shared = partner.activities.filter((activity) => user?.favoriteActivities.includes(activity)).length;
   const levels: FitnessLevel[] = ['Beginner', 'Intermediate', 'Advanced'];
   const levelGap = user?.fitnessLevel
@@ -221,19 +225,19 @@ function computeMatchPercent(partner: Partner, distance: number, user: User | nu
 
   let score = 60 + Math.min(shared, 2) * 12;
   score += levelGap === 0 ? 8 : levelGap === 1 ? 4 : 0;
-  score += distance < 2 ? 6 : distance < 5 ? 3 : 0;
+  if (distance !== null) score += distance < 2 ? 6 : distance < 5 ? 3 : 0;
   return Math.max(60, Math.min(99, score));
 }
 
-export function filterPartners<T extends Partner & { distanceKm: number }>(
+export function filterPartners<T extends Partner & { distanceKm: number | null }>(
   partners: T[],
   filters: PartnerFilters
 ): T[] {
   return partners.filter(
     (partner) =>
       (filters.gender === 'all' || partner.gender === filters.gender) &&
-      partner.age <= filters.maxAge &&
-      partner.distanceKm <= filters.radiusKm &&
+      (partner.age === undefined || partner.age <= filters.maxAge) &&
+      (partner.distanceKm === null || partner.distanceKm <= filters.radiusKm) &&
       (filters.activities.length === 0 ||
         partner.activities.some((activity) => filters.activities.includes(activity)))
   );
@@ -242,7 +246,7 @@ export function filterPartners<T extends Partner & { distanceKm: number }>(
 // Used by PartnerProfileScreen to look up a candidate's static details by id
 // (distance travels separately as a route param).
 export function findPartnerById(id: string): Partner | undefined {
-  return MOCK_PARTNERS.find((partner) => partner.id === id);
+  return MOCK_PARTNERS.find((partner) => partner.id === id) ?? usePartnerStore.getState().partners.find((partner) => partner.id === id);
 }
 
 interface PartnerMatchingState {
@@ -260,28 +264,43 @@ interface PartnerMatchingState {
 export function usePartnerMatching(filters: PartnerFilters = DEFAULT_FILTERS): PartnerMatchingState {
   const user = useAuth((state) => state.user);
   const { coords } = useLocation();
-  const [isLoading, setIsLoading] = useState(true);
+  const [demoLoading, setDemoLoading] = useState(true);
   const [fetchCycle, setFetchCycle] = useState(0);
   const [position, setPosition] = useState({ index: 0, key: '' });
+  const realPartners = usePartnerStore((state) => state.partners);
+  const realLoading = usePartnerStore((state) => state.isLoading || !state.hasLoaded);
+  const loadRealPartners = usePartnerStore((state) => state.load);
 
-  // Simulates a network fetch of nearby candidates, per issue #5's
-  // "loading skeleton while fetching matches" requirement.
+  // Demo mode simulates a fetch (loading skeleton, issue #5). Otherwise the real
+  // members are loaded from the database.
   useEffect(() => {
-    setIsLoading(true);
-    const timeout = setTimeout(() => setIsLoading(false), 900);
+    if (!DEMO_DATA) {
+      loadRealPartners();
+      return;
+    }
+    setDemoLoading(true);
+    const timeout = setTimeout(() => setDemoLoading(false), 900);
     return () => clearTimeout(timeout);
-  }, [fetchCycle]);
+  }, [fetchCycle, loadRealPartners]);
+
+  const isLoading = DEMO_DATA ? demoLoading : realLoading;
+  const sourcePartners = DEMO_DATA ? MOCK_PARTNERS : realPartners;
 
   const viewerOrigin =
     coords && distanceKm(coords, TEL_AVIV_CENTER) <= LOCAL_RADIUS_KM ? coords : TEL_AVIV_CENTER;
 
   const allPartners = useMemo(
     () =>
-      MOCK_PARTNERS.map((partner) => {
-        const distance = distanceKm(viewerOrigin, partner.coords);
-        return { ...partner, distanceKm: distance, matchPercent: computeMatchPercent(partner, distance, user) };
-      }).sort((a, b) => a.distanceKm - b.distanceKm),
-    [viewerOrigin, user]
+      sourcePartners
+        .map((partner) => {
+          const distance = partner.coords ? distanceKm(viewerOrigin, partner.coords) : null;
+          return { ...partner, distanceKm: distance, matchPercent: computeMatchPercent(partner, distance, user) };
+        })
+        // Nearest first when the location is known, otherwise best match first.
+        .sort((a, b) =>
+          a.distanceKm !== null && b.distanceKm !== null ? a.distanceKm - b.distanceKm : b.matchPercent - a.matchPercent
+        ),
+    [sourcePartners, viewerOrigin, user]
   );
 
   const filtersKey = JSON.stringify(filters);

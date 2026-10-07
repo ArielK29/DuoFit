@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import { ArrowLeft, BadgeCheck, MapPin, ShieldCheck, Star } from 'lucide-react-native';
 import { Button } from '@components/Button';
 import { useChatStore } from '@hooks/useChatStore';
@@ -8,6 +9,8 @@ import { Partner, findPartnerById } from '@hooks/usePartnerMatching';
 import { getActivityStyle } from '@lib/activityStyles';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
+import { DEMO_DATA } from '@lib/demo';
+import { showInvitesComingSoon } from '@lib/comingSoon';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
 const LEVEL_LABELS: Record<Partner['fitnessLevel'], string> = {
@@ -38,12 +41,18 @@ export function PartnerProfileScreen() {
   }
 
   const invite = () =>
-    router.push({
+    !DEMO_DATA
+      ? showInvitesComingSoon()
+      : router.push({
       pathname: '/schedule-workout',
       params: { partnerId: partner.id, partnerName: partner.name, activity: partner.activities[0] ?? 'אימון משותף' },
     });
 
   const message = () => {
+    if (!DEMO_DATA) {
+      showInvitesComingSoon();
+      return;
+    }
     ensureConversation(partner.id, partner.name);
     router.push({ pathname: '/conversation', params: { partnerId: partner.id, partnerName: partner.name } });
   };
@@ -62,11 +71,15 @@ export function PartnerProfileScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.hero}
         >
-          <Text style={styles.initial}>{partner.name[0]}</Text>
+          {partner.avatar ? (
+            <Image source={{ uri: partner.avatar }} style={StyleSheet.absoluteFill} contentFit="cover" />
+          ) : (
+            <Text style={styles.initial}>{partner.name[0]}</Text>
+          )}
         </LinearGradient>
 
         <View style={styles.nameRow}>
-          <Text style={styles.name}>{`${partner.name}, ${partner.age}`}</Text>
+          <Text style={styles.name}>{partner.age !== undefined ? `${partner.name}, ${partner.age}` : partner.name}</Text>
           {partner.verified && <BadgeCheck color={theme.colors.cyan} size={24} strokeWidth={2} />}
         </View>
         {!!distanceKm && (
@@ -75,30 +88,38 @@ export function PartnerProfileScreen() {
             <Text style={styles.distanceText}>{`${distanceKm} ק"מ ממך`}</Text>
           </View>
         )}
-        <View style={styles.ratingPill}>
-          <Star color={theme.colors.warning} size={14} strokeWidth={2} fill={theme.colors.warning} />
-          <Text style={styles.ratingText}>{`${partner.rating.toFixed(1)} · ${partner.sessions} אימונים משותפים`}</Text>
-        </View>
-        <Text style={styles.exampleNote}>תצוגה מקדימה: דירוג ואימות לדוגמה</Text>
+        {partner.rating !== undefined && (
+          <>
+            <View style={styles.ratingPill}>
+              <Star color={theme.colors.warning} size={14} strokeWidth={2} fill={theme.colors.warning} />
+              <Text style={styles.ratingText}>{`${partner.rating.toFixed(1)} · ${partner.sessions ?? 0} אימונים משותפים`}</Text>
+            </View>
+            <Text style={styles.exampleNote}>תצוגה מקדימה: דירוג ואימות לדוגמה</Text>
+          </>
+        )}
 
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>קצת עליי</Text>
-          <Text style={styles.cardText}>{partner.bio}</Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>{`זמינות · ${partner.availableFrom}–${partner.availableTo}`}</Text>
-          <View style={styles.daysRow}>
-            {WEEKDAY_LETTERS.map((letter, index) => {
-              const available = partner.availableDays.includes(index);
-              return (
-                <View key={letter} style={[styles.dayChip, available && styles.dayChipActive]}>
-                  <Text style={[styles.dayText, available && styles.dayTextActive]}>{letter}</Text>
-                </View>
-              );
-            })}
+        {!!partner.bio && (
+          <View style={styles.card}>
+            <Text style={styles.cardLabel}>קצת עליי</Text>
+            <Text style={styles.cardText}>{partner.bio}</Text>
           </View>
-        </View>
+        )}
+
+        {partner.availableDays !== undefined && (
+          <View style={styles.card}>
+            <Text style={styles.cardLabel}>{`זמינות · ${partner.availableFrom}–${partner.availableTo}`}</Text>
+            <View style={styles.daysRow}>
+              {WEEKDAY_LETTERS.map((letter, index) => {
+                const available = partner.availableDays?.includes(index);
+                return (
+                  <View key={letter} style={[styles.dayChip, available && styles.dayChipActive]}>
+                    <Text style={[styles.dayText, available && styles.dayTextActive]}>{letter}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
 
         <View style={styles.card}>
           <Text style={styles.cardLabel}>רמת כושר</Text>

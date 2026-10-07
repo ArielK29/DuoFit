@@ -64,7 +64,7 @@ export function ChatListScreen() {
 
   const suggestedMembers = PARTNER_POOL.filter(
     (partner) =>
-      partner.activities.includes(SUGGESTED_ACTIVITY) && SUGGESTED_DAYS.every((day) => partner.availableDays.includes(day))
+      partner.activities.includes(SUGGESTED_ACTIVITY) && SUGGESTED_DAYS.every((day) => (partner.availableDays ?? []).includes(day))
   );
   const showSuggestion = suggestedMembers.length >= 2 && !conversations[SUGGESTED_GROUP_ID] && filter !== 'personal';
 
