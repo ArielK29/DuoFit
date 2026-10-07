@@ -3,7 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@hooks/useAuth';
 import { DEMO_DATA } from '@lib/demo';
-import { checkInRemote, fetchWorkouts, CheckInResult } from '@lib/remoteWorkouts';
+import { cancelRemote, checkInRemote, fetchWorkouts, CheckInResult } from '@lib/remoteWorkouts';
+import { useNotificationStore } from '@hooks/useNotificationStore';
 import { scheduleWorkoutReminder } from '@lib/notifications';
 
 export interface ScheduledWorkout {
@@ -23,7 +24,8 @@ interface WorkoutState {
 
   scheduleWorkout: (workout: Omit<ScheduledWorkout, 'id' | 'checkedIn'>) => ScheduledWorkout;
   checkIn: (id: string) => Promise<CheckInResult>;
-  cancelWorkout: (id: string) => void;
+  // Real members: cancels for both members on the server; returns false when that was refused.
+  cancelWorkout: (id: string) => Promise<boolean>;
   // Real members: loads the shared workouts from the server (the server is the truth).
   hydrate: () => Promise<void>;
 }
@@ -65,10 +67,11 @@ export const useWorkoutStore = create<WorkoutState>()(
         return result;
       },
 
-      cancelWorkout: (id) =>
-        set({
-          scheduledWorkouts: get().scheduledWorkouts.filter((workout) => workout.id !== id),
-        }),
+      cancelWorkout: async (id) => {
+        if (!DEMO_DATA && !(await cancelRemote(id))) return false;
+        set({ scheduledWorkouts: get().scheduledWorkouts.filter((workout) => workout.id !== id) });
+        return true;
+      },
 
       hydrate: async () => {
         const me = useAuth.getState().user?.id;
@@ -79,8 +82,21 @@ export const useWorkoutStore = create<WorkoutState>()(
         }
         hydrating = true;
         try {
-          const workouts = await fetchWorkouts(me);
+          const feed = await fetchWorkouts(me);
+          const workouts = feed.active;
           if (useAuth.getState().user?.id !== me) return; // signed out while loading
+
+          // Tell the member once when their partner cancelled an upcoming workout.
+          feed.cancelledByPartner
+            .filter((workout) => new Date(workout.scheduledAt).getTime() > Date.now())
+            .forEach((workout) => {
+              useNotificationStore.getState().add({
+                kind: 'workout_soon',
+                title: 'האימון בוטל',
+                body: `${workout.partnerName} ביטל/ה את ${workout.activity} · ${workout.location}`,
+                dedupeKey: `cancelled-${workout.id}`,
+              });
+            });
           // A check-in that was confirmed while this list was loading must not flicker back.
           const confirmedHere = new Set(get().scheduledWorkouts.filter((item) => item.checkedIn).map((item) => item.id));
           set({
