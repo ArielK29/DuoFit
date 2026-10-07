@@ -20,8 +20,9 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
   set local role authenticated;
 
-  select count(*) into n from public.profiles;
-  res := res || '2 A sees profiles (expect 1, only own): ' || n || E'\n';
+  -- Counts below only look at the two test users: real members (if any) are visible by design.
+  select count(*) into n from public.profiles where id in (a, b);
+  res := res || '2 A sees profiles (expect 1, only own; B incomplete): ' || n || E'\n';
   update public.profiles set bio = 'hacked' where id = b;
   get diagnostics n = row_count;
   res := res || '3 A updates B profile, rows changed (expect 0): ' || n || E'\n';
@@ -71,8 +72,8 @@ begin
   reset role;
   perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
   set local role authenticated;
-  select count(*) into n from public.profiles;
-  res := res || '13 B sees profiles (expect 1): ' || n || E'\n';
+  select count(*) into n from public.profiles where id in (a, b);
+  res := res || '13 B sees profiles (expect 1; A incomplete): ' || n || E'\n';
   select count(*) into n from storage.objects where bucket_id = 'avatars';
   res := res || '14 B sees avatar objects (expect 0, A file hidden): ' || n || E'\n';
 
@@ -90,6 +91,34 @@ begin
     res := res || '16 anon calls handle_new_user: ALLOWED (BAD)' || E'\n';
   exception when others then
     res := res || '16 anon calls handle_new_user: blocked (good)' || E'\n';
+  end;
+  reset role;
+
+  -- Partner discovery: B completes the profile (done as the table owner), then A looks.
+  update public.profiles set gender = 'M', fitness_level = 'Beginner', favorite_activities = array['ריצה'] where id = b;
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  select count(*) into n from public.profiles where id in (a, b);
+  res := res || '17 A sees profiles after B completed theirs (expect 2: own + B): ' || n || E'\n';
+  select count(*) into n from public.profiles where id = b and display_name = 'B';
+  res := res || '18 A can read B public fields (expect 1): ' || n || E'\n';
+  update public.profiles set bio = 'hacked' where id = b;
+  get diagnostics n = row_count;
+  res := res || '19 A still cannot update B (expect 0): ' || n || E'\n';
+  begin
+    perform created_at, favorite_activities from public.profiles where id = b;
+    res := res || '20 A reads allowed public columns of B: ok' || E'\n';
+  exception when others then
+    res := res || '20 A reads allowed public columns of B: BLOCKED (BAD)' || E'\n';
+  end;
+  reset role;
+  perform set_config('request.jwt.claims', '{"role":"anon"}', true);
+  set local role anon;
+  begin
+    select count(*) into n from public.profiles;
+    res := res || '21 anon reads profiles, rows (expect denied or 0): ' || n || E'\n';
+  exception when others then
+    res := res || '21 anon reads profiles: denied (good)' || E'\n';
   end;
   reset role;
 

@@ -34,12 +34,14 @@ export const SuggestedPartnerCard: React.FC<SuggestedPartnerCardProps> = ({
         </LinearGradient>
         <View style={styles.headerText}>
           <Text style={styles.name}>
-            {partner.name}, {partner.age}
+            {partner.age !== undefined ? `${partner.name}, ${partner.age}` : partner.name}
           </Text>
-          <View style={styles.metaRow}>
-            <MapPin color={theme.colors.textTertiary} size={12} strokeWidth={2} />
-            <Text style={styles.meta}>{`${partner.distanceKm.toFixed(1)} ק"מ ממך`}</Text>
-          </View>
+          {partner.distanceKm !== null && (
+            <View style={styles.metaRow}>
+              <MapPin color={theme.colors.textTertiary} size={12} strokeWidth={2} />
+              <Text style={styles.meta}>{`${partner.distanceKm.toFixed(1)} ק"מ ממך`}</Text>
+            </View>
+          )}
           {sharedActivity && (
             <View style={styles.sharedPill}>
               <Sparkles color={theme.colors.cyan} size={12} strokeWidth={2} />

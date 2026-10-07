@@ -24,6 +24,8 @@ import { computePlankRank, getPlankSeconds } from '@lib/plank';
 import { computePartnerStreaks, computeStreak } from '@lib/streaks';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
+import { DEMO_DATA } from '@lib/demo';
+import { showInvitesComingSoon } from '@lib/comingSoon';
 
 // Target thresholds shown alongside the real numbers below — not mock data.
 const PARTNERS_GOAL = 5;
@@ -144,10 +146,12 @@ export default function Dashboard() {
   const openPartner = (partner: PartnerWithDistance) =>
     router.push({
       pathname: '/partner-profile',
-      params: { partnerId: partner.id, distanceKm: partner.distanceKm.toFixed(1) },
+      params: { partnerId: partner.id, distanceKm: partner.distanceKm?.toFixed(1) ?? '' },
     });
   const invitePartner = (partner: PartnerWithDistance) =>
-    router.push({
+    !DEMO_DATA
+      ? showInvitesComingSoon()
+      : router.push({
       pathname: '/schedule-workout',
       params: { partnerId: partner.id, partnerName: partner.name, activity: partner.activities[0] ?? 'אימון משותף' },
     });

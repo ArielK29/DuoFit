@@ -4,12 +4,14 @@ import { useNotificationStore } from '@hooks/useNotificationStore';
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { DEFAULT_WEEKLY_GOAL, useProgressStore } from '@hooks/useProgressStore';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
+import { usePartnerStore } from '@hooks/usePartnerStore';
 
 // Everything below is stored on the device. When the user signs out (or the
 // session ends), wipe it, so the next person to sign in on this phone never sees
 // the previous person's workouts, chats, posts or weight.
 function resetLocalData() {
   useWorkoutStore.setState({ scheduledWorkouts: [] });
+  usePartnerStore.getState().reset();
   useChatStore.setState({ conversations: {} });
   useNotificationStore.setState({ items: [] });
   useCommunityStore.setState({

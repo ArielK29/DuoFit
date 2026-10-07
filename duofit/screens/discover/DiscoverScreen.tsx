@@ -22,6 +22,7 @@ import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionB
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
 import { shareInvite } from '@lib/shareInvite';
+import { showInvitesComingSoon } from '@lib/comingSoon';
 import { visualRight } from '@lib/rtl';
 
 type ViewMode = 'partners' | 'places';
@@ -58,6 +59,10 @@ export function DiscoverScreen() {
     if (!currentPartner) return;
     const { id, name, activities } = currentPartner;
     interested();
+    if (!DEMO_DATA) {
+      showInvitesComingSoon();
+      return;
+    }
     router.push({
       pathname: '/schedule-workout',
       params: { partnerId: id, partnerName: name, activity: activities[0] ?? 'אימון משותף' },
@@ -67,17 +72,23 @@ export function DiscoverScreen() {
   const openPartnerProfile = (partner: PartnerWithDistance) =>
     router.push({
       pathname: '/partner-profile',
-      params: { partnerId: partner.id, distanceKm: partner.distanceKm.toFixed(1) },
+      params: { partnerId: partner.id, distanceKm: partner.distanceKm?.toFixed(1) ?? '' },
     });
 
   const invitePartner = (partner: PartnerWithDistance) =>
-    router.push({
+    !DEMO_DATA
+      ? showInvitesComingSoon()
+      : router.push({
       pathname: '/schedule-workout',
       params: { partnerId: partner.id, partnerName: partner.name, activity: partner.activities[0] ?? 'אימון משותף' },
     });
 
   const openChat = () => {
     if (!currentPartner) return;
+    if (!DEMO_DATA) {
+      showInvitesComingSoon();
+      return;
+    }
     ensureConversation(currentPartner.id, currentPartner.name);
     router.push({
       pathname: '/conversation',
@@ -197,7 +208,7 @@ export function DiscoverScreen() {
                   onOpenProfile={() =>
                     router.push({
                       pathname: '/partner-profile',
-                      params: { partnerId: currentPartner.id, distanceKm: currentPartner.distanceKm.toFixed(1) },
+                      params: { partnerId: currentPartner.id, distanceKm: currentPartner.distanceKm?.toFixed(1) ?? '' },
                     })
                   }
                 />

@@ -10,6 +10,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import { BadgeCheck, MapPin, ShieldCheck, Sparkles, Star } from 'lucide-react-native';
 import { PartnerWithDistance } from '@hooks/usePartnerMatching';
 import { getActivityStyle } from '@lib/activityStyles';
@@ -95,7 +96,7 @@ export const PartnerCard = React.forwardRef<PartnerCardHandle, PartnerCardProps>
           style={styles.pressable}
           onPress={onOpenProfile}
           accessibilityRole="button"
-          accessibilityLabel={`${partner.name}, ${partner.age}, ${partner.activities.join(' ו')}, ${partner.distanceKm.toFixed(1)} ק"מ, ${partner.matchPercent}% התאמה. לחץ לפרופיל`}
+          accessibilityLabel={`${partner.name}${partner.age !== undefined ? `, ${partner.age}` : ''}, ${partner.activities.join(' ו')}${partner.distanceKm !== null ? `, ${partner.distanceKm.toFixed(1)} ק"מ` : ''}, ${partner.matchPercent}% התאמה. לחץ לפרופיל`}
         >
           <LinearGradient
             colors={[theme.colors.magenta, theme.colors.cyan]}
@@ -103,15 +104,20 @@ export const PartnerCard = React.forwardRef<PartnerCardHandle, PartnerCardProps>
             end={{ x: 1, y: 1 }}
             style={styles.hero}
           >
-            <View style={styles.distancePill}>
-              <MapPin color={theme.colors.black} size={13} strokeWidth={2} />
-              <Text style={styles.pillText}>{`${partner.distanceKm.toFixed(1)} ק"מ`}</Text>
-            </View>
+            {partner.avatar && (
+              <Image source={{ uri: partner.avatar }} style={StyleSheet.absoluteFill} contentFit="cover" />
+            )}
+            {partner.distanceKm !== null && (
+              <View style={styles.distancePill}>
+                <MapPin color={theme.colors.black} size={13} strokeWidth={2} />
+                <Text style={styles.pillText}>{`${partner.distanceKm.toFixed(1)} ק"מ`}</Text>
+              </View>
+            )}
             <View style={styles.matchPill}>
               <Sparkles color={theme.colors.black} size={13} strokeWidth={2} />
               <Text style={styles.pillText}>{partner.matchPercent}% התאמה</Text>
             </View>
-            <Text style={styles.initial}>{partner.name[0]}</Text>
+            {!partner.avatar && <Text style={styles.initial}>{partner.name[0]}</Text>}
             <View style={styles.activityPill}>
               <ActivityIcon color={theme.colors.text} size={14} strokeWidth={2} />
               <Text style={styles.activityPillText}>{mainActivity}</Text>
@@ -120,35 +126,43 @@ export const PartnerCard = React.forwardRef<PartnerCardHandle, PartnerCardProps>
 
           <View style={styles.body}>
             <View style={styles.nameRow}>
-              <View style={styles.ratingPill}>
-                <Star color={theme.colors.warning} size={13} strokeWidth={2} fill={theme.colors.warning} />
-                <Text style={styles.ratingText}>
-                  {partner.sessions} · {partner.rating.toFixed(1)}
-                </Text>
-              </View>
+              {partner.rating !== undefined ? (
+                <View style={styles.ratingPill}>
+                  <Star color={theme.colors.warning} size={13} strokeWidth={2} fill={theme.colors.warning} />
+                  <Text style={styles.ratingText}>
+                    {partner.sessions ?? 0} · {partner.rating.toFixed(1)}
+                  </Text>
+                </View>
+              ) : (
+                <View />
+              )}
               <View style={styles.nameGroup}>
                 {partner.verified && <BadgeCheck color={theme.colors.cyan} size={20} strokeWidth={2} />}
                 <Text style={styles.name}>
-                  {partner.name}, {partner.age}
+                  {partner.age !== undefined ? `${partner.name}, ${partner.age}` : partner.name}
                 </Text>
               </View>
             </View>
 
-            <Text style={styles.bio}>{partner.bio}</Text>
+            {!!partner.bio && <Text style={styles.bio}>{partner.bio}</Text>}
 
-            <Text style={styles.availabilityLabel}>
-              זמינות · {partner.availableFrom}–{partner.availableTo}
-            </Text>
-            <View style={styles.daysRow}>
-              {WEEKDAY_LETTERS.map((letter, index) => {
-                const available = partner.availableDays.includes(index);
-                return (
-                  <View key={letter} style={[styles.dayChip, available && styles.dayChipActive]}>
-                    <Text style={[styles.dayText, available && styles.dayTextActive]}>{letter}</Text>
-                  </View>
-                );
-              })}
-            </View>
+            {partner.availableDays !== undefined && (
+              <>
+                <Text style={styles.availabilityLabel}>
+                  זמינות · {partner.availableFrom}–{partner.availableTo}
+                </Text>
+                <View style={styles.daysRow}>
+                  {WEEKDAY_LETTERS.map((letter, index) => {
+                    const available = partner.availableDays?.includes(index);
+                    return (
+                      <View key={letter} style={[styles.dayChip, available && styles.dayChipActive]}>
+                        <Text style={[styles.dayText, available && styles.dayTextActive]}>{letter}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </>
+            )}
 
             {partner.verified && (
               <View style={styles.verifiedBanner}>
