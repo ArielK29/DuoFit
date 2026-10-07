@@ -23,13 +23,8 @@ interface WorkoutRow {
 const FALLBACK_NAME = 'שותף לאימון';
 const DELETED_NAME = 'חבר שעזב';
 
-export interface WorkoutFeed {
-  active: ScheduledWorkout[];
-  // Workouts the OTHER member cancelled (so this phone can say so once).
-  cancelledByPartner: ScheduledWorkout[];
-}
-
-export async function fetchWorkouts(me: string): Promise<WorkoutFeed> {
+// Cancelled workouts are left out (the partner hears about a cancellation through a server notification).
+export async function fetchWorkouts(me: string): Promise<ScheduledWorkout[]> {
   const { data, error } = await supabase
     .from('workouts')
     .select(
@@ -38,7 +33,7 @@ export async function fetchWorkouts(me: string): Promise<WorkoutFeed> {
     .order('scheduled_at', { ascending: true })
     .limit(500);
   if (error) throw error;
-  const feed: WorkoutFeed = { active: [], cancelledByPartner: [] };
+  const active: ScheduledWorkout[] = [];
   for (const row of (data ?? []) as unknown as WorkoutRow[]) {
     const iAmHost = row.host_id === me;
     const otherId = iAmHost ? row.guest_id : row.host_id;
@@ -53,10 +48,9 @@ export async function fetchWorkouts(me: string): Promise<WorkoutFeed> {
       checkedIn: (iAmHost ? row.host_checked_in_at : row.guest_checked_in_at) !== null,
       iAmHost,
     };
-    if (row.cancelled_at === null) feed.active.push(workout);
-    else if (row.cancelled_by !== null && row.cancelled_by !== me) feed.cancelledByPartner.push(workout);
+    if (row.cancelled_at === null) active.push(workout);
   }
-  return feed;
+  return active;
 }
 
 // Cancels a workout before it starts (the server refuses after the start or after a check-in).

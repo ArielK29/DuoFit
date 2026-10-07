@@ -138,6 +138,8 @@ export const useChatStore = create<ChatState>()(
 
       const notifyIncoming = (partnerId: string, partnerName: string, message: ChatMessage) => {
         if (useActiveChat.getState().activeId === partnerId) return;
+        // Real members: the server records an invitation as its own notification.
+        if (!DEMO_DATA && message.kind === 'invite') return;
         useNotificationStore.getState().add({
           kind: 'message',
           title: partnerName,
