@@ -7,6 +7,7 @@ import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { usePartnerStore } from '@hooks/usePartnerStore';
 import { useFeedStore } from '@hooks/useFeedStore';
 import { usePlankBoard } from '@hooks/usePlankBoard';
+import { useGroupStore } from '@hooks/useGroupStore';
 import { clearRemoteChatCache } from '@lib/remoteChat';
 
 // Everything below is stored on the device. When the user signs out (or the
@@ -17,6 +18,7 @@ function resetLocalData() {
   usePartnerStore.getState().reset();
   useFeedStore.getState().reset();
   usePlankBoard.getState().reset();
+  useGroupStore.getState().reset();
   useChatStore.setState({ conversations: {}, appliedInvites: [] });
   clearRemoteChatCache();
   useNotificationStore.setState({ items: [] });

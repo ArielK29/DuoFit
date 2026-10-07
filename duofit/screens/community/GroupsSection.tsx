@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { Check } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Pressable, ScrollView, TextInput, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Check, MessageCircle, Plus } from 'lucide-react-native';
+import { BottomSheet } from '@components/BottomSheet';
+import { Button } from '@components/Button';
+import { useGroupStore } from '@hooks/useGroupStore';
+import { GROUP_ACTIVITIES, RemoteGroup, toGroupKey } from '@lib/remoteGroups';
+import { DEMO_DATA } from '@lib/demo';
+import { visualRightText } from '@lib/rtl';
 import { GROUPS, CommunityGroup } from '@constants/community';
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { getActivityStyle } from '@lib/activityStyles';
@@ -11,7 +18,8 @@ import { theme } from '@styles/theme';
 export const GroupsSection: React.FC = () => {
   const [showAll, setShowAll] = useState(false);
 
-  // Groups are created by real people; until that exists there is nothing to show.
+  // Real members see the real groups (created by members); the demo keeps its example groups.
+  if (!DEMO_DATA) return <RealGroupsSection />;
   if (GROUPS.length === 0) return null;
 
   return (
@@ -36,6 +44,119 @@ export const GroupsSection: React.FC = () => {
           ))}
         </ScrollView>
       )}
+    </View>
+  );
+};
+
+// Real groups: the directory from the server, join / leave, open the group chat, create a group.
+const RealGroupsSection: React.FC = () => {
+  const router = useRouter();
+  const groups = useGroupStore((state) => state.groups);
+  const joinedIds = useGroupStore((state) => state.joinedIds);
+  const loaded = useGroupStore((state) => state.loaded);
+  const [createVisible, setCreateVisible] = useState(false);
+
+  useEffect(() => {
+    useGroupStore.getState().load();
+  }, []);
+
+  const openChat = (group: RemoteGroup) =>
+    router.push({ pathname: '/conversation', params: { partnerId: toGroupKey(group.id), partnerName: group.name } });
+
+  return (
+    <View style={styles.wrap}>
+      <View style={styles.header}>
+        <Text style={styles.title}>קבוצות</Text>
+        <Pressable style={styles.createLink} onPress={() => setCreateVisible(true)} hitSlop={12} accessibilityRole="button">
+          <Plus color={theme.colors.cyan} size={16} strokeWidth={2.5} />
+          <Text style={styles.createText}>צור קבוצה</Text>
+        </Pressable>
+      </View>
+
+      {groups.length === 0 ? (
+        <Text style={styles.empty}>{loaded ? 'עוד אין קבוצות. פתח את הראשונה והזמן אחרים להצטרף' : 'טוען קבוצות...'}</Text>
+      ) : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carousel}>
+          {groups.map((group) => {
+            const joined = joinedIds.includes(group.id);
+            const { icon: Icon, color } = getActivityStyle(group.activity);
+            return (
+              <View key={group.id} style={styles.card}>
+                <View style={[styles.iconTile, { backgroundColor: `${color}26` }]}>
+                  <Icon color={color} size={24} strokeWidth={2} />
+                </View>
+                <Text style={styles.name}>{group.name}</Text>
+                <Text style={styles.members}>{`${group.memberCount} חברים`}</Text>
+                {joined ? (
+                  <View style={styles.actions}>
+                    <Pressable style={[styles.joinButton, styles.openButton]} onPress={() => openChat(group)} accessibilityRole="button">
+                      <MessageCircle color={theme.colors.black} size={16} strokeWidth={2.5} />
+                      <Text style={styles.joinText}>צ'אט</Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <Pressable
+                    style={styles.joinButton}
+                    onPress={() => useGroupStore.getState().join(group.id)}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.joinText}>הצטרף</Text>
+                  </Pressable>
+                )}
+              </View>
+            );
+          })}
+        </ScrollView>
+      )}
+
+      <CreateGroupSheet visible={createVisible} onClose={() => setCreateVisible(false)} />
+    </View>
+  );
+};
+
+const CreateGroupSheet: React.FC<{ visible: boolean; onClose: () => void }> = ({ visible, onClose }) => (
+  <BottomSheet visible={visible} title="קבוצה חדשה" onClose={onClose}>
+    <CreateGroupForm onClose={onClose} />
+  </BottomSheet>
+);
+
+const CreateGroupForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [name, setName] = useState('');
+  const [activity, setActivity] = useState(GROUP_ACTIVITIES[0]);
+  const [sending, setSending] = useState(false);
+  const canCreate = name.trim().length >= 2 && !sending;
+
+  const create = async () => {
+    if (!canCreate) return;
+    setSending(true);
+    const created = await useGroupStore.getState().create(name, activity);
+    setSending(false);
+    if (created) onClose();
+  };
+
+  return (
+    <View>
+      <TextInput
+        style={styles.nameInput}
+        value={name}
+        onChangeText={setName}
+        placeholder="שם הקבוצה"
+        placeholderTextColor={theme.colors.textTertiary}
+        maxLength={60}
+      />
+      <View style={styles.activityRow}>
+        {GROUP_ACTIVITIES.map((item) => (
+          <Pressable
+            key={item}
+            style={[styles.activityChip, activity === item && styles.activityChipActive]}
+            onPress={() => setActivity(item)}
+            accessibilityState={{ selected: activity === item }}
+          >
+            <Text style={[styles.activityText, activity === item && styles.activityTextActive]}>{item}</Text>
+          </Pressable>
+        ))}
+      </View>
+      <Button label="צור קבוצה" variant="primary" size="lg" loading={sending} disabled={!canCreate} onPress={create} />
     </View>
   );
 };
@@ -143,5 +264,66 @@ const styles = StyleSheet.create({
   },
   joinedText: {
     color: theme.colors.cyan,
+  },
+  createLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    minHeight: 48,
+  },
+  createText: {
+    fontSize: 14,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.cyan,
+  },
+  empty: {
+    fontSize: 14,
+    fontFamily: theme.typography.body.fontFamily,
+    color: theme.colors.textSecondary,
+    ...visualRightText,
+  },
+  actions: {
+    alignSelf: 'stretch',
+  },
+  openButton: {
+    backgroundColor: theme.colors.cyan,
+  },
+  nameInput: {
+    minHeight: 56,
+    backgroundColor: theme.colors.bg,
+    borderWidth: 1,
+    borderColor: theme.colors.surfaceHover,
+    borderRadius: theme.borderRadius.lg,
+    paddingHorizontal: theme.spacing.lg,
+    fontSize: 16,
+    fontFamily: theme.typography.body.fontFamily,
+    color: theme.colors.text,
+    textAlign: 'right',
+    marginBottom: theme.spacing.md,
+  },
+  activityRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
+    justifyContent: 'flex-end',
+    marginBottom: theme.spacing.lg,
+  },
+  activityChip: {
+    minHeight: 48,
+    justifyContent: 'center',
+    backgroundColor: theme.colors.bg,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  activityChipActive: {
+    backgroundColor: theme.colors.cyan,
+  },
+  activityText: {
+    fontSize: 15,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textSecondary,
+  },
+  activityTextActive: {
+    color: theme.colors.black,
   },
 });
