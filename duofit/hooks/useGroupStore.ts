@@ -18,7 +18,7 @@ interface GroupState {
   load: () => Promise<void>;
   create: (name: string, activity: string) => Promise<boolean>;
   join: (groupId: string) => Promise<void>;
-  leave: (groupId: string) => Promise<void>;
+  leave: (groupId: string) => Promise<boolean>;
   applyRemoteMessage: (row: api.GroupMessageRow) => Promise<void>;
   reportMessage: (messageId: string) => Promise<void>;
   reset: () => void;
@@ -44,7 +44,10 @@ export const useGroupStore = create<GroupState>()((set, get) => ({
     }
     set({ loading: true });
     try {
-      const [groups, joinedIds] = await Promise.all([api.fetchGroups(), api.fetchMyGroupIds(userId)]);
+      const [directory, joinedIds] = await Promise.all([api.fetchGroups(), api.fetchMyGroupIds(userId)]);
+      // A joined group that is older than the newest 100 is fetched on its own.
+      const missing = joinedIds.filter((id) => !directory.some((group) => group.id === id));
+      const groups = [...directory, ...(await api.fetchGroupsByIds(missing))];
       if (me() !== userId) return; // signed out while loading
       set({ groups, joinedIds, loaded: true, loadFailed: false });
 
@@ -59,6 +62,7 @@ export const useGroupStore = create<GroupState>()((set, get) => ({
           .filter((group) => joinedIds.includes(group.id))
           .map(async (group) => {
             const messages = await api.fetchGroupMessages(group.id);
+            if (me() !== userId) return; // signed out (or switched account) while loading: write nothing
             messages.forEach((item) => names.set(item.row.sender_id, item.senderName));
             useChatStore.getState().setGroupConversation(
               api.toGroupKey(group.id),
@@ -89,8 +93,8 @@ export const useGroupStore = create<GroupState>()((set, get) => ({
   create: async (name, activity) => {
     try {
       await api.createGroup(name, activity);
-    } catch {
-      notifyFailure();
+    } catch (error) {
+      notifyFailure(api.groupErrorMessage(error) ?? undefined);
       return false;
     }
     await get().load();
@@ -100,8 +104,8 @@ export const useGroupStore = create<GroupState>()((set, get) => ({
   join: async (groupId) => {
     try {
       await api.joinGroup(groupId);
-    } catch {
-      notifyFailure();
+    } catch (error) {
+      notifyFailure(api.groupErrorMessage(error) ?? undefined);
       return;
     }
     await get().load();
@@ -109,15 +113,16 @@ export const useGroupStore = create<GroupState>()((set, get) => ({
 
   leave: async (groupId) => {
     const userId = me();
-    if (!userId) return;
+    if (!userId) return false;
     try {
       await api.leaveGroup(groupId, userId);
     } catch {
       notifyFailure();
-      return;
+      return false;
     }
     useChatStore.getState().removeConversation(api.toGroupKey(groupId));
     await get().load();
+    return true;
   },
 
   applyRemoteMessage: async (row) => {

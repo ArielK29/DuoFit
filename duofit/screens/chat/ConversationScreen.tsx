@@ -17,7 +17,7 @@ import { notifyInviteAnswered } from '@lib/notifications';
 import { useGroupStore } from '@hooks/useGroupStore';
 import { useFeedStore } from '@hooks/useFeedStore';
 import { askChoice } from '@lib/askChoice';
-import { groupIdFromKey } from '@lib/remoteGroups';
+import { groupIdFromKey, isGroupKey } from '@lib/remoteGroups';
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
 
@@ -45,7 +45,8 @@ export function ConversationScreen() {
   }, [partnerId, partnerName, ensureConversation]);
 
   const messages = conversation?.messages ?? [];
-  const isGroup = Boolean(conversation?.isGroup);
+  // A group chat is recognised by its key too, so the screen is right before the first load and after leaving.
+  const isGroup = Boolean(conversation?.isGroup) || (!DEMO_DATA && isGroupKey(partnerId));
 
   // Tell the notification logic which chat is on screen.
   useEffect(() => {
@@ -84,8 +85,7 @@ export function ConversationScreen() {
         label: 'עזוב קבוצה',
         destructive: true,
         onPress: async () => {
-          await useGroupStore.getState().leave(groupIdFromKey(partnerId));
-          router.back();
+          if (await useGroupStore.getState().leave(groupIdFromKey(partnerId))) router.back();
         },
       },
     ]);
