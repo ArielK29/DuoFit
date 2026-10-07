@@ -1,6 +1,11 @@
 import { useAuth } from '@hooks/useAuth';
 import { RemoteNotificationRow, fetchNotifications } from '@lib/remoteNotifications';
-import { useNotificationStore, AppNotification } from '@hooks/useNotificationStore';
+import {
+  useNotificationStore,
+  AppNotification,
+  flushPendingNotificationWrites,
+  lastNotificationClearAt,
+} from '@hooks/useNotificationStore';
 
 const FALLBACK_NAME = 'חבר/ה';
 
@@ -39,8 +44,11 @@ export async function hydrateNotifications(): Promise<void> {
   }
   loading = true;
   try {
+    const startedAt = Date.now();
+    await flushPendingNotificationWrites().catch(() => {});
     const rows = await fetchNotifications();
     if (useAuth.getState().user?.id !== me) return; // signed out while loading
+    if (lastNotificationClearAt() >= startedAt) return; // the member cleared the list meanwhile: do not bring it back
     useNotificationStore.getState().mergeRemote(rows.map(toAppNotification));
   } catch {
     // Offline: keep what is on the phone.
