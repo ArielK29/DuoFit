@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,10 @@ import {
 } from 'react-native';
 import { Send } from 'lucide-react-native';
 import { useCommunityStore } from '@hooks/useCommunityStore';
+import { useFeedStore } from '@hooks/useFeedStore';
+import { useAuth } from '@hooks/useAuth';
+import { DEMO_DATA } from '@lib/demo';
+import { askChoice } from '@lib/askChoice';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 
@@ -34,15 +38,54 @@ const CommentsContent: React.FC<{ postId: string; authorName: string; onClose: (
   authorName,
   onClose,
 }) => {
-  const comments = useCommunityStore((state) => state.comments[postId] ?? EMPTY);
-  const addComment = useCommunityStore((state) => state.addComment);
+  const demoComments = useCommunityStore((state) => state.comments[postId] ?? EMPTY);
+  const addDemoComment = useCommunityStore((state) => state.addComment);
+  const remoteComments = useFeedStore((state) => state.comments[postId]);
+  const feed = useFeedStore.getState();
+  const myId = useAuth((state) => state.user?.id);
   const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
 
-  const send = () => {
+  useEffect(() => {
+    if (!DEMO_DATA) useFeedStore.getState().loadComments(postId);
+  }, [postId]);
+
+  const send = async () => {
     const text = draft.trim();
-    if (!text) return;
-    addComment(postId, text);
-    setDraft('');
+    if (!text || sending) return;
+    if (DEMO_DATA) {
+      addDemoComment(postId, text);
+      setDraft('');
+      return;
+    }
+    setSending(true);
+    const saved = await feed.addComment(postId, text);
+    setSending(false);
+    if (saved) setDraft('');
+  };
+
+  const comments = DEMO_DATA
+    ? demoComments.map((item) => ({ id: item.id, text: item.text, author: 'אתה', userId: myId ?? '' }))
+    : (remoteComments ?? []).map((item) => ({
+        id: item.id,
+        text: item.body,
+        author: item.userId === myId ? 'אתה' : item.authorName,
+        userId: item.userId,
+      }));
+
+  // Own comments can be deleted; other people's comments can be reported or their writer blocked.
+  const openMenu = (comment: { id: string; author: string; userId: string }) => {
+    if (DEMO_DATA) return;
+    if (comment.userId === myId) {
+      askChoice('מחיקת תגובה', 'למחוק את התגובה שלך?', [
+        { label: 'מחק', destructive: true, onPress: () => feed.deleteComment(postId, comment.id) },
+      ]);
+      return;
+    }
+    askChoice('דיווח או חסימה', `התגובה של ${comment.author}.`, [
+      { label: 'דווח והסתר', destructive: true, onPress: () => feed.report({ commentId: comment.id }, 'inappropriate') },
+      { label: `חסום את ${comment.author}`, destructive: true, onPress: () => feed.block(comment.userId) },
+    ]);
   };
 
   return (
@@ -51,17 +94,21 @@ const CommentsContent: React.FC<{ postId: string; authorName: string; onClose: (
       <View style={styles.sheet}>
         <View style={styles.handle} />
         <Text style={styles.title}>{`תגובות לפוסט של ${authorName}`}</Text>
-        <Text style={styles.hint}>תגובות הקהילה בפוסטים לדוגמה הן לא אמיתיות. כאן מופיעות התגובות שלך.</Text>
+        <Text style={styles.hint}>
+          {DEMO_DATA
+            ? 'תגובות הקהילה בפוסטים לדוגמה הן לא אמיתיות. כאן מופיעות התגובות שלך.'
+            : 'לחיצה על תגובה: מחיקה, דיווח או חסימה'}
+        </Text>
 
         <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
           {comments.length === 0 ? (
-            <Text style={styles.empty}>עוד אין תגובות ממך. היה הראשון להגיב</Text>
+            <Text style={styles.empty}>{DEMO_DATA ? 'עוד אין תגובות ממך. היה הראשון להגיב' : 'עוד אין תגובות. היה הראשון להגיב'}</Text>
           ) : (
             comments.map((comment) => (
-              <View key={comment.id} style={styles.comment}>
-                <Text style={styles.commentAuthor}>אתה</Text>
+              <Pressable key={comment.id} style={styles.comment} onPress={() => openMenu(comment)}>
+                <Text style={styles.commentAuthor}>{comment.author}</Text>
                 <Text style={styles.commentText}>{comment.text}</Text>
-              </View>
+              </Pressable>
             ))
           )}
         </ScrollView>
@@ -73,13 +120,13 @@ const CommentsContent: React.FC<{ postId: string; authorName: string; onClose: (
             onChangeText={setDraft}
             placeholder="כתוב תגובה..."
             placeholderTextColor={theme.colors.textTertiary}
-            maxLength={200}
+            maxLength={DEMO_DATA ? 200 : 300}
             onSubmitEditing={send}
           />
           <Pressable
             style={[styles.sendButton, !draft.trim() && styles.sendDisabled]}
             onPress={send}
-            disabled={!draft.trim()}
+            disabled={!draft.trim() || sending}
             accessibilityLabel="שלח תגובה"
           >
             <Send color={theme.colors.black} size={20} strokeWidth={2} />

@@ -8,7 +8,9 @@ import { visualRightText } from '@lib/rtl';
 export interface FeedPost {
   id: string;
   authorName: string;
+  authorId?: string;
   authorInitial: string;
+  avatarUrl?: string;
   avatarColor: string;
   verified: boolean;
   activity: string;
@@ -45,7 +47,11 @@ export const PostCard: React.FC<PostCardProps> = ({
   <View style={styles.card}>
     <View style={styles.header}>
       <View style={[styles.avatar, { backgroundColor: post.avatarColor }]}>
-        <Text style={styles.avatarInitial}>{post.authorInitial}</Text>
+        {post.avatarUrl ? (
+          <Image source={{ uri: post.avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
+        ) : (
+          <Text style={styles.avatarInitial}>{post.authorInitial}</Text>
+        )}
       </View>
       <View style={styles.authorBlock}>
         <View style={styles.nameRow}>
@@ -187,6 +193,11 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.full,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: 48,
+    height: 48,
   },
   avatarInitial: {
     fontSize: 18,

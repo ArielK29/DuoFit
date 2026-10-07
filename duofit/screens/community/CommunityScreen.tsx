@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { View, Text, ScrollView, Pressable, Alert, RefreshControl, StyleSheet } from 'react-native';
 import { Camera, Plus } from 'lucide-react-native';
 import { HeaderActions, UserAvatar } from '@components/HeaderActions';
 import { useAuth } from '@hooks/useAuth';
 import { useCommunityStore, UserPost } from '@hooks/useCommunityStore';
+import { useFeedStore } from '@hooks/useFeedStore';
 import { FEED_FILTERS, MEMBER_COUNT, SEED_POSTS } from '@constants/community';
 import { ChallengeSection } from '@screens/community/ChallengeSection';
 import { CommentsModal } from '@screens/community/CommentsModal';
@@ -13,6 +14,7 @@ import { FeedPost, PostCard } from '@screens/community/PostCard';
 import { PlankTimerModal } from '@screens/community/PlankTimerModal';
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
+import { askChoice } from '@lib/askChoice';
 import { visualLeft, visualRightText } from '@lib/rtl';
 
 function formatTimeAgo(iso: string): string {
@@ -28,6 +30,7 @@ export function CommunityScreen() {
   const user = useAuth((state) => state.user);
   const { userPosts, likedPostIds, rsvpPostIds, hiddenPostIds, comments } = useCommunityStore();
   const { toggleLike, toggleRsvp, hidePost, deletePost } = useCommunityStore.getState();
+  const feed = useFeedStore();
 
   const [activeFilter, setActiveFilter] = useState('הכל');
   const [composeVisible, setComposeVisible] = useState(false);
@@ -35,6 +38,15 @@ export function CommunityScreen() {
   const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
 
   const initial = user?.name?.[0] ?? '?';
+
+  // Real members: load the shared feed when the tab opens and when the member pulls down.
+  const loadFeed = feed.load;
+  useEffect(() => {
+    if (!DEMO_DATA) loadFeed();
+  }, [loadFeed]);
+  const refresh = useCallback(() => {
+    loadFeed();
+  }, [loadFeed]);
 
   const myPosts: FeedPost[] = userPosts.map((post: UserPost) => ({
     id: post.id,
@@ -66,26 +78,66 @@ export function CommunityScreen() {
     isMine: false,
   }));
 
-  const visiblePosts = [...myPosts, ...seedPosts].filter(
+  const remotePosts: FeedPost[] = feed.posts.map((post) => ({
+    id: post.id,
+    authorId: post.userId,
+    authorName: post.userId === user?.id ? (user?.name ?? 'אתה') : post.authorName,
+    authorInitial: post.authorName[0] ?? '?',
+    avatarUrl: post.avatarUrl ?? undefined,
+    avatarColor: theme.colors.magenta,
+    verified: false,
+    activity: post.activity,
+    meta: formatTimeAgo(post.createdAt),
+    text: post.body,
+    imageUri: post.imageUrl ?? undefined,
+    likes: post.likes,
+    comments: post.comments,
+    isMine: post.userId === user?.id,
+  }));
+
+  const allPosts = DEMO_DATA ? [...myPosts, ...seedPosts] : remotePosts;
+  const visiblePosts = allPosts.filter(
     (post) => !hiddenPostIds.includes(post.id) && (activeFilter === 'הכל' || post.activity === activeFilter)
   );
-  const commentsPost = [...myPosts, ...seedPosts].find((post) => post.id === commentsPostId);
+  const commentsPost = allPosts.find((post) => post.id === commentsPostId);
+  // The post disappeared (reported, or its author was blocked) while its comments were open.
+  useEffect(() => {
+    if (!DEMO_DATA && feed.loaded && commentsPostId && !commentsPost) setCommentsPostId(null);
+  }, [feed.loaded, commentsPostId, commentsPost]);
+  const isLiked = (postId: string) =>
+    DEMO_DATA ? likedPostIds.includes(postId) : (feed.posts.find((item) => item.id === postId)?.liked ?? false);
 
-  const reportPost = (post: FeedPost) =>
-    Alert.alert('דיווח על פוסט', `לדווח על הפוסט של ${post.authorName}? הוא יוסתר מהפיד שלך.`, [
-      { text: 'ביטול', style: 'cancel' },
-      { text: 'דווח והסתר', style: 'destructive', onPress: () => hidePost(post.id) },
-    ]);
+  const reportPost = (post: FeedPost) => {
+    if (DEMO_DATA) {
+      Alert.alert('דיווח על פוסט', `לדווח על הפוסט של ${post.authorName}? הוא יוסתר מהפיד שלך.`, [
+        { text: 'ביטול', style: 'cancel' },
+        { text: 'דווח והסתר', style: 'destructive', onPress: () => hidePost(post.id) },
+      ]);
+      return;
+    }
+    // Real members: report (hidden for you at once, hidden for everybody after 3 reports) or block the person.
+    askChoice(
+      'דיווח או חסימה',
+      `הפוסט של ${post.authorName}. דיווח מסתיר אותו ממך מיד. חסימה מסתירה את כל מה שהאדם הזה כותב, וגם אתה לא תופיע אצלו.`,
+      [
+        { label: 'דווח והסתר', destructive: true, onPress: () => feed.report({ postId: post.id }, 'inappropriate') },
+        ...(post.authorId ? [{ label: `חסום את ${post.authorName}`, destructive: true, onPress: () => feed.block(post.authorId as string) }] : []),
+      ]
+    );
+  };
 
   const confirmDelete = (post: FeedPost) =>
-    Alert.alert('מחיקת פוסט', 'למחוק את הפוסט שלך?', [
-      { text: 'ביטול', style: 'cancel' },
-      { text: 'מחק', style: 'destructive', onPress: () => deletePost(post.id) },
+    askChoice('מחיקת פוסט', 'למחוק את הפוסט שלך?', [
+      { label: 'מחק', destructive: true, onPress: () => (DEMO_DATA ? deletePost(post.id) : feed.deletePost(post.id)) },
     ]);
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={DEMO_DATA ? undefined : <RefreshControl refreshing={feed.loading} onRefresh={refresh} tintColor={theme.colors.cyan} />}
+      >
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.title}>קהילה</Text>
@@ -133,16 +185,22 @@ export function CommunityScreen() {
 
         {visiblePosts.length === 0 ? (
           <Text style={styles.emptyFeed}>
-            {activeFilter === 'הכל' ? 'עוד אין פוסטים. היה הראשון לשתף איך היה האימון' : 'אין פוסטים בקטגוריה הזו כרגע'}
+            {feed.loading && !feed.loaded
+              ? 'טוען את הפיד...'
+              : feed.loadFailed && !feed.loaded
+                ? 'לא הצלחנו לטעון את הפיד. משוך למטה כדי לנסות שוב'
+              : activeFilter === 'הכל'
+                ? 'עוד אין פוסטים. היה הראשון לשתף איך היה האימון'
+                : 'אין פוסטים בקטגוריה הזו כרגע'}
           </Text>
         ) : (
           visiblePosts.map((post) => (
             <PostCard
               key={post.id}
               post={post}
-              liked={likedPostIds.includes(post.id)}
+              liked={isLiked(post.id)}
               rsvped={rsvpPostIds.includes(post.id)}
-              onToggleLike={() => toggleLike(post.id)}
+              onToggleLike={() => (DEMO_DATA ? toggleLike(post.id) : feed.toggleLike(post.id))}
               onOpenComments={() => setCommentsPostId(post.id)}
               onToggleRsvp={() => toggleRsvp(post.id)}
               onReport={() => reportPost(post)}
