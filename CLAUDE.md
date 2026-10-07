@@ -251,12 +251,13 @@ Official Supabase skills are installed in `.claude/skills/` (`supabase`, `supaba
 - `storage` bucket `avatars`: own folder, 5 MB, jpeg/png/webp.
 - `conversations`, `messages`, `conversation_reads`: 1:1 chat between members, invitation answered by the recipient only, anti-spam limits, Realtime delivery.
 - `progress_settings`, `weight_entries`: own rows only (goals, plank record, weight log).
+- `notifications`: written only by triggers (invitation sent/answered, workout cancelled, comment on my post) through `private.notify`; a member reads, marks read (server-stamped) and deletes own rows; newest 200 kept; realtime to the owner.
 - `workouts`: shared workout per accepted invitation (created by a trigger from the invitation, participants read, own check-in only, window 3 h before to 24 h after). Either member can cancel before the start (not after a check-in); when a member deletes their account the other keeps the workout (host_id/guest_id set null, orphan rows removed). Known: streaks count days and rely on self check-in, so one person with two accounts can fake a daily streak; real proof needs a location check-in (product decision).
 - `plank_weekly`: best plank time of the current week per member, readable by members (blocked pairs excluded), own write only, server keeps the best, 2 h cap (weekly leaderboard).
 - `posts`, `comments`, `post_likes`, `user_blocks`, `content_reports` + storage bucket `post-images`: community feed for signed-in members. Block hides both ways, a report hides for the reporter at once and for everybody after 3 reports (helper functions in the non-exposed `private` schema), anti-spam limits, own-folder image policies.
 - Edge Function `delete-account` (`supabase/functions/delete-account`): in-app account deletion; the service role key lives only there.
 
-Still on-device: community groups and group chats, notifications. Moving the rest is tracked in the "[Backend] Move user data to Supabase with RLS" issue; community needs report/block and image storage first.
+Still on-device: community groups and group chats. Moving the rest is tracked in the "[Backend] Move user data to Supabase with RLS" issue; community needs report/block and image storage first.
 
 Any new table needs its own test file or extension of the existing ones; run all of `supabase/tests/*.sql` after changing policies.
 

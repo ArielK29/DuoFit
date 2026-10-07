@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
-import { ArrowLeft, Bell, CalendarClock, MessageCircle, Trophy } from 'lucide-react-native';
+import { ArrowLeft, Bell, CalendarClock, CalendarPlus, CalendarX, MessageCircle, MessageSquare, Trophy } from 'lucide-react-native';
 import {
   AppNotification,
   NotificationKind,
@@ -14,6 +14,9 @@ const KIND_ICONS: Record<NotificationKind, typeof Bell> = {
   workout_soon: CalendarClock,
   goal_reached: Trophy,
   message: MessageCircle,
+  invite: CalendarPlus,
+  workout_cancelled: CalendarX,
+  comment: MessageSquare,
 };
 
 function timeAgo(iso: string): string {
