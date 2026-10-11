@@ -119,7 +119,10 @@ export const SignUpScreen: React.FC = () => {
       <Pressable style={authStyles.linkRow} onPress={() => router.replace('/login')} accessibilityRole="link">
         <Text style={authStyles.linkText}>כבר יש לך חשבון? התחבר</Text>
       </Pressable>
-      <Text style={authStyles.muted}>בהרשמה אתה מסכים לתנאי השירות שלנו</Text>
+      <Text style={authStyles.muted}>בהרשמה אתה מסכים לתנאי השימוש והפרטיות שלנו</Text>
+      <Pressable style={authStyles.linkRow} onPress={() => router.push('/terms')} accessibilityRole="link">
+        <Text style={authStyles.linkText}>קרא את תנאי השימוש והפרטיות</Text>
+      </Pressable>
     </AuthLayout>
   );
 };
