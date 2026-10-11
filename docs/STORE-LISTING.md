@@ -71,7 +71,7 @@ Other answers:
 ## Permission texts already in `app.json`
 - Photos: "כדי לבחור תמונת פרופיל, DuoFit זקוק לגישה לתמונות שלך."
 - Location (when in use): "DuoFit משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך."
-- Notifications: **none today.** Notifications are shown inside the app only. `expo-notifications` is listed as a plugin in `app.json`, but no code imports it. Before the first store build decide: remove the plugin (cleanest, no permission dialog) or build real push notifications (then add a permission text and a data-safety line for the push token).
+- Notifications: the app asks for permission to show **local** notifications: a reminder 30 minutes before a shared workout (`lib/notifications.ts`, scheduled on the device, no push token, no server). Messages and invitations are shown inside the app only. No data-safety line is needed for a local reminder. If real push notifications are ever built (messages when the app is closed), add a push-token table with RLS, EAS push credentials and a data-safety line (issue #95).
 
 ## Screenshots (owner / device needed)
 iPhone 6.7" and 6.1", Android phone. Suggested order: discover (partners), partner profile, chat with an invitation, community, progress, dashboard. Use a real test account with real photos; **never** turn on `EXPO_PUBLIC_DEMO_DATA` for store screenshots (it shows invented people).
