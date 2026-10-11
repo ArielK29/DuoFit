@@ -113,7 +113,8 @@ const FilterSheetContent: React.FC<FilterSheetProps> = ({ filters, partners, onA
                   key={activity}
                   style={[styles.chip, active && styles.chipActive]}
                   onPress={() => toggleActivity(activity)}
-                  accessibilityState={{ selected: active }}
+                  accessibilityRole="button"
+                  aria-selected={active}
                 >
                   <Icon color={active ? theme.colors.black : theme.colors.textSecondary} size={16} strokeWidth={2} />
                   <Text style={[styles.chipText, active && styles.chipTextActive]}>{activity}</Text>

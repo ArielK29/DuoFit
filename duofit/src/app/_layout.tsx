@@ -85,6 +85,9 @@ function AppStack({ isAuthenticated, profileComplete }: { isAuthenticated: boole
         <Stack.Screen name="invite-to-workout" />
         <Stack.Screen name="notifications" />
       </Stack.Protected>
+      {/* Open to everyone (linked from sign-up). Declared last on purpose: the first open screen
+          becomes the fallback for a blocked address, and that must stay the login / home flow. */}
+      <Stack.Screen name="terms" />
     </Stack>
   );
 }

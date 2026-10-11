@@ -24,7 +24,25 @@ import { DEMO_DATA } from '@lib/demo';
 // One-tap answers for the things people say most when arranging a workout.
 const QUICK_REPLIES = ['מתאים לי 💪', 'בוא נקבע', 'איפה נפגשים?', 'אני מאחר/ת 10 דקות', 'תודה!'];
 
+// A chat link without a member id (a malformed or hand-typed address) shows a clear
+// message instead of an empty chat that looks usable.
 export function ConversationScreen() {
+  const router = useRouter();
+  const { partnerId } = useLocalSearchParams<'/conversation', { partnerId: string }>();
+  if (!partnerId) {
+    return (
+      <View style={styles.missing}>
+        <Text style={styles.missingText}>השיחה לא נמצאה</Text>
+        <Pressable style={styles.missingButton} onPress={() => router.replace('/chat')} accessibilityRole="button">
+          <Text style={styles.missingButtonText}>חזרה לצ'אטים</Text>
+        </Pressable>
+      </View>
+    );
+  }
+  return <ConversationContent />;
+}
+
+function ConversationContent() {
   const router = useRouter();
   const { partnerId = '', partnerName = '' } = useLocalSearchParams<
     '/conversation',
@@ -264,6 +282,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.bg,
+  },
+  missing: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: theme.spacing.lg,
+    backgroundColor: theme.colors.bg,
+  },
+  missingText: {
+    fontSize: 18,
+    fontFamily: theme.typography.h3.fontFamily,
+    color: theme.colors.text,
+  },
+  missingButton: {
+    minHeight: 48,
+    minWidth: 48,
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.lg,
+  },
+  missingButtonText: {
+    fontSize: 16,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.magenta,
   },
   header: {
     flexDirection: 'row',

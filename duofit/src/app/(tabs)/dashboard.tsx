@@ -452,8 +452,8 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   avatar: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     borderRadius: theme.borderRadius.full,
     backgroundColor: theme.colors.surfaceHover,
     justifyContent: 'center',
