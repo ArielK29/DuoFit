@@ -136,13 +136,14 @@ begin
   end;
   reset role;
 
-  -- trimming to the newest 200 per member (helper called as the table owner)
+  -- flood cap: 205 pings from ONE member give only 5 unread ones (helper called as the table owner).
+  -- (Trimming to the newest 200 is checked in rls_notifications_hardening_test.sql, test 7.)
   perform set_config('request.jwt.claims', '', true);
   for i in 1..205 loop
     perform private.notify(c, 'post_comment', a, null, 'n' || i);
   end loop;
   select count(*) into n from public.notifications where user_id = c;
-  res := res || '17 a member keeps at most 200 notifications (expect 200): ' || n || E'\n';
+  res := res || '17 a flood of 205 pings from one member is capped (expect 5): ' || n || E'\n';
 
   raise exception E'RLS_NOTIFICATIONS_TEST_RESULTS\n%', res;
 end $$;
