@@ -317,8 +317,13 @@ export const ProfileSetupScreen: React.FC = () => {
                 styles.levelChip,
                 gender === option.value && styles.levelChipActive,
               ]}
-              onPress={() => setGender(option.value)}
+              onPress={() => {
+                setGender(option.value);
+                setError(null);
+              }}
               disabled={loading}
+              accessibilityRole="radio"
+              aria-checked={gender === option.value}
             >
               <Text
                 style={[
@@ -341,8 +346,13 @@ export const ProfileSetupScreen: React.FC = () => {
                 styles.levelChip,
                 fitnessLevel === level.value && styles.levelChipActive,
               ]}
-              onPress={() => setFitnessLevel(level.value)}
+              onPress={() => {
+                setFitnessLevel(level.value);
+                setError(null);
+              }}
               disabled={loading}
+              accessibilityRole="radio"
+              aria-checked={fitnessLevel === level.value}
             >
               <Text
                 style={[
@@ -365,8 +375,13 @@ export const ProfileSetupScreen: React.FC = () => {
                 styles.activityChip,
                 activities.includes(activity) && styles.activityChipActive,
               ]}
-              onPress={() => toggleActivity(activity)}
+              onPress={() => {
+                toggleActivity(activity);
+                setError(null);
+              }}
               disabled={loading}
+              accessibilityRole="checkbox"
+              aria-checked={activities.includes(activity)}
             >
               <Text
                 style={[

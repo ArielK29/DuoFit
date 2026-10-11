@@ -176,7 +176,8 @@ export function CommunityScreen() {
               key={filter}
               style={[styles.chip, activeFilter === filter && styles.chipActive]}
               onPress={() => setActiveFilter(filter)}
-              accessibilityState={{ selected: activeFilter === filter }}
+              accessibilityRole="button"
+              aria-selected={activeFilter === filter}
             >
               <Text style={[styles.chipText, activeFilter === filter && styles.chipTextActive]}>{filter}</Text>
             </Pressable>

@@ -98,7 +98,8 @@ const ComposeContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               key={item}
               style={[styles.chip, activity === item && styles.chipActive]}
               onPress={() => setActivity(item)}
-              accessibilityState={{ selected: activity === item }}
+              accessibilityRole="button"
+              aria-selected={activity === item}
             >
               <Text style={[styles.chipText, activity === item && styles.chipTextActive]}>{item}</Text>
             </Pressable>

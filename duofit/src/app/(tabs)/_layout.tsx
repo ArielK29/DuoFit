@@ -18,13 +18,15 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.surfaceHover,
-          height: 56 + Math.max(bottomInset, 8),
+          // Each tab item is at least 48 px tall (touch target): 64 minus 8 padding and the 1 px border = 55.
+          height: 64 + Math.max(bottomInset, 8),
           paddingBottom: Math.max(bottomInset, 8),
           paddingTop: 8,
         },
         tabBarLabelStyle: {
           fontFamily: theme.typography.label.fontFamily,
           fontSize: 11,
+          lineHeight: 14,
         },
       }}
     >

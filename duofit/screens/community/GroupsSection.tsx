@@ -150,7 +150,8 @@ const CreateGroupForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             key={item}
             style={[styles.activityChip, activity === item && styles.activityChipActive]}
             onPress={() => setActivity(item)}
-            accessibilityState={{ selected: activity === item }}
+            accessibilityRole="button"
+            aria-selected={activity === item}
           >
             <Text style={[styles.activityText, activity === item && styles.activityTextActive]}>{item}</Text>
           </Pressable>
