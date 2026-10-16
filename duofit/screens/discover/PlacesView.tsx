@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, Alert, Linking, Platform, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Linking, Platform, StyleSheet } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
-import { CalendarPlus, MapPinOff, Zap } from 'lucide-react-native';
+import { MapPinOff, Zap } from 'lucide-react-native';
 import { PLACES, Place } from '@constants/places';
 import { darkMapStyle } from '@constants/mapStyle';
 import { PartnerWithDistance, distanceKm } from '@hooks/usePartnerMatching';
@@ -211,13 +211,6 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
             accessibilityRole="button"
             accessibilityLabel={`${place.name}, ${place.type}, ${distance.toFixed(1)} ק"מ${DEMO_DATA ? `, ${place.trainingNow} מתאמנים עכשיו` : ''}`}
           >
-            <Pressable
-              style={styles.calendarButton}
-              onPress={() => Alert.alert('בקרוב', 'תזמון אימון במקום מסוים יהיה זמין בקרוב')}
-              accessibilityLabel={`תזמן אימון ב${place.name}`}
-            >
-              <CalendarPlus color={theme.colors.textSecondary} size={20} strokeWidth={2} />
-            </Pressable>
             <View style={styles.cardText}>
               <Text style={styles.placeName}>{place.name}</Text>
               <Text style={styles.placeMeta}>{`${place.type} · ${distance.toFixed(1)} ק"מ`}</Text>
@@ -559,13 +552,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.cyan,
-  },
-  calendarButton: {
-    width: 48,
-    height: 48,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.surfaceHover,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
