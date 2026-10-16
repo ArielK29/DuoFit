@@ -83,10 +83,11 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
   }, [mapLoaded, fallback]);
 
   const showLoadMessage = loadFailed && !mapLoaded && !(fallback && mapReady);
+  // One plain message per situation: no developer detail (whether the map started) and no text that changes while
+  // it is on screen. On a real Android phone two versions of the old text were drawn on top of each other, because
+  // an overlay over a map surface kept the previous frame when its text changed.
   const loadMessage =
-    internetOk === false
-      ? 'אין חיבור לאינטרנט בטלפון, והמפה צריכה אינטרנט'
-      : `המפה לא נטענה (${mapReady ? 'המפה התחילה אבל האריחים לא הגיעו' : 'המפה לא התחילה'})`;
+    internetOk === false ? 'אין חיבור לאינטרנט בטלפון, והמפה צריכה אינטרנט' : 'המפה לא נטענה כרגע. נסה שוב בעוד רגע';
 
   const selected = showPartners ? partners.find((partner) => partner.id === selectedId) : undefined;
 

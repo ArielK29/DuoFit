@@ -36,7 +36,7 @@ function buildBanner(points: WeightPoint[], isExample: boolean): string {
   const change = points[points.length - 1].kg - points[0].kg;
   const amount = formatKg(Math.abs(change));
   if (Math.abs(change) < 0.05) return 'המשקל שלך יציב מאז ההתחלה';
-  if (change < 0) return `ירדת ${amount} ק"ג. עקביות היא המפתח${isExample ? ', ואתה בדיוק שם.' : '.'}`;
+  if (change < 0) return `ירדת ${amount} ק"ג. עקביות היא המפתח${isExample ? ', וזה בדיוק מה שרואים כאן.' : '.'}`;
   return `עלית ${amount} ק"ג מאז ההתחלה. כל יום הוא הזדמנות חדשה`;
 }
 
