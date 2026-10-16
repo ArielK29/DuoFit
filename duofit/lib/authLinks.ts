@@ -1,0 +1,53 @@
+// Links that come back from Supabase e-mails (password reset), and the check of the new password. Pure: no React, no network.
+import { MIN_PASSWORD_LENGTH } from './authErrors.ts';
+
+export type AuthLink =
+  | { kind: 'session'; accessToken: string; refreshToken: string; type: string | null }
+  | { kind: 'code'; code: string }
+  | { kind: 'error'; code: string | null; expired: boolean }
+  | { kind: 'none' };
+
+const NONE: AuthLink = { kind: 'none' };
+
+// Supabase puts the result in the fragment (#access_token=...) or in the query (?code=...), and errors in either.
+// Order of importance: an error, then tokens, then a one-time code. Incomplete or unrelated links are "none".
+export function parseAuthLink(url: string | null | undefined): AuthLink {
+  if (typeof url !== 'string' || !url.trim()) return NONE;
+  const text = url.trim();
+  const hashAt = text.indexOf('#');
+  const hash = hashAt >= 0 ? text.slice(hashAt + 1) : '';
+  const beforeHash = hashAt >= 0 ? text.slice(0, hashAt) : text;
+  const queryAt = beforeHash.indexOf('?');
+  const query = queryAt >= 0 ? beforeHash.slice(queryAt + 1) : '';
+  const fromHash = new URLSearchParams(hash);
+  const fromQuery = new URLSearchParams(query);
+  const pick = (key: string): string | null => fromHash.get(key) || fromQuery.get(key) || null;
+
+  if (pick('error')) {
+    const code = pick('error_code');
+    const description = pick('error_description') ?? '';
+    return { kind: 'error', code, expired: code === 'otp_expired' || /expired/i.test(description) };
+  }
+  const accessToken = pick('access_token');
+  const refreshToken = pick('refresh_token');
+  if (accessToken && refreshToken) return { kind: 'session', accessToken, refreshToken, type: pick('type') };
+  const code = pick('code');
+  if (code) return { kind: 'code', code };
+  return NONE;
+}
+
+// What the member reads when the link cannot be used. Empty for a usable link.
+export function recoveryLinkMessage(link: AuthLink): string {
+  if (link.kind === 'session' || link.kind === 'code') return '';
+  if (link.kind === 'error' && link.expired) return 'הקישור פג תוקף. בקש קישור חדש לאיפוס הסיסמה.';
+  return 'הקישור לא תקין. בקש קישור חדש לאיפוס הסיסמה.';
+}
+
+// The new password and its confirmation. Returns a Hebrew message, or null when both are fine.
+export function validateNewPassword(password: string, confirm: string): string | null {
+  if (!password) return 'הזן סיסמה חדשה';
+  if (!password.trim()) return 'הסיסמה לא יכולה להכיל רק רווחים';
+  if (password.length < MIN_PASSWORD_LENGTH) return `הסיסמה צריכה להכיל לפחות ${MIN_PASSWORD_LENGTH} תווים`;
+  if (password !== confirm) return 'הסיסמאות לא זהות';
+  return null;
+}
