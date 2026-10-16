@@ -22,7 +22,9 @@
       "package": "com.arielk29.duofit",
       "adaptiveIcon": {
         "backgroundColor": "#050505",
-        "foregroundImage": "./assets/images/android-icon-foreground.png"
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       }
     },
     "web": {
@@ -35,7 +37,7 @@
         {
           "backgroundColor": "#050505",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 200
         }
       ],
       [
