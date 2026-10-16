@@ -13,6 +13,13 @@ export function authErrorMessage(error: { message?: string; code?: string; statu
   if (text.includes('already registered') || text.includes('user_already_exists')) {
     return 'כבר קיים חשבון עם האימייל הזה';
   }
+  // Must come before the weak-password check: Supabase words it "New password should be different...".
+  if (text.includes('same_password') || text.includes('should be different from the old password')) {
+    return 'הסיסמה החדשה חייבת להיות שונה מהסיסמה הקודמת';
+  }
+  if (text.includes('auth session missing') || text.includes('session_not_found') || text.includes('session_expired')) {
+    return 'הקישור כבר לא בתוקף. בקש קישור חדש לאיפוס הסיסמה';
+  }
   if (text.includes('weak_password') || text.includes('password should be')) {
     return 'הסיסמה חלשה מדי. השתמש לפחות ב-8 תווים';
   }

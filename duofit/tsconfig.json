@@ -10,6 +10,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
@@ -42,6 +43,10 @@
       ]
     }
   },
+  "exclude": [
+    "node_modules",
+    "**/*.test.ts"
+  ],
   "include": [
     "**/*.ts",
     "**/*.tsx",
