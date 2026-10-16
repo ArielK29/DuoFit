@@ -88,6 +88,10 @@ function AppStack({ isAuthenticated, profileComplete }: { isAuthenticated: boole
       {/* Open to everyone (linked from sign-up). Declared last on purpose: the first open screen
           becomes the fallback for a blocked address, and that must stay the login / home flow. */}
       <Stack.Screen name="terms" />
+      {/* The e-mail links (password reset, sign-up confirmation) open these, signed in or not:
+          the link itself signs the member in. */}
+      <Stack.Screen name="reset-password" />
+      <Stack.Screen name="auth-confirmed" />
     </Stack>
   );
 }

@@ -1,3 +1,6 @@
+// Shown when signing in before the sign-up link was clicked; the login screen offers a resend next to it.
+export const EMAIL_NOT_CONFIRMED_MESSAGE = 'האימייל עוד לא אומת. לחץ על הקישור שנשלח אליך במייל';
+
 // Turns Supabase Auth errors into plain Hebrew messages. Falls back to a generic
 // message so raw English/technical text never reaches the user.
 export function authErrorMessage(error: { message?: string; code?: string; status?: number } | null | undefined): string {
@@ -8,7 +11,7 @@ export function authErrorMessage(error: { message?: string; code?: string; statu
     return 'אימייל או סיסמה שגויים';
   }
   if (text.includes('email not confirmed') || text.includes('email_not_confirmed')) {
-    return 'האימייל עוד לא אומת. לחץ על הקישור שנשלח אליך במייל';
+    return EMAIL_NOT_CONFIRMED_MESSAGE;
   }
   if (text.includes('already registered') || text.includes('user_already_exists')) {
     return 'כבר קיים חשבון עם האימייל הזה';
