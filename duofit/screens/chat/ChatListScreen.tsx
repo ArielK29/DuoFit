@@ -31,6 +31,7 @@ export function ChatListScreen() {
   const router = useRouter();
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
   const conversations = useChatStore((state) => state.conversations);
+  const loadFailed = useChatStore((state) => state.loadFailed);
   const { openSeeded, ensureConversation, createGroup } = useChatStore.getState();
 
   const [filter, setFilter] = useState<ChatFilter>('all');
@@ -121,10 +122,22 @@ export function ChatListScreen() {
           />
         </View>
 
+        {!DEMO_DATA && loadFailed && query === '' && (
+          <Pressable onPress={() => useChatStore.getState().hydrateRemote()} accessibilityRole="button" hitSlop={8}>
+            <Text style={styles.empty}>
+              {visibleRows.length === 0
+                ? 'לא הצלחנו לטעון את השיחות. לחץ כאן לנסות שוב'
+                : 'לא הצלחנו לרענן את השיחות, ייתכן שחסרות הודעות חדשות. לחץ כאן לנסות שוב'}
+            </Text>
+          </Pressable>
+        )}
+
         {visibleRows.length === 0 ? (
+          !DEMO_DATA && loadFailed && query === '' ? null : (
           <Text style={styles.empty}>
             {query !== '' ? 'לא נמצאו שיחות שמתאימות לחיפוש' : filter === 'groups' ? 'עוד אין לך קבוצות. הצטרף לקבוצה בקהילה' : 'עדיין אין שיחות. מצא שותף בלשונית ההתאמות והתחל לדבר'}
           </Text>
+          )
         ) : (
           visibleRows.map((row) => <ChatRowItem key={row.id} row={row} now={now} onPress={() => openRow(row)} />)
         )}

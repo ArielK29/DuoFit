@@ -61,6 +61,8 @@ interface ChatState {
   conversations: Record<string, Conversation>;
   // Invitations (message ids) whose accepted workout was already added to this phone.
   appliedInvites: string[];
+  // The last load from the server failed (offline); not saved on the phone. The list says so instead of "no chats".
+  loadFailed: boolean;
 
   // Real chat (outside demo mode): load from the server, apply live changes.
   hydrateRemote: () => Promise<void>;
@@ -156,6 +158,7 @@ export const useChatStore = create<ChatState>()(
       return {
       conversations: {},
       appliedInvites: [],
+      loadFailed: false,
 
       // Loads the member's conversations from the server and MERGES them with what is on the
       // phone (messages still being sent are kept; nothing that arrived meanwhile is erased).
@@ -182,7 +185,7 @@ export const useChatStore = create<ChatState>()(
               lastReadAt: laterOf(conversation.lastReadAt, local[conversation.partnerId]?.lastReadAt),
             };
           });
-          set({ conversations: merged });
+          set({ conversations: merged, loadFailed: false });
           // Invitations accepted while this phone was closed still become workouts.
           Object.values(remote).forEach((conversation) =>
             conversation.messages.forEach((message) => {
@@ -193,6 +196,7 @@ export const useChatStore = create<ChatState>()(
           );
         } catch {
           // Offline or not signed in yet: keep what is on the phone, the next load fixes it.
+          if (myId() === me) set({ loadFailed: true });
         } finally {
           hydrating = false;
         }
