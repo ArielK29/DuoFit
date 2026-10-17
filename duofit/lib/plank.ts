@@ -1,4 +1,5 @@
 import { DEMO_DATA } from '@lib/demo';
+import { formatDuration, getDaysLeftInWeek } from '@lib/duration';
 import {
   EXAMPLE_PLANK_BEST_SECONDS,
   PLANK_LEADERBOARD,
@@ -12,15 +13,8 @@ const TOP_ROWS = 5;
 // leaderboard yet.
 const EXAMPLE_RANK = 37;
 
-export function formatDuration(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
-}
-
-export function getDaysLeftInWeek(now: Date): number {
-  return 6 - now.getDay(); // week ends Saturday (getDay: 0 = Sunday)
-}
+// The timer and week helpers live in lib/duration.ts (unit tested); re-exported so existing imports keep working.
+export { formatDuration, getDaysLeftInWeek };
 
 // null = nothing to show yet (outside demo mode there is no made-up starting record).
 export function getPlankSeconds(bestSeconds: number | null): number | null {
