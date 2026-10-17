@@ -13,6 +13,8 @@ import { useCommunityStore } from '@hooks/useCommunityStore';
 import { getActivityStyle } from '@lib/activityStyles';
 import { listState } from '@lib/loadState';
 import { theme } from '@styles/theme';
+import { checkText } from '@lib/contentFilter';
+import { notifyFailure } from '@lib/notifyFailure';
 
 // "קבוצות באזור": joining is real (saved on the device); the member counts
 // and the groups themselves are example data.
@@ -137,6 +139,11 @@ const CreateGroupForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const create = async () => {
     if (!canCreate) return;
+    const verdict = checkText(name);
+    if (!verdict.ok) {
+      notifyFailure(verdict.message, 'לא ניתן ליצור');
+      return;
+    }
     setSending(true);
     const created = await useGroupStore.getState().create(name, activity);
     setSending(false);

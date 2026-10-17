@@ -20,6 +20,8 @@ import { askChoice } from '@lib/askChoice';
 import { groupIdFromKey, isGroupKey } from '@lib/remoteGroups';
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
+import { checkText } from '@lib/contentFilter';
+import { notifyFailure } from '@lib/notifyFailure';
 
 // One-tap answers for the things people say most when arranging a workout.
 const QUICK_REPLIES = ['מתאים לי 💪', 'בוא נקבע', 'איפה נפגשים?', 'אני מאחר/ת 10 דקות', 'תודה!'];
@@ -85,6 +87,11 @@ function ConversationContent() {
   const sendText = (raw: string) => {
     const text = raw.trim();
     if (!text) return;
+    const verdict = checkText(text);
+    if (!verdict.ok) {
+      notifyFailure(verdict.message, 'לא ניתן לשלוח');
+      return;
+    }
     sendMessage(partnerId, partnerName, text);
     setInputText('');
     if (DEMO_DATA) {
