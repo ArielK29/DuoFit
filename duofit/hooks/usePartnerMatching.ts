@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth, User, FitnessLevel } from '@hooks/useAuth';
 import { useLocation, Coordinates } from '@hooks/useLocation';
 import { DEMO_DATA } from '@lib/demo';
+import { distanceKm } from '@lib/distance';
 import { usePartnerStore } from '@hooks/usePartnerStore';
 
 export type Gender = 'M' | 'F';
@@ -188,16 +189,8 @@ export const DEFAULT_FILTERS: PartnerFilters = {
 
 export const ACTIVITY_OPTIONS = ['כוח', 'קליסטניקס', 'ריצה', 'קרוספיט', 'יוגה', 'כדורסל'];
 
-// Haversine formula — sufficient for city-scale distances.
-export function distanceKm(a: Coordinates, b: Coordinates): number {
-  const R = 6371;
-  const dLat = ((b.latitude - a.latitude) * Math.PI) / 180;
-  const dLon = ((b.longitude - a.longitude) * Math.PI) / 180;
-  const lat1 = (a.latitude * Math.PI) / 180;
-  const lat2 = (b.latitude * Math.PI) / 180;
-  const h = Math.sin(dLat / 2) ** 2 + Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
-  return R * 2 * Math.asin(Math.sqrt(h));
-}
+// The distance formula lives in lib/distance.ts (unit tested); re-exported so existing imports keep working.
+export { distanceKm };
 
 // Search anchor for the mock pool. Candidates are fixed points in Tel Aviv,
 // so distances only make sense from inside the city: the device's GPS fix is
