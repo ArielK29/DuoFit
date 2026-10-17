@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MessageCircle, SearchX, SlidersHorizontal, X, Zap } from 'lucide-react-native';
+import { MessageCircle, SearchX, SlidersHorizontal, WifiOff, X, Zap } from 'lucide-react-native';
 import {
   ACTIVITY_OPTIONS,
   DEFAULT_FILTERS,
@@ -51,7 +51,7 @@ export function DiscoverScreen() {
   const cardRef = useRef<PartnerCardHandle>(null);
   const ensureConversation = useChatStore((state) => state.ensureConversation);
 
-  const { allPartners, candidates, currentPartner, viewerOrigin, isLoading, isEmpty, interested, pass, refresh } =
+  const { allPartners, candidates, currentPartner, viewerOrigin, isLoading, loadFailed, isEmpty, interested, pass, refresh } =
     usePartnerMatching(filters);
 
   const handleInterested = () => {
@@ -103,7 +103,7 @@ export function DiscoverScreen() {
   const noPartnersYet = allPartners.length === 0;
 
   // Swipe / invite / message sit in a bar pinned above the tab bar (thumb zone).
-  const showActions = viewMode === 'partners' && !isLoading && !isEmpty && !!currentPartner;
+  const showActions = viewMode === 'partners' && !isLoading && !loadFailed && !isEmpty && !!currentPartner;
 
   const ageChipActive = filters.maxAge === QUICK_AGE;
   const radiusChipActive = filters.radiusKm === QUICK_RADIUS_KM;
@@ -167,6 +167,20 @@ export function DiscoverScreen() {
 
             {isLoading ? (
               <SkeletonLoader style={styles.skeleton} />
+            ) : loadFailed ? (
+              <View style={styles.emptyWrap}>
+                <EmptyState
+                  icon={
+                    <View style={styles.emptyIconCircle}>
+                      <WifiOff color={theme.colors.cyan} size={24} strokeWidth={2} />
+                    </View>
+                  }
+                  headline="לא הצלחנו לטעון שותפים"
+                  subheading="בדוק את החיבור לאינטרנט ונסה שוב"
+                  ctaLabel="נסה שוב"
+                  onCtaPress={refresh}
+                />
+              </View>
             ) : isEmpty || !currentPartner ? (
               <View style={styles.emptyWrap}>
                 <EmptyState

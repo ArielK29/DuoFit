@@ -11,6 +11,7 @@ import { visualRightText } from '@lib/rtl';
 import { GROUPS, CommunityGroup } from '@constants/community';
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { getActivityStyle } from '@lib/activityStyles';
+import { listState } from '@lib/loadState';
 import { theme } from '@styles/theme';
 
 // "קבוצות באזור": joining is real (saved on the device); the member counts
@@ -54,6 +55,8 @@ const RealGroupsSection: React.FC = () => {
   const groups = useGroupStore((state) => state.groups);
   const joinedIds = useGroupStore((state) => state.joinedIds);
   const loaded = useGroupStore((state) => state.loaded);
+  const loading = useGroupStore((state) => state.loading);
+  const loadFailed = useGroupStore((state) => state.loadFailed);
   const [createVisible, setCreateVisible] = useState(false);
 
   useEffect(() => {
@@ -74,7 +77,13 @@ const RealGroupsSection: React.FC = () => {
       </View>
 
       {groups.length === 0 ? (
-        <Text style={styles.empty}>{loaded ? 'עוד אין קבוצות. פתח את הראשונה והזמן אחרים להצטרף' : 'טוען קבוצות...'}</Text>
+        listState({ loading, loaded, failed: loadFailed, count: 0 }) === 'failed' ? (
+          <Pressable onPress={() => useGroupStore.getState().load()} accessibilityRole="button" hitSlop={8}>
+            <Text style={styles.empty}>לא הצלחנו לטעון את הקבוצות. לחץ כאן לנסות שוב</Text>
+          </Pressable>
+        ) : (
+          <Text style={styles.empty}>{loaded ? 'עוד אין קבוצות. פתח את הראשונה והזמן אחרים להצטרף' : 'טוען קבוצות...'}</Text>
+        )
       ) : (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carousel}>
           {groups.map((group) => {

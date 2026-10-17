@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar, Clock, MapPin } from 'lucide-react-native';
@@ -7,6 +7,7 @@ import { Button } from '@components/Button';
 import { PLACES } from '@constants/places';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
+import { createSubmitGuard } from '@lib/loadState';
 
 // The same venues as the Matches > Places map.
 const LOCATIONS = PLACES.map((place) => place.name);
@@ -42,6 +43,8 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
   // The server accepts workouts from now until 90 days ahead.
   const [pickerBounds] = useState(() => ({ min: new Date(), max: new Date(Date.now() + 89 * 24 * 3600 * 1000) }));
   const [location, setLocation] = useState<string | null>(null);
+  // A double tap on the confirm button must not send two invitations or schedule two workouts.
+  const confirmOnce = useRef(createSubmitGuard()).current;
   const [activePicker, setActivePicker] = useState<'date' | 'time' | null>(null);
 
   const handlePickerChange = (event: { type: string }, selected?: Date) => {
@@ -108,7 +111,7 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
           variant="primary"
           size="lg"
           disabled={!location}
-          onPress={() => location && onConfirm(scheduledAt, location)}
+          onPress={() => location && confirmOnce(() => onConfirm(scheduledAt, location))}
         />
       </View>
     </>
