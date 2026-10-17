@@ -3,6 +3,7 @@ import { useAuth, User, FitnessLevel } from '@hooks/useAuth';
 import { useLocation, Coordinates } from '@hooks/useLocation';
 import { DEMO_DATA } from '@lib/demo';
 import { distanceKm } from '@lib/distance';
+import { listState } from '@lib/loadState';
 import { usePartnerStore } from '@hooks/usePartnerStore';
 
 export type Gender = 'M' | 'F';
@@ -248,6 +249,8 @@ interface PartnerMatchingState {
   currentPartner: PartnerWithDistance | undefined;
   viewerOrigin: Coordinates;
   isLoading: boolean;
+  // Real members only: the list could not be loaded (offline), so "nobody here yet" would be untrue.
+  loadFailed: boolean;
   isEmpty: boolean;
   interested: () => void;
   pass: () => void;
@@ -262,6 +265,7 @@ export function usePartnerMatching(filters: PartnerFilters = DEFAULT_FILTERS): P
   const [position, setPosition] = useState({ index: 0, key: '' });
   const realPartners = usePartnerStore((state) => state.partners);
   const realLoading = usePartnerStore((state) => state.isLoading || !state.hasLoaded);
+  const realError = usePartnerStore((state) => state.error);
   const loadRealPartners = usePartnerStore((state) => state.load);
 
   // Demo mode simulates a fetch (loading skeleton, issue #5). Otherwise the real
@@ -277,6 +281,9 @@ export function usePartnerMatching(filters: PartnerFilters = DEFAULT_FILTERS): P
   }, [fetchCycle, loadRealPartners]);
 
   const isLoading = DEMO_DATA ? demoLoading : realLoading;
+  const loadFailed =
+    !DEMO_DATA &&
+    listState({ loading: realLoading, loaded: !realError, failed: realError !== null, count: realPartners.length }) === 'failed';
   const sourcePartners = DEMO_DATA ? MOCK_PARTNERS : realPartners;
 
   const viewerOrigin =
@@ -309,7 +316,8 @@ export function usePartnerMatching(filters: PartnerFilters = DEFAULT_FILTERS): P
     currentPartner: candidates[currentIndex],
     viewerOrigin,
     isLoading,
-    isEmpty: !isLoading && currentIndex >= candidates.length,
+    loadFailed,
+    isEmpty: !isLoading && !loadFailed && currentIndex >= candidates.length,
     interested: advance,
     pass: advance,
     refresh: () => {
