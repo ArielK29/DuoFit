@@ -2,7 +2,7 @@
   "expo": {
     "name": "DuoFit",
     "slug": "duofit",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "duofit",
@@ -14,7 +14,12 @@
       "userInterfaceStyle": "dark",
       "bundleIdentifier": "com.arielk29.duofit",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "he",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSAllowsLocalNetworking": true
+        }
       }
     },
     "android": {
@@ -43,19 +48,34 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "כדי לבחור תמונת פרופיל, DuoFit זקוק לגישה לתמונות שלך."
+          "photosPermission": "כדי לבחור תמונת פרופיל או תמונה לפוסט, DuoFit זקוקה לגישה לתמונות שלך.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "DuoFit משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך."
+          "locationWhenInUsePermission": "DuoFit משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "motionUsagePermission": false
         }
       ],
       "expo-notifications",
       "expo-font",
       "expo-router",
-      "expo-localization",
+      [
+        "expo-localization",
+        {
+          "supportsRTL": true,
+          "forcesRTL": true,
+          "supportedLocales": {
+            "ios": ["he"],
+            "android": ["he"]
+          }
+        }
+      ],
       "@react-native-community/datetimepicker"
     ],
     "experiments": {
