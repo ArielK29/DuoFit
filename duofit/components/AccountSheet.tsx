@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, Alert, Platform, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { BottomSheet } from '@components/BottomSheet';
 import { Button } from '@components/Button';
 import { useAccountSheet } from '@hooks/useAccountSheet';
@@ -12,6 +13,7 @@ import { theme } from '@styles/theme';
 
 // "My account": who is signed in, and the real sign-out.
 export const AccountSheet: React.FC = () => {
+  const router = useRouter();
   const visible = useAccountSheet((state) => state.visible);
   const close = useAccountSheet((state) => state.close);
   const user = useAuth((state) => state.user);
@@ -26,6 +28,12 @@ export const AccountSheet: React.FC = () => {
   useEffect(() => {
     if (visible && !DEMO_DATA && !useFeedStore.getState().loaded) useFeedStore.getState().load();
   }, [visible]);
+
+  // The terms and privacy text stays one tap from the account sheet, as the stores require.
+  const openTerms = () => {
+    close();
+    router.push('/terms');
+  };
 
   const handleSignOut = async () => {
     close();
@@ -68,7 +76,10 @@ export const AccountSheet: React.FC = () => {
         </View>
       </View>
       <Text style={styles.note}>הנתונים שלך שמורים בחשבון הזה. כשתתנתק, הנתונים המקומיים במכשיר יימחקו.</Text>
-      <Button label="התנתק" variant="secondary" size="lg" onPress={handleSignOut} />
+      <View style={styles.buttons}>
+        <Button label="תנאי שימוש ופרטיות" variant="secondary" size="lg" onPress={openTerms} />
+        <Button label="התנתק" variant="secondary" size="lg" onPress={handleSignOut} />
+      </View>
       {!DEMO_DATA && blocked.length > 0 && (
         <View style={styles.blockedWrap}>
           <Text style={styles.blockedTitle}>חברים חסומים</Text>
@@ -89,6 +100,9 @@ export const AccountSheet: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  buttons: {
+    gap: theme.spacing.sm,
+  },
   blockedWrap: {
     marginTop: theme.spacing.xl,
   },

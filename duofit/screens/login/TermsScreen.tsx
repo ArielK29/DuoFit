@@ -6,10 +6,10 @@ import { TERMS_SECTIONS, TERMS_UPDATED } from '@lib/termsText';
 import { visualRightText } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
-// Terms of service and privacy notice, reachable before sign-in (from the sign-up screen).
+// Terms of service and privacy notice: reachable before sign-in (from the sign-up screen) and after it (from the account sheet).
 export const TermsScreen: React.FC = () => {
   const router = useRouter();
-  const goBack = () => (router.canGoBack() ? router.back() : router.replace('/sign-up'));
+  const goBack = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   return (
     <View style={styles.container}>
