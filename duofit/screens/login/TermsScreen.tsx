@@ -3,12 +3,15 @@ import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import { TERMS_SECTIONS, TERMS_UPDATED } from '@lib/termsText';
+import { SUPPORT_EMAIL, contactSection } from '@lib/contact';
 import { visualRightText } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
 // Terms of service and privacy notice: reachable before sign-in (from the sign-up screen) and after it (from the account sheet).
 export const TermsScreen: React.FC = () => {
   const router = useRouter();
+  const contact = contactSection(SUPPORT_EMAIL);
+  const sections = contact ? [...TERMS_SECTIONS, contact] : TERMS_SECTIONS;
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   return (
@@ -23,7 +26,7 @@ export const TermsScreen: React.FC = () => {
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.updated}>עודכן לאחרונה: {TERMS_UPDATED}</Text>
-        {TERMS_SECTIONS.map((section) => (
+        {sections.map((section) => (
           <View key={section.title} style={styles.section}>
             <Text style={styles.sectionTitle} accessibilityRole="header">
               {section.title}
