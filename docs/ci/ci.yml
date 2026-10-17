@@ -1,0 +1,31 @@
+name: CI
+
+# Runs on every pull request and on main: types, lint and the unit tests of the app.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: duofit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: duofit/package-lock.json
+      - run: npm ci
+      - name: Types
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npx expo lint
+      - name: Unit tests
+        run: npm test

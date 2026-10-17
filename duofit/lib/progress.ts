@@ -1,4 +1,4 @@
-import { WeightEntry } from '@hooks/useProgressStore';
+import type { WeightEntry } from '@hooks/useProgressStore';
 
 const DAY_MS = 86400000;
 const MONTH_LABELS = ['ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יוני', 'יולי', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ'];

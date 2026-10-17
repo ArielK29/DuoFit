@@ -1,18 +1,23 @@
-import { ScheduledWorkout } from '@hooks/useWorkoutStore';
+import type { ScheduledWorkout } from '@hooks/useWorkoutStore';
 
 // Longest run of consecutive calendar days ending at the most recent
 // check-in — simple streak definition, no "did you break it today" logic.
+// A calendar day as a whole number, taken from the phone's local date. Counting in UTC days of the
+// local y/m/d keeps the 23 and 25 hour days of a clock change exactly one day apart.
+const DAY_MS = 86400000;
+function localDayNumber(iso: string): number {
+  const date = new Date(iso);
+  return Math.round(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / DAY_MS);
+}
+
 export function computeStreak(workouts: ScheduledWorkout[]): number {
   if (workouts.length === 0) return 0;
 
-  const dayKeys = Array.from(
-    new Set(workouts.map((workout) => new Date(workout.scheduledAt).toDateString()))
-  ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  const days = Array.from(new Set(workouts.map((workout) => localDayNumber(workout.scheduledAt)))).sort((x, y) => y - x);
 
   let streak = 1;
-  for (let i = 1; i < dayKeys.length; i++) {
-    const diff = (new Date(dayKeys[i - 1]).getTime() - new Date(dayKeys[i]).getTime()) / 86400000;
-    if (diff === 1) streak++;
+  for (let i = 1; i < days.length; i++) {
+    if (days[i - 1] - days[i] === 1) streak++;
     else break;
   }
   return streak;
