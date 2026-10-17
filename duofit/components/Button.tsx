@@ -95,6 +95,9 @@ export const Button: React.FC<ButtonProps> = ({
         android_ripple={{ color: 'rgba(255,255,255,0.12)' }}
         disabled={disabled || loading}
         accessibilityRole="button"
+        // The spinner replaces the text while loading; screen readers still need the name and the busy state.
+        accessibilityLabel={label}
+        accessibilityState={{ disabled: disabled || loading, busy: loading }}
         {...pressableProps}
       >
         {loading ? (
