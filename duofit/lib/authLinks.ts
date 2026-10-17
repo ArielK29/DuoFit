@@ -43,6 +43,13 @@ export function recoveryLinkMessage(link: AuthLink): string {
   return 'הקישור לא תקין. בקש קישור חדש לאיפוס הסיסמה.';
 }
 
+// Same idea for the sign-up confirmation link. Empty for a usable link.
+export function confirmationLinkMessage(link: AuthLink): string {
+  if (link.kind === 'session' || link.kind === 'code') return '';
+  if (link.kind === 'error' && link.expired) return 'הקישור פג תוקף. התחבר, ואם האימייל עוד לא אומת תוכל לבקש קישור חדש.';
+  return 'הקישור לא תקין. אם כבר אימתת את האימייל, התחבר. אחרת התחבר ותוכל לבקש קישור חדש.';
+}
+
 // The new password and its confirmation. Returns a Hebrew message, or null when both are fine.
 export function validateNewPassword(password: string, confirm: string): string | null {
   if (!password) return 'הזן סיסמה חדשה';

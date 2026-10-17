@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { authErrorMessage } from './authErrors.ts';
+import { authErrorMessage, EMAIL_NOT_CONFIRMED_MESSAGE } from './authErrors.ts';
 
 test('authErrorMessage: the same-password error from a reset is its own clear message, not "weak password"', () => {
   const sameByCode = authErrorMessage({ code: 'same_password', message: 'New password should be different from the old password.' });
@@ -21,4 +21,10 @@ test('authErrorMessage: known cases keep working and nothing leaks in English', 
   for (const e of [null, undefined, { message: 'boom' }, { message: 'Auth session missing!' }]) {
     assert.ok(!/[A-Za-z]{3,}/.test(authErrorMessage(e as any)), String(e));
   }
+});
+
+test('authErrorMessage: the "not confirmed yet" message is the exported one, so the login screen can offer a resend', () => {
+  assert.equal(authErrorMessage({ code: 'email_not_confirmed', message: 'Email not confirmed' }), EMAIL_NOT_CONFIRMED_MESSAGE);
+  assert.notEqual(authErrorMessage({ message: 'Invalid login credentials' }), EMAIL_NOT_CONFIRMED_MESSAGE);
+  assert.match(EMAIL_NOT_CONFIRMED_MESSAGE, /אומת/);
 });
