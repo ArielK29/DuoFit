@@ -62,6 +62,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "legal:build": "node scripts/build-legal-pages.ts",
     "test": "node --test \"lib/**/*.test.ts\""
   },
   "private": true,
