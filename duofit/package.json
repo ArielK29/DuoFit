@@ -63,6 +63,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "legal:build": "node scripts/build-legal-pages.ts",
+    "qa:scan": "node scripts/qa-inventory.ts",
     "test": "node --test \"lib/**/*.test.ts\""
   },
   "private": true,
