@@ -4,13 +4,14 @@ import { useRouter } from 'expo-router';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { useAuth } from '@hooks/useAuth';
-import { isValidEmail } from '@lib/authErrors';
+import { EMAIL_NOT_CONFIRMED_MESSAGE, isValidEmail } from '@lib/authErrors';
 import { trackEvent } from '@lib/analytics';
 import { AuthLayout, authStyles } from '@screens/login/AuthLayout';
 
 export const LoginScreen: React.FC = () => {
   const router = useRouter();
   const signIn = useAuth((state) => state.signIn);
+  const resendConfirmation = useAuth((state) => state.resendConfirmation);
   const isLoading = useAuth((state) => state.isLoading);
   const storeError = useAuth((state) => state.error);
   const setError = useAuth((state) => state.setError);
@@ -18,14 +19,21 @@ export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
+  const [resent, setResent] = useState(false);
 
   // Start every visit with a clean error (the store keeps the last one).
   useEffect(() => {
     setError(null);
   }, [setError]);
 
+  const handleResend = async () => {
+    setLocalError(null);
+    setResent(await resendConfirmation(email));
+  };
+
   const handleLogin = async () => {
     setLocalError(null);
+    setResent(false);
     setError(null);
 
     if (!isValidEmail(email)) {
@@ -70,9 +78,13 @@ export const LoginScreen: React.FC = () => {
       />
 
       {error && <Text style={authStyles.errorText}>{error}</Text>}
+      {resent && <Text style={authStyles.successText}>נשלח שוב. זה יכול לקחת דקה</Text>}
 
       <View style={authStyles.buttons}>
         <Button label="התחבר" variant="primary" size="lg" loading={isLoading} disabled={isLoading} onPress={handleLogin} />
+        {error === EMAIL_NOT_CONFIRMED_MESSAGE && (
+          <Button label="שלח שוב את מייל האימות" variant="secondary" size="lg" disabled={isLoading} onPress={handleResend} />
+        )}
       </View>
 
       <Pressable style={authStyles.linkRow} onPress={() => router.push('/forgot-password')} accessibilityRole="link">

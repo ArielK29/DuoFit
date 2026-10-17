@@ -18,7 +18,7 @@ const LINK_WAIT_MS = 2000;
 // itself signs the member in, and then they choose a new password.
 export const ResetPasswordScreen: React.FC = () => {
   const router = useRouter();
-  const startPasswordRecovery = useAuth((state) => state.startPasswordRecovery);
+  const completeAuthLink = useAuth((state) => state.completeAuthLink);
   const updatePassword = useAuth((state) => state.updatePassword);
   const isLoading = useAuth((state) => state.isLoading);
   const storeError = useAuth((state) => state.error);
@@ -58,7 +58,7 @@ export const ResetPasswordScreen: React.FC = () => {
       setPhase('invalid');
       return undefined;
     }
-    startPasswordRecovery(link).then((ok) => {
+    completeAuthLink(link).then((ok) => {
       if (ok) {
         // Keep the one-time tokens out of the address bar and the browser history.
         if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -71,7 +71,7 @@ export const ResetPasswordScreen: React.FC = () => {
       }
     });
     return undefined;
-  }, [url, startPasswordRecovery]);
+  }, [url, completeAuthLink]);
 
   const handleSave = async () => {
     setLocalError(null);

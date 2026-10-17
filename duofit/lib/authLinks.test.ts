@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseAuthLink, recoveryLinkMessage, validateNewPassword } from './authLinks.ts';
+import { confirmationLinkMessage, parseAuthLink, recoveryLinkMessage, validateNewPassword } from './authLinks.ts';
 
 const HAS_HEBREW = /[\u0590-\u05FF]/;
 const NO_LATIN_WORDS = (text: string) => !/[A-Za-z]{3,}/.test(text);
@@ -55,6 +55,22 @@ test('recoveryLinkMessage: plain Hebrew for every bad link, nothing for a good o
   for (const text of [expired, broken, none]) { assert.match(text, HAS_HEBREW); assert.ok(NO_LATIN_WORDS(text), text); assert.match(text, /קישור/); }
   assert.equal(recoveryLinkMessage({ kind: 'session', accessToken: 'a', refreshToken: 'b', type: 'recovery' }), '');
   assert.equal(recoveryLinkMessage({ kind: 'code', code: 'c' }), '');
+});
+
+test('confirmationLinkMessage: sign-up links get their own plain Hebrew, never the password-reset wording', () => {
+  const expired = confirmationLinkMessage({ kind: 'error', code: 'otp_expired', expired: true });
+  const broken = confirmationLinkMessage({ kind: 'error', code: 'unexpected_failure', expired: false });
+  const none = confirmationLinkMessage({ kind: 'none' });
+  assert.match(expired, /פג תוקף/);
+  assert.notEqual(expired, broken);
+  for (const text of [expired, broken, none]) {
+    assert.match(text, HAS_HEBREW);
+    assert.ok(NO_LATIN_WORDS(text), text);
+    assert.doesNotMatch(text, /איפוס|סיסמה חדשה/, 'not the reset wording');
+    assert.match(text, /התחבר/, 'tells the member what to do next');
+  }
+  assert.equal(confirmationLinkMessage({ kind: 'session', accessToken: 'a', refreshToken: 'b', type: 'signup' }), '');
+  assert.equal(confirmationLinkMessage({ kind: 'code', code: 'c' }), '');
 });
 
 test('validateNewPassword: Hebrew message for each mistake, null when fine', () => {

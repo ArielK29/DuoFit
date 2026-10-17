@@ -1,9 +1,8 @@
 import { create } from 'zustand';
-import { Platform } from 'react-native';
-import * as Linking from 'expo-linking';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@lib/supabase';
 import { authErrorMessage } from '@lib/authErrors';
+import { appLinkUrl } from '@lib/appLinks';
 import type { AuthLink } from '@lib/authLinks';
 
 export type Gender = 'M' | 'F' | 'Other';
@@ -76,8 +75,8 @@ export interface AuthState {
   // Permanently deletes the account and all of its data (App Store requirement).
   deleteAccount: () => Promise<boolean>;
   sendPasswordReset: (email: string) => Promise<boolean>;
-  // Turns the link from the reset email into a session, so the new password can be saved.
-  startPasswordRecovery: (link: AuthLink) => Promise<boolean>;
+  // Turns the link from an e-mail (password reset, sign-up confirmation) into a session.
+  completeAuthLink: (link: AuthLink) => Promise<boolean>;
   updatePassword: (password: string) => Promise<boolean>;
   resendConfirmation: (email: string) => Promise<boolean>;
   saveProfile: (update: ProfileUpdate) => Promise<boolean>;
@@ -132,7 +131,7 @@ export const useAuth = create<AuthState>()((set, get) => ({
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { display_name: displayName.trim() } },
+      options: { data: { display_name: displayName.trim() }, emailRedirectTo: appLinkUrl('auth-confirmed') },
     });
     set({ isLoading: false });
 
@@ -178,12 +177,7 @@ export const useAuth = create<AuthState>()((set, get) => ({
 
   sendPasswordReset: async (email) => {
     set({ isLoading: true, error: null });
-    // The email link must come back to this app (or this site on the web). The address has to be
-    // on the Supabase "Redirect URLs" allow list, otherwise Supabase falls back to the Site URL.
-    const redirectTo = Platform.OS === 'web' && typeof window !== 'undefined'
-      ? `${window.location.origin}/reset-password`
-      : Linking.createURL('reset-password');
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: appLinkUrl('reset-password') });
     set({ isLoading: false });
     if (error) {
       set({ error: authErrorMessage(error) });
@@ -192,7 +186,7 @@ export const useAuth = create<AuthState>()((set, get) => ({
     return true;
   },
 
-  startPasswordRecovery: async (link) => {
+  completeAuthLink: async (link) => {
     set({ isLoading: true, error: null });
     let error: { message?: string; code?: string; status?: number } | null = null;
     // A damaged token makes the Supabase client throw instead of returning an error, so catch it here.
@@ -233,7 +227,7 @@ export const useAuth = create<AuthState>()((set, get) => ({
 
   resendConfirmation: async (email) => {
     set({ isLoading: true, error: null });
-    const { error } = await supabase.auth.resend({ type: 'signup', email: email.trim() });
+    const { error } = await supabase.auth.resend({ type: 'signup', email: email.trim(), options: { emailRedirectTo: appLinkUrl('auth-confirmed') } });
     set({ isLoading: false });
     if (error) {
       set({ error: authErrorMessage(error) });
