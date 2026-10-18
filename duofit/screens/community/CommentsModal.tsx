@@ -18,6 +18,8 @@ import { DEMO_DATA } from '@lib/demo';
 import { askChoice } from '@lib/askChoice';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
+import { checkText } from '@lib/contentFilter';
+import { notifyFailure } from '@lib/notifyFailure';
 
 interface CommentsModalProps {
   postId: string | null;
@@ -53,6 +55,11 @@ const CommentsContent: React.FC<{ postId: string; authorName: string; onClose: (
   const send = async () => {
     const text = draft.trim();
     if (!text || sending) return;
+    const verdict = checkText(text);
+    if (!verdict.ok) {
+      notifyFailure(verdict.message, 'לא ניתן לשלוח');
+      return;
+    }
     if (DEMO_DATA) {
       addDemoComment(postId, text);
       setDraft('');

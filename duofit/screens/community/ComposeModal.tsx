@@ -18,6 +18,8 @@ import { useFeedStore } from '@hooks/useFeedStore';
 import { DEMO_DATA } from '@lib/demo';
 import { theme } from '@styles/theme';
 import { visualLeft, visualRightText } from '@lib/rtl';
+import { checkText } from '@lib/contentFilter';
+import { notifyFailure } from '@lib/notifyFailure';
 
 interface ComposeModalProps {
   visible: boolean;
@@ -53,6 +55,11 @@ const ComposeContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const publish = async () => {
     if (!canPost) return;
+    const verdict = checkText(text);
+    if (!verdict.ok) {
+      notifyFailure(verdict.message, 'לא ניתן לפרסם');
+      return;
+    }
     if (DEMO_DATA) {
       addPost({ text: text.trim(), activity, imageUri });
       onClose();

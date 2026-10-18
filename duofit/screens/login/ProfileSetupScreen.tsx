@@ -18,6 +18,7 @@ import { trackEvent, logError } from '@lib/analytics';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 import { useAuth, FitnessLevel, Gender } from '@hooks/useAuth';
+import { checkText } from '@lib/contentFilter';
 
 I18nManager.forceRTL(true);
 
@@ -92,6 +93,11 @@ export const ProfileSetupScreen: React.FC = () => {
 
     if (!name.trim()) {
       setError('הזן שם');
+      return;
+    }
+    const verdict = checkText(`${name} ${bio}`);
+    if (!verdict.ok) {
+      setError(verdict.message);
       return;
     }
     if (!gender) {
