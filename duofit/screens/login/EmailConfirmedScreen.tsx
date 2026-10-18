@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { Button } from '@components/Button';
 import { useAuth } from '@hooks/useAuth';
-import { confirmationLinkMessage, parseAuthLink } from '@lib/authLinks';
+import { confirmationLinkMessage, invalidLinkExits, parseAuthLink } from '@lib/authLinks';
 import { AuthLayout, authStyles } from '@screens/login/AuthLayout';
 
 type Phase = 'checking' | 'confirmed' | 'invalid';
@@ -17,6 +17,7 @@ const LINK_WAIT_MS = 2000;
 export const EmailConfirmedScreen: React.FC = () => {
   const router = useRouter();
   const completeAuthLink = useAuth((state) => state.completeAuthLink);
+  const signedIn = useAuth((state) => state.isAuthenticated);
 
   // On the phone the link arrives asynchronously; on the web it is simply the page address.
   const nativeUrl = Linking.useURL();
@@ -73,7 +74,9 @@ export const EmailConfirmedScreen: React.FC = () => {
       <AuthLayout subtitle="אימות אימייל">
         <Text style={authStyles.successTitle}>הקישור לא עובד</Text>
         <Text style={authStyles.successText}>{problem}</Text>
-        <Button label="להתחברות" variant="primary" size="lg" onPress={() => router.replace('/login')} />
+        {invalidLinkExits(signedIn, 'confirm').map((exit) => (
+          <Button key={exit.href} label={exit.label} variant="primary" size="lg" onPress={() => router.replace(exit.href)} />
+        ))}
       </AuthLayout>
     );
   }
