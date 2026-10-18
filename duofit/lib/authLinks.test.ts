@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { confirmationLinkMessage, parseAuthLink, recoveryLinkMessage, validateNewPassword } from './authLinks.ts';
+import { confirmationLinkMessage, invalidLinkExits, parseAuthLink, recoveryLinkMessage, validateNewPassword } from './authLinks.ts';
 
 const HAS_HEBREW = /[\u0590-\u05FF]/;
 const NO_LATIN_WORDS = (text: string) => !/[A-Za-z]{3,}/.test(text);
@@ -81,4 +81,17 @@ test('validateNewPassword: Hebrew message for each mistake, null when fine', () 
   assert.equal(validateNewPassword('long-enough-1', 'long-enough-1'), null);
   assert.equal(validateNewPassword('12345678', '12345678'), null, 'exactly the minimum length is fine');
   assert.equal(validateNewPassword('אבגדהוזחט', 'אבגדהוזחט'), null, 'any characters count');
+});
+test('invalidLinkExits: a signed-in member only gets a way back into the app (sign-in and forgot-password are closed to them)', () => {
+  for (const flow of ['reset', 'confirm'] as const) {
+    assert.deepEqual(invalidLinkExits(true, flow), [{ label: 'חזרה לאפליקציה', href: '/' }], flow);
+  }
+});
+
+test('invalidLinkExits: a signed-out member gets the way to a new link and to sign-in', () => {
+  assert.deepEqual(invalidLinkExits(false, 'reset'), [
+    { label: 'בקש קישור חדש', href: '/forgot-password' },
+    { label: 'חזרה להתחברות', href: '/login' },
+  ]);
+  assert.deepEqual(invalidLinkExits(false, 'confirm'), [{ label: 'להתחברות', href: '/login' }]);
 });

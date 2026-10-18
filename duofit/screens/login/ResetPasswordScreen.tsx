@@ -6,7 +6,7 @@ import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { useAuth } from '@hooks/useAuth';
 import { MIN_PASSWORD_LENGTH } from '@lib/authErrors';
-import { parseAuthLink, recoveryLinkMessage, validateNewPassword } from '@lib/authLinks';
+import { invalidLinkExits, parseAuthLink, recoveryLinkMessage, validateNewPassword } from '@lib/authLinks';
 import { AuthLayout, authStyles } from '@screens/login/AuthLayout';
 
 type Phase = 'checking' | 'ready' | 'invalid' | 'done';
@@ -19,13 +19,15 @@ const LINK_WAIT_MS = 2000;
 export const ResetPasswordScreen: React.FC = () => {
   const router = useRouter();
   const completeAuthLink = useAuth((state) => state.completeAuthLink);
+  const signedIn = useAuth((state) => state.isAuthenticated);
   const updatePassword = useAuth((state) => state.updatePassword);
   const isLoading = useAuth((state) => state.isLoading);
   const storeError = useAuth((state) => state.error);
   const setError = useAuth((state) => state.setError);
 
-  // On the phone the link arrives asynchronously; on the web it is simply the page address.
-  const nativeUrl = Linking.useURL();
+  // On the phone the link can arrive before this screen exists (the app was already running when the mail link
+  // was tapped), so use the hook that keeps the latest link; on the web it is simply the page address.
+  const nativeUrl = Linking.useLinkingURL();
   const url = Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href : nativeUrl;
 
   const [phase, setPhase] = useState<Phase>('checking');
@@ -97,8 +99,9 @@ export const ResetPasswordScreen: React.FC = () => {
       <AuthLayout subtitle="איפוס סיסמה">
         <Text style={authStyles.successTitle}>הקישור לא עובד</Text>
         <Text style={authStyles.successText}>{problem}</Text>
-        <Button label="בקש קישור חדש" variant="primary" size="lg" onPress={() => router.replace('/forgot-password')} />
-        <Button label="חזרה להתחברות" variant="secondary" size="lg" onPress={() => router.replace('/login')} />
+        {invalidLinkExits(signedIn, 'reset').map((exit, index) => (
+          <Button key={exit.href} label={exit.label} variant={index === 0 ? 'primary' : 'secondary'} size="lg" onPress={() => router.replace(exit.href)} />
+        ))}
       </AuthLayout>
     );
   }

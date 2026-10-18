@@ -53,7 +53,7 @@ export const LoginScreen: React.FC = () => {
   const error = localError ?? storeError;
 
   return (
-    <AuthLayout subtitle="למצוא את בן הזוג הבא שלך" description="התחבר עם האימייל והסיסמה שלך">
+    <AuthLayout subtitle="שותפים לאימון, קרוב אליך" description="התחבר עם האימייל והסיסמה שלך">
       <Input
         label="אימייל"
         placeholder="name@example.com"

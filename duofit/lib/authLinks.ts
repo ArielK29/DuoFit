@@ -50,6 +50,22 @@ export function confirmationLinkMessage(link: AuthLink): string {
   return 'הקישור לא תקין. אם כבר אימתת את האימייל, התחבר. אחרת התחבר ותוכל לבקש קישור חדש.';
 }
 
+// The buttons under a bad e-mail link. A member who is already signed in cannot open the sign-in or
+// forgot-password screens (they are closed to signed-in members), so for them the only exit is the app.
+export function invalidLinkExits(
+  signedIn: boolean,
+  flow: 'reset' | 'confirm'
+): { label: string; href: '/' | '/forgot-password' | '/login' }[] {
+  if (signedIn) return [{ label: 'חזרה לאפליקציה', href: '/' }];
+  if (flow === 'reset') {
+    return [
+      { label: 'בקש קישור חדש', href: '/forgot-password' },
+      { label: 'חזרה להתחברות', href: '/login' },
+    ];
+  }
+  return [{ label: 'להתחברות', href: '/login' }];
+}
+
 // The new password and its confirmation. Returns a Hebrew message, or null when both are fine.
 export function validateNewPassword(password: string, confirm: string): string | null {
   if (!password) return 'הזן סיסמה חדשה';
