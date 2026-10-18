@@ -25,8 +25,9 @@ export const ResetPasswordScreen: React.FC = () => {
   const storeError = useAuth((state) => state.error);
   const setError = useAuth((state) => state.setError);
 
-  // On the phone the link arrives asynchronously; on the web it is simply the page address.
-  const nativeUrl = Linking.useURL();
+  // On the phone the link can arrive before this screen exists (the app was already running when the mail link
+  // was tapped), so use the hook that keeps the latest link; on the web it is simply the page address.
+  const nativeUrl = Linking.useLinkingURL();
   const url = Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href : nativeUrl;
 
   const [phase, setPhase] = useState<Phase>('checking');
