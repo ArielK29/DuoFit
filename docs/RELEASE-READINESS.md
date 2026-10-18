@@ -68,3 +68,10 @@ The site returns HSTS, `x-content-type-options`, `x-frame-options` and `referrer
 | **All 11 RLS test files in `supabase/tests/`** | **Pass.** smoke 21/21, chat 26 lines, community 37, groups 28, groups hardening 9, plank 12, progress 14, notifications 17, notifications hardening 10, workouts 15, workout lifecycle 10: every line good / matching its expectation. Each test rolls itself back; afterwards the database had 1 user, 1 profile, no conversations, posts, groups, notifications or workouts |
 | Test file fix | `rls_notifications_test.sql` line 17 still expected 200 notifications after the later flood cap (5 unread pings per member); the expectation now says 5. The 200 trim is covered by the hardening test |
 | Correction | An earlier note here said `expo-notifications` was unused. That was wrong (the check missed a dynamic import): it is used for local workout reminders (`lib/notifications.ts`). Keep the plugin. The only open question is whether to build real push notifications later (issue #95) |
+
+## Re-scan on 2026-10-18 (Snyk signed in again; all changes since 2026-10-12 included)
+| Scan | Result |
+|---|---|
+| Snyk Code (first-party code, medium and above) | **0 issues** (covers the password reset, e-mail confirmation, content filter and every screen added since the last scan) |
+| Snyk dependencies (high and above) | **4 findings, none in code that ships in the app**, all in build and lint tooling and none fixable today: `braces` 3.0.3 (via react-native, metro), `node-forge` 1.4.0 (via expo, @expo/cli), `uri-js` 4.4.1 and `zod` 3.25.76 (both via eslint). The `deepmerge` finding of 2026-10-11 is gone after the package update (B6). `zod` has a fix in 4.x that the Expo tooling does not allow yet |
+| Rule kept | No `npm audit fix --force` (it proposes downgrading Expo); re-scan after every `npx expo install --fix` and before each store submission |
