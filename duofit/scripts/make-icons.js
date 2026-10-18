@@ -47,4 +47,6 @@ async function png(svg, file, size, opaque) {
   // Web favicon: small rounded square.
   const mf = mark(512, cyIcon, wide);
   await png(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">${GRAD}<rect width="1024" height="1024" rx="224" fill="url(#bg)"/><path d="${mf.d}" transform="${mf.tf}" fill="#F5F5F5"/></svg>`, 'favicon.png', 196, false);
+  // The logo shown inside the app (login screens): the same rounded monogram as the icon, 512 px with transparent corners.
+  await png(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">${GRAD}<rect width="1024" height="1024" rx="224" fill="url(#bg)"/><path d="${mf.d}" transform="${mf.tf}" fill="#F5F5F5"/></svg>`, 'duofit-logo.png', 512, false);
 })();
