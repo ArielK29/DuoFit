@@ -16,6 +16,11 @@ Last updated 2026-10-17. Decisions that are made are listed once, with their dat
 | 2026-10 | The SOS button opens the real dialer (100 or 101) after a confirmation | Terms text says it does not replace emergency services |
 | 2026-10 | Real members only on the server; account deletion inside the app | Edge Function `delete-account` (Apple 5.1.1(v)) |
 | 2026-10-18 | One brand: the pink and cyan "DF" monogram (app icon, splash and the logo inside the app) | The green in-app logo is retired; issue #105 |
+| 2026-10-18 | **No remote push notifications in version 1**: local reminders only; revisit for 1.1 after testers' feedback | Issue #95 |
+| 2026-10-18 | **Accept the missing leaked-password protection** for version 1 (8-character minimum and email confirmation stay on); revisit when the project moves to a paid plan | Issue #90 |
+| 2026-10-18 | **No PostHog Session Replay at launch** | Issue #25 |
+| 2026-10-18 | **Android after the iPhone version is approved**; before it: block SYSTEM_ALERT_WINDOW, Google Maps key, tile provider plan | B9 |
+| 2026-10-18 | The policy drafts (retention, deletion, providers, privacy coverage; docs/OWNER-PREP.md section 3) go to the lawyer as they are | A-3b to A-3e; A12 is the review itself |
 | 2026-10 | Mobile apps are built with Expo; the Gmail agent mobile app reuses its web page through Expo DOM components | Repo `gmail-agent-mobile` |
 
 ## Open
@@ -26,31 +31,14 @@ Last updated 2026-10-17. Decisions that are made are listed once, with their dat
 - **Cost:** a domain is a yearly fee, usually in the range of a few tens of dollars **(verify at the registrar)**.
 - **Who:** the owner buys it (Claude does not buy). Claude then wires Vercel, Supabase URLs and the SMTP steps, and runs `npm run legal:build` after `lib/contact.ts` gets the support address.
 
-### 2. Real push notifications (issue #95)
-- **Question:** send messages and invitations when the app is closed?
-- **Today:** only local reminders (30 minutes before a shared workout and when an invitation is answered). Messages show inside the app.
-- **Recommendation:** **not in version 1.** Ship with local reminders, ask testers whether they miss push, decide for 1.1. Real push needs: Apple and Google accounts in EAS, push credentials, a push-token table with RLS, a Data Safety line and an updated privacy text.
-- **Note:** `expo-notifications` already adds the iOS push entitlement; that is allowed without using push.
-
-### 3. Staging Supabase project (issue #100)
+### 2. Staging Supabase project (issue #100)
 - **Owner's answer (2026-10-15):** yes, but not now; ask again at launch.
 - **Recommendation:** set it up right after the first TestFlight build works and **before the first schema change that follows**, so that migrations are tried on staging first. Steps: second Supabase project, the same migrations in both, `staging` branch and `.env.staging`, separate EAS environment variables, Polar sandbox for the Gmail agent.
 - **Cost:** a second Free-plan project is free but counts toward the Free-plan project limit **(verify)**.
 
-### 4. Leaked-password protection (issue #90)
-- **Question:** it checks passwords against known leaks, and is a paid-plan feature (Supabase Pro).
-- **Recommendation:** accept for version 1 (8-character minimum, email confirmation on) and revisit when the user count grows or the project moves to a paid plan anyway.
-
-### 5. Legal review of the terms and privacy text (issue #96, checklist A12)
+### 3. Legal review of the terms and privacy text (issue #96, checklist A12)
 - **Question:** who reviews the text before submission.
 - **Recommendation:** a lawyer, before the first submission. The text is a draft that is true to the code today (`lib/termsText.ts`); drafts for retention, deletion and the provider list are in `docs/OWNER-PREP.md`. Items that need the owner's dashboards are marked verify there.
 
-### 6. PostHog session replay (issue #25)
-- **Recommendation:** do not enable it at launch. It records screens, including chats and photos, which the privacy text and the store privacy label would then have to cover. Revisit after launch with a clear reason.
-
-### 7. Android timing
-- **Question:** when to publish on Google Play.
-- **Recommendation:** after the iPhone version is approved. A new personal Play account may need a closed test with a number of testers for some days before publishing **(verify the current rule in Play Console)**. Before the Android release: block `SYSTEM_ALERT_WINDOW` in the manifest, set a Google Maps key, check the tile provider plan (`docs/APP-STORE-READINESS.md`, B9).
-
-### 8. Gmail agent, separate list
+### 4. Gmail agent, separate list
 Google verification of the restricted Gmail scope (a domain and a privacy page are required), the paid model before real customers, and deploying the app-return backend (gmail-agent issue 32) are tracked in the `gmail-agent` repository and in the "Gmail agent" appendix of `docs/APP-STORE-READINESS.md`.
