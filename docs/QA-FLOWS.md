@@ -25,7 +25,7 @@ Setup: two test members (A and B) with a profile each, and one reviewer account;
 | 17 | SOS | Open SOS, choose 100 or 101, confirm | Asks first, opens the dialer with the number, can be cancelled | | |
 | 18 | Account deletion | "My account", delete, confirm twice | Account and data removed; cannot sign in again; the other member keeps the shared workout without your details | | |
 | 19 | Permissions | Deny everything; revoke later in Settings; re-open | App stays usable; every denied feature explains how to enable it | | |
-| 20 | Connectivity | Airplane mode in each tab; slow network; return online | Plain Hebrew message, no endless spinner, recovers by itself | | |
+| 20 | Connectivity | Airplane mode in each tab; slow network; return online | A slim banner "אין חיבור לאינטרנט..." appears within about 40 s (two failed checks) and goes away within about 5 s of coming back; plain Hebrew message, no endless spinner, recovers by itself | | |
 | 21 | Layout | Smallest and largest phone, large text size, landscape lock, keyboard over inputs | No overlap, no cut text, inputs stay visible | | |
 | 22 | Cold start | Force close, open 5 times, open from a notification | Starts in under a few seconds, returns to the right place | | |
 
