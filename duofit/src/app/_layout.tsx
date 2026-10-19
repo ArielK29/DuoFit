@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PostHogErrorBoundary } from 'posthog-react-native';
 import { ErrorFallback } from '@components/ErrorFallback';
+import { ConnectivityShell } from '@components/OfflineBanner';
 import { AccountSheet } from '@components/AccountSheet';
 import { NotificationWatcher } from '@components/NotificationWatcher';
 import { ChatSync } from '@components/ChatSync';
@@ -148,6 +149,7 @@ export default function RootLayout() {
           <LoadingScreen />
         ) : (
           <PostHogErrorBoundary fallback={ErrorFallback}>
+            <ConnectivityShell>
             <AppStack isAuthenticated={isAuthenticated} profileComplete={profileComplete} />
             {isAuthenticated && profileComplete && <AccountSheet />}
             {isAuthenticated && profileComplete && <NotificationWatcher />}
@@ -156,6 +158,7 @@ export default function RootLayout() {
             {isAuthenticated && profileComplete && <WorkoutSync />}
             {isAuthenticated && profileComplete && <NotificationSync />}
             {isAuthenticated && profileComplete && <GroupSync />}
+            </ConnectivityShell>
           </PostHogErrorBoundary>
         )}
       </AnalyticsProvider>
