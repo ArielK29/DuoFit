@@ -29,6 +29,7 @@ Last updated 2026-10-17. Decisions that are made are listed once, with their dat
 - **Question:** buy one domain now or later. The owner said "later, when the app is ready 100%".
 - **Recommendation:** buy it as soon as the device pass starts, not after. It is the one thing that blocks four others: a public privacy-policy URL (the App Store form requires one), the support email (A4), real sign-up emails (custom SMTP, issue #86, the built-in sender is rate limited), and the Google verification for the Gmail agent.
 - **Cost:** a domain is a yearly fee, usually in the range of a few tens of dollars **(verify at the registrar)**.
+- **Names checked on 2026-10-20** (public registry lookup; "free" means no registration was found, confirm at the registrar before buying): **free:** duofit.fit, duofit.io, duofit.co, duofit.me, duofit.life, getduofit.com, trainduofit.com, joinduofit.com. **Taken:** duofit.com, duofit.app, duofit.net, duofitapp.com, myduofit.com, duofit.club. Recommendation: **duofit.fit** (short, says what it is) or **getduofit.com**; the support address then is support@ the chosen domain. A .co.il name needs an Israeli registrar and was not checked reliably.
 - **Who:** the owner buys it (Claude does not buy). Claude then wires Vercel, Supabase URLs and the SMTP steps, and runs `npm run legal:build` after `lib/contact.ts` gets the support address.
 
 ### 2. Staging Supabase project (issue #100)
