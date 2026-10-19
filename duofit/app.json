@@ -71,8 +71,12 @@
           "supportsRTL": true,
           "forcesRTL": true,
           "supportedLocales": {
-            "ios": ["he"],
-            "android": ["he"]
+            "ios": [
+              "he"
+            ],
+            "android": [
+              "he"
+            ]
           }
         }
       ],
@@ -80,6 +84,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e2d60da9-5e3b-4d5b-b1af-d5225bfd3e94"
+      }
+    },
+    "owner": "ariel_korman"
   }
 }
