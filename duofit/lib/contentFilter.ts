@@ -10,7 +10,7 @@
 export const BLOCKED_MESSAGE = 'הטקסט כולל ביטוי שאינו מותר ב-DuoFit. שנה את הניסוח ונסה שוב';
 
 // Each entry is one word, or a phrase of words separated by a space.
-const BLOCKED_TERMS: string[] = [
+export const BLOCKED_TERMS: string[] = [
   // Hebrew
   'בן זונה', 'בת זונה', 'זונה', 'זונות', 'שרמוטה', 'שרמוטות', 'כוס אמק', 'כוס אמא שלך', 'לך תמות', 'תמות כבר',
   'מפגר', 'מפגרת', 'מפגרים', 'ערבוש', 'ערבושים', 'כושי', 'כושים',
