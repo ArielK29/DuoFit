@@ -20,7 +20,7 @@ Apple requires: "A method for filtering objectionable material from being posted
 |---|---|
 | Filtering | **Missing.** Searched the code and the migrations for any blocklist or content check: none. Only anti-spam limits exist (messages per minute, posts per hour). **This is the most likely reason for a rejection that is not yet on the plan.** Proposal below |
 | Report | Yes: messages, posts, comments, group messages and members (`content_reports`); the reporter sees it hidden at once; three reports hide it for everybody |
-| Timely responses | **A person is needed.** Reports are stored, but nobody is notified and nobody is assigned. Decision for the owner (A-3f): who reads reports and how often. Minimum: a weekly look at the `content_reports` table; better, an email alert |
+| Timely responses | **A person is needed.** Reports are stored, but nobody is notified and nobody is assigned. Decision for the owner (A-3f): who reads reports and how often. Minimum: a weekly look at the `content_reports` table; better, an email alert. Proposed routine and queries: [MODERATION.md](MODERATION.md) |
 | Block | Yes: block and unblock from "My account"; blocking hides both ways |
 | Contact | `SUPPORT_EMAIL` in `lib/contact.ts` is empty until the mailbox exists (A4); the privacy and support pages are ready |
 
