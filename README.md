@@ -24,6 +24,7 @@ npx expo start                 # scan the QR code with Expo Go
 | `EXPO_PUBLIC_SUPABASE_URL` | Supabase project URL (Project settings, API) |
 | `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | The **publishable** key. Never the `service_role` key |
 | `EXPO_PUBLIC_POSTHOG_API_KEY`, `EXPO_PUBLIC_POSTHOG_HOST` | Analytics (optional) |
+| `GOOGLE_MAPS_ANDROID_API_KEY` | Android map key, only as an **EAS environment variable** (see [docs/MAPS-SETUP.md](docs/MAPS-SETUP.md)); not needed for Expo Go or the iPhone |
 | `EXPO_PUBLIC_DEMO_DATA` | `true` shows invented people for design demos. **Never** set it in an EAS, Vercel or store build |
 
 Never paste keys into chat, issues or commits.
