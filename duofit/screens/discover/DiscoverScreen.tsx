@@ -15,6 +15,8 @@ import { useChatStore } from '@hooks/useChatStore';
 import { PartnerCard, PartnerCardHandle } from '@screens/discover/PartnerCard';
 import { PlacesView } from '@screens/discover/PlacesView';
 import { EmptyState } from '@components/EmptyState';
+import { UserAvatar } from '@components/HeaderActions';
+import { useAccountSheet } from '@hooks/useAccountSheet';
 import { FilterSheet } from '@components/FilterSheet';
 import { SegmentedToggle } from '@components/SegmentedToggle';
 import { SkeletonLoader } from '@components/SkeletonLoader';
@@ -124,6 +126,7 @@ export function DiscoverScreen() {
               <SlidersHorizontal color={theme.colors.text} size={20} strokeWidth={2} />
               {!isDefault(filters) && <View style={styles.filterDot} />}
             </Pressable>
+            <UserAvatar onPress={() => useAccountSheet.getState().open()} />
             {DEMO_DATA && (
               <View style={styles.previewPill}>
                 <Text style={styles.previewPillText}>תצוגה מקדימה</Text>

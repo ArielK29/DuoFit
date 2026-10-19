@@ -100,7 +100,7 @@ export function ChatListScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.title}>צ'אטים</Text>
-          <HeaderActions trailing={null} />
+          <HeaderActions />
         </View>
 
         {DEMO_DATA && (
