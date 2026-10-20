@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { useAuth } from '@hooks/useAuth';
 import { newId } from '@lib/uuid';
 import { notifyFailure } from '@lib/notifyFailure';
+import { usePartnerStore } from '@hooks/usePartnerStore';
 import * as api from '@lib/remoteCommunity';
 import type { BlockedMember, RemoteComment, RemotePost, ReportReason } from '@lib/remoteCommunity';
 
@@ -186,6 +187,7 @@ export const useFeedStore = create<FeedState>()((set, get) => ({
     await get().load();
     // Comments already on screen may belong to the person just blocked: fetch them again.
     await Promise.all(Object.keys(get().comments).map((postId) => get().loadComments(postId)));
+    void usePartnerStore.getState().load(); // the blocked member leaves the partner list
   },
 
   unblock: async (userId) => {
@@ -198,6 +200,7 @@ export const useFeedStore = create<FeedState>()((set, get) => ({
       return;
     }
     await get().load();
+    void usePartnerStore.getState().load(); // the member is back in the partner list
   },
 
   reset: () => {

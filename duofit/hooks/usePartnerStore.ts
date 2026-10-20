@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '@lib/supabase';
+import { withoutBlocked } from '@lib/blockedFilter';
 import { useAuth } from '@hooks/useAuth';
 import type { Partner } from '@hooks/usePartnerMatching';
 import type { FitnessLevel } from '@hooks/useAuth';
@@ -62,7 +63,10 @@ export const usePartnerStore = create<PartnerStoreState>()((set, get) => ({
       set({ isLoading: false, hasLoaded: true, error: error.message });
       return;
     }
-    set({ partners: (data as DiscoverRow[]).map(toPartner), isLoading: false, hasLoaded: true });
+    // Members I blocked are left out. If my block list cannot be read, nobody is left out (the server still protects the blocked side).
+    const blockRows = await supabase.from('user_blocks').select('blocked_id').eq('blocker_id', me);
+    const blockedIds = blockRows.error ? null : ((blockRows.data ?? []) as { blocked_id: string }[]).map((row) => row.blocked_id);
+    set({ partners: withoutBlocked((data as DiscoverRow[]).map(toPartner), blockedIds), isLoading: false, hasLoaded: true });
   },
 
   reset: () => set({ partners: [], isLoading: false, hasLoaded: false, error: null }),
