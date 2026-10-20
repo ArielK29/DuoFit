@@ -18,6 +18,7 @@ import {
   fetchRemoteConversations,
   markRemoteRead,
   partnerIdForConversation,
+  reportRemoteMessage,
   sendRemoteInvite,
   sendRemoteText,
   toChatMessage,
@@ -76,6 +77,8 @@ interface ChatState {
   openSeeded: (seed: ConversationSeed) => void;
   createGroup: (id: string, name: string, members: string[], memberCount: number) => void;
   removeConversation: (id: string) => void;
+  // Real private chat: report the other member's message (it disappears for me at once).
+  reportMessage: (partnerId: string, messageId: string) => Promise<void>;
   markRead: (partnerId: string) => void;
   sendMessage: (partnerId: string, partnerName: string, text: string) => void;
   sendInvite: (partnerId: string, partnerName: string, invite: Omit<WorkoutInvite, 'status'>) => void;
@@ -352,6 +355,16 @@ export const useChatStore = create<ChatState>()(
         const rest = { ...get().conversations };
         delete rest[id];
         set({ conversations: rest });
+      },
+
+      reportMessage: async (partnerId, messageId) => {
+        try {
+          await reportRemoteMessage(messageId);
+        } catch {
+          notifyFailure();
+          return;
+        }
+        dropMessage(partnerId, messageId);
       },
 
       markRead: (partnerId) => {
