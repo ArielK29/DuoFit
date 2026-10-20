@@ -33,7 +33,7 @@ Everything the lawyer needs in one place. **Nothing here is legal advice.** The 
 3. Data kept on servers abroad (Supabase region, PostHog EU): what has to be said, and is anything else needed for transfers?
 4. **Liability for in-person meetings** between members: is the wording in the terms ("בריאות ובטיחות") enough, and should there be an explicit confirmation at sign-up?
 5. **Adults only:** is a declared-age confirmation at sign-up needed, given there is no age verification?
-6. **Content and reports:** obligations when someone reports a post or a member (response time, removal, keeping records), and wording of the "we may remove content and close accounts" clause.
+6. **Content and reports:** obligations when someone reports a post or a member (response time, removal, keeping records), and wording of the "we may remove content and close accounts" clause. Also: a member who reports a PRIVATE message makes it readable to us (the owner reads reported messages only); does the privacy text need a sentence about it?
 7. A **private individual** as the seller in the store: obligations, and when to move to a company (also for the later paid Gmail agent).
 8. Consumer and advertising rules that apply if the app later sells subscriptions (the plan today: no payments in the apps).
 9. Does the terms' jurisdiction clause (Israeli law, Israeli courts) work for an app that Apple distributes under its own agreement?

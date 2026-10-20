@@ -17,6 +17,7 @@ import { notifyInviteAnswered } from '@lib/notifications';
 import { useGroupStore } from '@hooks/useGroupStore';
 import { useFeedStore } from '@hooks/useFeedStore';
 import { askChoice } from '@lib/askChoice';
+import { messageMenuKind } from '@lib/chatMenu';
 import { groupIdFromKey, isGroupKey } from '@lib/remoteGroups';
 import { theme } from '@styles/theme';
 import { DEMO_DATA } from '@lib/demo';
@@ -55,6 +56,8 @@ function ConversationContent() {
   const sendMessage = useChatStore((state) => state.sendMessage);
   const respondToInvite = useChatStore((state) => state.respondToInvite);
   const markRead = useChatStore((state) => state.markRead);
+  const reportDirectMessage = useChatStore((state) => state.reportMessage);
+  const removeConversation = useChatStore((state) => state.removeConversation);
 
   const [inputText, setInputText] = useState('');
   const [isPartnerTyping, setIsPartnerTyping] = useState(false);
@@ -134,6 +137,29 @@ function ConversationContent() {
     ]);
   };
 
+  // Real private chat: report the other member's message, or block them (the chat then leaves both lists).
+  const handleDirectMenu = (message: Extract<ChatMessage, { kind: 'text' }>) => {
+    askChoice('דיווח או חסימה', `ההודעה של ${partnerName}. דיווח מסתיר אותה ממך מיד. חסימה מסתירה את כל השיחה משני הצדדים.`, [
+      { label: 'דווח והסתר', destructive: true, onPress: () => reportDirectMessage(partnerId, message.id) },
+      {
+        label: `חסום את ${partnerName}`,
+        destructive: true,
+        onPress: async () => {
+          await useFeedStore.getState().block(partnerId);
+          if (!useFeedStore.getState().blocked.some((member) => member.id === partnerId)) return; // the block failed: it said so already
+          removeConversation(partnerId);
+          router.back();
+        },
+      },
+    ]);
+  };
+
+  const handleMessageTap = (message: Extract<ChatMessage, { kind: 'text' }>) => {
+    const kind = messageMenuKind({ demo: DEMO_DATA, isGroup, fromMe: message.senderId === 'me' });
+    if (kind === 'group') handleMessageMenu(message);
+    else if (kind === 'direct') handleDirectMenu(message);
+  };
+
   const handleRespondToInvite = (messageId: string, accept: boolean) => {
     respondToInvite(partnerId, messageId, accept);
     // Demo only. In a real chat the SENDER of the invitation is notified when the answer arrives.
@@ -179,10 +205,10 @@ function ConversationContent() {
             <Pressable
               key={message.id}
               style={[styles.bubble, message.senderId === 'me' ? styles.bubbleMine : styles.bubblePartner]}
-              disabled={DEMO_DATA || !isGroup || message.senderId === 'me'}
-              onPress={() => handleMessageMenu(message)}
-              accessibilityRole={isGroup && !DEMO_DATA && message.senderId !== 'me' ? 'button' : undefined}
-              accessibilityHint={isGroup && !DEMO_DATA && message.senderId !== 'me' ? 'דיווח או חסימה' : undefined}
+              disabled={messageMenuKind({ demo: DEMO_DATA, isGroup, fromMe: message.senderId === 'me' }) === null}
+              onPress={() => handleMessageTap(message)}
+              accessibilityRole={messageMenuKind({ demo: DEMO_DATA, isGroup, fromMe: message.senderId === 'me' }) ? 'button' : undefined}
+              accessibilityHint={messageMenuKind({ demo: DEMO_DATA, isGroup, fromMe: message.senderId === 'me' }) ? 'דיווח או חסימה' : undefined}
             >
               {message.senderName && <Text style={styles.senderName}>{message.senderName}</Text>}
               <Text style={[styles.bubbleText, message.senderId === 'me' && styles.bubbleTextMine]}>

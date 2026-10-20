@@ -185,3 +185,10 @@ export function subscribeRemoteChat(myId: string, handlers: RemoteChatHandlers):
     supabase.removeChannel(channel);
   };
 }
+
+// Reports a private message (the report hides it from the reporter at once; the owner reads reports, see docs/MODERATION.md).
+// Allowed only for the other member of the conversation. A second report of the same message counts as done.
+export async function reportRemoteMessage(messageId: string): Promise<void> {
+  const { error } = await supabase.from('content_reports').insert({ message_id: messageId, reason: 'inappropriate' });
+  if (error && error.code !== '23505') throw error;
+}
