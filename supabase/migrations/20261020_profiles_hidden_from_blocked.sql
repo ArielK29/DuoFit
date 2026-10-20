@@ -1,4 +1,5 @@
--- NOT APPLIED YET (waits for the owner's approval). Test: supabase/tests/rls_profiles_blocked_test.sql (rolled back).
+-- Applied to the `duofit` Supabase project on 2026-10-20 (profiles_hidden_from_blocked) after the owner approved. Advisors: only the known leaked-password warning.
+-- Test (rolled back, 7 of 7 good before and after applying): supabase/tests/rls_profiles_blocked_test.sql.
 -- A member who is blocked must not be able to look the blocker up in partner discovery. One direction only: the blocker keeps
 -- the right to read the blocked member's profile row (the block list in "My account" shows the name, so it can be unblocked);
 -- the app itself leaves the blocked member out of the blocker's discovery list.
