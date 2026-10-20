@@ -22,6 +22,7 @@ import { GroupSync } from '@components/GroupSync';
 import { useAuth, isProfileComplete } from '@hooks/useAuth';
 import { startSessionSync } from '@lib/session';
 import { AnalyticsProvider } from '@lib/analytics';
+import { startLinkCapture } from '@lib/incomingLink';
 import { theme } from '@styles/theme';
 
 // Force RTL layout for Hebrew
@@ -39,6 +40,9 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
 // renders with the OS default font. Must be called at module scope,
 // unawaited, before the splash screen would otherwise auto-hide.
 SplashScreen.preventAutoHideAsync();
+
+// Catch the e-mail links (reset password, confirm e-mail) from the first moment, before any screen exists.
+startLinkCapture();
 
 // Shared loading view for both the zustand-hydration gate and the
 // font-loading gate below, so the spinner isn't duplicated in two places.

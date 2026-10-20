@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { confirmationLinkMessage, invalidLinkExits, parseAuthLink, recoveryLinkMessage, validateNewPassword } from './authLinks.ts';
+import { confirmationLinkMessage, describeAuthLink, invalidLinkExits, parseAuthLink, recoveryLinkMessage, validateNewPassword } from './authLinks.ts';
 
 const HAS_HEBREW = /[\u0590-\u05FF]/;
 const NO_LATIN_WORDS = (text: string) => !/[A-Za-z]{3,}/.test(text);
@@ -94,4 +94,20 @@ test('invalidLinkExits: a signed-out member gets the way to a new link and to si
     { label: 'חזרה להתחברות', href: '/login' },
   ]);
   assert.deepEqual(invalidLinkExits(false, 'confirm'), [{ label: 'להתחברות', href: '/login' }]);
+});
+
+test('describeAuthLink: shows the shape of a link for the developer log and never a secret value', () => {
+  const url = 'exp://10.0.0.14.nip.io:8081/--/reset-password#access_token=SECRETTOKEN123&refresh_token=SECRETREFRESH&type=recovery&expires_in=3600';
+  const text = describeAuthLink(url);
+  assert.doesNotMatch(text, /SECRET/);
+  assert.match(text, /reset-password/);
+  assert.match(text, /access_token/);
+  assert.match(text, /hash/);
+  assert.match(text, /type=recovery/);
+});
+
+test('describeAuthLink: no link, and a link without any fragment, are both described plainly', () => {
+  assert.match(describeAuthLink(null), /no link/);
+  assert.match(describeAuthLink('exp://10.0.0.14.nip.io:8081/--/reset-password'), /no fragment/);
+  assert.doesNotMatch(describeAuthLink('exp://h/--/x?code=SECRETCODE'), /SECRETCODE/);
 });

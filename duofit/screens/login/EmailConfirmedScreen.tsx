@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Platform, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import * as Linking from 'expo-linking';
+import { clearIncomingLink, useIncomingLink } from '@lib/incomingLink';
 import { Button } from '@components/Button';
 import { useAuth } from '@hooks/useAuth';
 import { confirmationLinkMessage, invalidLinkExits, parseAuthLink } from '@lib/authLinks';
@@ -21,7 +21,7 @@ export const EmailConfirmedScreen: React.FC = () => {
 
   // On the phone the link can arrive before this screen exists (the app was already running when the mail link
   // was tapped), so use the hook that keeps the latest link; on the web it is simply the page address.
-  const nativeUrl = Linking.useLinkingURL();
+  const nativeUrl = useIncomingLink();
   const url = Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href : nativeUrl;
 
   const [phase, setPhase] = useState<Phase>('checking');
@@ -48,6 +48,7 @@ export const EmailConfirmedScreen: React.FC = () => {
       return undefined;
     }
     completeAuthLink(link).then((ok) => {
+      clearIncomingLink(); // a one-time link is used up either way
       if (ok) {
         // Keep the one-time tokens out of the address bar and the browser history.
         if (Platform.OS === 'web' && typeof window !== 'undefined') {

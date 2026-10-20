@@ -74,3 +74,19 @@ export function validateNewPassword(password: string, confirm: string): string |
   if (password !== confirm) return 'הסיסמאות לא זהות';
   return null;
 }
+// The shape of a link for the developer log, with every value removed (the tokens in it are secrets): where it points, whether it
+// has a fragment or a query, and the names of what is in them. Only `type` and `error_code` values are shown.
+export function describeAuthLink(url: string | null | undefined): string {
+  if (typeof url !== 'string' || !url.trim()) return 'no link';
+  const text = url.trim();
+  const hashAt = text.indexOf('#');
+  const beforeHash = hashAt >= 0 ? text.slice(0, hashAt) : text;
+  const queryAt = beforeHash.indexOf('?');
+  const target = queryAt >= 0 ? beforeHash.slice(0, queryAt) : beforeHash;
+  const show = (params: URLSearchParams): string =>
+    [...params.keys()].map((key) => (key === 'type' || key === 'error_code' ? `${key}=${params.get(key)}` : key)).join(',');
+  const parts = [target];
+  parts.push(hashAt >= 0 ? `hash[${show(new URLSearchParams(text.slice(hashAt + 1)))}]` : 'no fragment');
+  if (queryAt >= 0) parts.push(`query[${show(new URLSearchParams(beforeHash.slice(queryAt + 1)))}]`);
+  return parts.join(' ');
+}
