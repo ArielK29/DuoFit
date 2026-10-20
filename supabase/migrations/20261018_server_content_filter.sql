@@ -1,6 +1,9 @@
 -- Server side of the content filter (App Store guideline 1.2), the same rules as duofit/lib/contentFilter.ts, so it
--- also holds for anyone who talks to the API directly. NOT APPLIED: needs the owner's approval of the word list
--- (docs: issue #125). The list below must stay equal to BLOCKED_TERMS in lib/contentFilter.ts (a test checks it).
+-- also holds for anyone who talks to the API directly. APPLIED to the `duofit` Supabase project on 2026-10-20 after the owner
+-- approved the word list (issue #125). In the applied copy the invisible-character class of the regular expression is written with
+-- \u escapes (E'[\u0591-\u05C7...]') so that no invisible character has to be copied by hand; it is the same set of characters.
+-- Test (rolled back; every line good after applying): supabase/tests/server_content_filter_test.sql.
+-- The list below must stay equal to BLOCKED_TERMS in lib/contentFilter.ts (a test checks it).
 --
 -- Rules: whole words only, after lower-casing, removing vowel marks and zero-width characters, mapping Hebrew final
 -- letters to the normal ones, collapsing repeated letters, joining a run of three or more single letters
