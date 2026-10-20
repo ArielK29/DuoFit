@@ -14,7 +14,7 @@ Apple asks for a way to report content and **timely responses to concerns**. The
 The app hides content by itself in two cases: the reporter no longer sees it at once, and after **three different reports** nobody sees it. So a missed day does not leave harmful content visible for everybody.
 
 ## 1. See the reports of the last 7 days
-Supabase dashboard, project `wtheyjuqpidgrgehplgw`, SQL Editor. Read only. **The `private_message` lines work only after the migration `20261020_chat_block_and_report.sql` is applied** (until then the query fails on `r.message_id`: delete the `left join public.messages d` line, the `d.body` and `d.sender_id` parts and the `r.message_id` part, or ask Claude to apply the migration first).
+Supabase dashboard, project `wtheyjuqpidgrgehplgw`, SQL Editor. Read only. The query covers posts, comments, group messages and private messages.
 
 ```sql
 select

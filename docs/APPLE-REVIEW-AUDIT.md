@@ -19,7 +19,7 @@ Apple requires: "A method for filtering objectionable material from being posted
 | Requirement | In the app today |
 |---|---|
 | Filtering | **Missing.** Searched the code and the migrations for any blocklist or content check: none. Only anti-spam limits exist (messages per minute, posts per hour). **This is the most likely reason for a rejection that is not yet on the plan.** Proposal below |
-| Report | Posts, comments and group messages, yes (`content_reports`). **One-to-one (private) messages: NO report button and NO block inside the chat; found 2026-10-20, built in migration `20261020_chat_block_and_report.sql` + app change, not applied until the owner approves.** Members can also be blocked from "My account"; the reporter sees it hidden at once; three reports hide it for everybody |
+| Report | Posts, comments and group messages, yes (`content_reports`). **One-to-one (private) messages: NO report button and NO block inside the chat; found 2026-10-20, fixed with migration `20261020_chat_block_and_report.sql` (applied 2026-10-20) + the app change in PR 140 (merge pending).** Members can also be blocked from "My account"; the reporter sees it hidden at once; three reports hide it for everybody |
 | Timely responses | **A person is needed.** Reports are stored, but nobody is notified and nobody is assigned. Decision for the owner (A-3f): who reads reports and how often. Minimum: a weekly look at the `content_reports` table; better, an email alert. Proposed routine and queries: [MODERATION.md](MODERATION.md) |
 | Block | Yes: block and unblock from "My account"; blocking hides both ways |
 | Contact | `SUPPORT_EMAIL` in `lib/contact.ts` is empty until the mailbox exists (A4); the privacy and support pages are ready |
@@ -57,7 +57,7 @@ The app's own data answers (email, name, photos, user content, health and fitnes
 >
 > How to see the main features: Discover (find a partner, filters, map of places), tap a member to see the profile and send a workout invitation; Chat; Community (posts, groups, weekly challenge); Progress (weight, goals); "My account" (top of the screen) has Block list, Terms and Privacy, Sign out and Delete my account.
 >
-> User-generated content: every post, comment and message from another member has a Report action (private one-to-one messages: only after migration 20261020_chat_block_and_report.sql is applied, do NOT send this note before that); members can be blocked and unblocked from "My account"; reported content is hidden for the reporter at once and for everyone after several reports; content that breaks the terms is removed and accounts closed. Support: <support email>.
+> User-generated content: every post, comment and message from another member has a Report action (private one-to-one messages: only once the app version that contains PR 140 is the one submitted); members can be blocked and unblocked from "My account"; reported content is hidden for the reporter at once and for everyone after several reports; content that breaks the terms is removed and accounts closed. Support: <support email>.
 >
 > Location is used only while the app is open, to show nearby places and partners; it is read on the device and not stored on our server. Photos are used only for the profile picture and post pictures. The SOS button opens the phone dialer with 100 or 101 after a confirmation; it is not an emergency service.
 >

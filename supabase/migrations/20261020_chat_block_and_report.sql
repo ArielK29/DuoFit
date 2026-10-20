@@ -1,4 +1,5 @@
--- NOT APPLIED YET (waits for the owner's approval). Tested in a rolled-back transaction: supabase/tests/rls_chat_block_report_test.sql.
+-- Applied to the `duofit` Supabase project on 2026-10-20 (chat_block_and_report) after the owner approved. Security advisors: only the known leaked-password warning.
+-- Test (rolled back, 20 of 20 good before and after applying): supabase/tests/rls_chat_block_report_test.sql.
 -- Apple guideline 1.2 asks for "mechanisms to report offensive content" and the "ability to block abusive users".
 -- Both existed for the community feed and the group chats, but NOT for the private one-to-one chat:
 --  * a member blocked in the community could still write to the person who blocked them;
