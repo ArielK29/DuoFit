@@ -20,6 +20,7 @@ What is already prepared in the repo (issue #12) and what the owner must do hims
    - `EXPO_PUBLIC_POSTHOG_HOST`
    - **Never** add `EXPO_PUBLIC_DEMO_DATA` (it would put invented people into the real app).
    - **Never** add the `service_role` key anywhere in the app.
+   - **Done 2026-10-20** (A6, with the owner's approval, via `eas env:set`, plain text): the four variables exist in `preview` and `production` of the project `@ariel_korman/duofit`. Checked afterwards: no `EXPO_PUBLIC_DEMO_DATA` and no `service_role` key in any environment. The `development` environment has none yet (add the same four before the first development build).
 5. **Privacy policy URL** (required by both stores) and a support e-mail/URL.
 6. **Store listing**: Hebrew name/description, screenshots (iPhone 6.7" and 6.1", Android phone), age rating, data-safety / privacy-nutrition answers (location, profile, photos, messages, analytics).
 7. **Android only**: Google Maps API key if the map is used on Android (put it in `app.json` → `android.config.googleMaps.apiKey`, restrict it to the package name).
