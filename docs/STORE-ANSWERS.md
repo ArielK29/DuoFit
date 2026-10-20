@@ -62,4 +62,4 @@ Take them from a real build with the reviewer account, **never** with the demo f
 Dark theme and right-to-left are the product; no frames or captions are needed, short Hebrew captions are optional.
 
 ## 6. What still needs the owner
-Approve this list (A10) and the texts (A-5c), provide the support address, run the real accounts for the screenshots, and answer the forms in App Store Connect after the Apple membership is active.
+**Approved by the owner on 2026-10-20 (A10): every answer above as written.** Still needed: the texts (A-5c), provide the support address, run the real accounts for the screenshots, and answer the forms in App Store Connect after the Apple membership is active.
