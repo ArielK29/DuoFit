@@ -2,6 +2,7 @@ import 'react-native-url-polyfill/auto';
 import { AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
+import { createTimeoutFetch } from '@lib/timeoutFetch';
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -14,6 +15,8 @@ if (!url || !key) {
 // The publishable key is meant to ship inside the app; what protects the data is
 // row-level security on every table (see the Supabase migrations).
 export const supabase = createClient(url ?? 'http://localhost', key ?? 'missing-key', {
+  // A request that gets no answer fails after 20 s (60 s for uploads and Edge Functions) instead of hanging the screen.
+  global: { fetch: createTimeoutFetch(fetch) },
   auth: {
     storage: AsyncStorage,
     autoRefreshToken: true,
