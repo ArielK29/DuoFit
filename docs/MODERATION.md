@@ -1,8 +1,8 @@
 # DuoFit: handling reports (Apple guideline 1.2, "timely responses")
 
-Apple asks for a way to report content and **timely responses to concerns**. The app already stores reports (`content_reports`: posts, comments and group messages; members can be blocked). This page is the routine for answering them. It is a proposal for the owner (checklist A-3f): the numbers can change, but they must be real, because the reviewer may ask.
+Apple asks for a way to report content and **timely responses to concerns**. The app already stores reports (`content_reports`: posts, comments and group messages; members can be blocked). This page is the routine for answering them. The owner approved these commitments on 2026-10-20 (checklist A-3f); the public support page that goes with them waits for the domain and the support mailbox (A3, A4). The numbers can change, but they must stay real, because the reviewer may ask.
 
-## Proposed commitments
+## Commitments (approved by the owner on 2026-10-20)
 | Rule | Proposal |
 |---|---|
 | Who looks | The owner (later a named helper). |
