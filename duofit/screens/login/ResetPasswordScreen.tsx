@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Platform, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import * as Linking from 'expo-linking';
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { useAuth } from '@hooks/useAuth';
 import { MIN_PASSWORD_LENGTH } from '@lib/authErrors';
-import { invalidLinkExits, parseAuthLink, recoveryLinkMessage, validateNewPassword } from '@lib/authLinks';
+import { clearIncomingLink, useIncomingLink } from '@lib/incomingLink';
+import { describeAuthLink, invalidLinkExits, parseAuthLink, recoveryLinkMessage, validateNewPassword } from '@lib/authLinks';
 import { AuthLayout, authStyles } from '@screens/login/AuthLayout';
 
 type Phase = 'checking' | 'ready' | 'invalid' | 'done';
@@ -27,7 +27,7 @@ export const ResetPasswordScreen: React.FC = () => {
 
   // On the phone the link can arrive before this screen exists (the app was already running when the mail link
   // was tapped), so use the hook that keeps the latest link; on the web it is simply the page address.
-  const nativeUrl = Linking.useLinkingURL();
+  const nativeUrl = useIncomingLink();
   const url = Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href : nativeUrl;
 
   const [phase, setPhase] = useState<Phase>('checking');
@@ -44,6 +44,7 @@ export const ResetPasswordScreen: React.FC = () => {
   useEffect(() => {
     if (!url) {
       const timer = setTimeout(() => {
+        if (__DEV__) console.log('[reset-link] no link arrived within', LINK_WAIT_MS, 'ms');
         setProblem(recoveryLinkMessage({ kind: 'none' }));
         setPhase((current) => (current === 'checking' ? 'invalid' : current));
       }, LINK_WAIT_MS);
@@ -53,6 +54,7 @@ export const ResetPasswordScreen: React.FC = () => {
     if (handledUrl.current === url) return undefined;
     handledUrl.current = url;
 
+    if (__DEV__) console.log('[reset-link]', describeAuthLink(url)); // shape only, never the tokens
     const link = parseAuthLink(url);
     const message = recoveryLinkMessage(link);
     if (message) {
@@ -61,6 +63,7 @@ export const ResetPasswordScreen: React.FC = () => {
       return undefined;
     }
     completeAuthLink(link).then((ok) => {
+      clearIncomingLink(); // a one-time link is used up either way
       if (ok) {
         // Keep the one-time tokens out of the address bar and the browser history.
         if (Platform.OS === 'web' && typeof window !== 'undefined') {
