@@ -14,6 +14,10 @@ Last updated 2026-10-17. Decisions that are made are listed once, with their dat
 | 2026-10 | Payments: subscriptions are sold only on the web (Polar); mobile apps give access only, with no price, upgrade button or link to checkout; DuoFit has no payments | Gmail agent; first priority after launch is free testers with `billing_enforced=false` |
 | 2026-10 | Example data (verified marks, ratings, invented people) only behind `EXPO_PUBLIC_DEMO_DATA`, never in a build; venues show no promotions; match percent is computed from real data | `lib/demo.ts` |
 | 2026-10 | The SOS button opens the real dialer (100 or 101) after a confirmation | Terms text says it does not replace emergency services |
+| 2026-10-22 | The owner will not delete, lock or change the App Review accounts ( and ) or the reviewer's password while Apple reviews | Decided by the owner, who left the choice to Claude with the aim of not failing review; A-4e |
+| 2026-10-22 | Optional decisions: no push notifications in version 1; the missing leaked-password protection is accepted; a separate staging project is asked about again at launch | A13 (all three were decided earlier in October) |
+| 2026-10-22 | Public release is manual: the approved version goes live only when the owner presses release | Decided by the owner, who left the choice to Claude; A-5g |
+| 2026-10-22 | Nothing is sent to Apple (replies, submission) without the owner seeing it first; Claude prepares drafts | A-5f |
 | 2026-10 | Real members only on the server; account deletion inside the app | Edge Function `delete-account` (Apple 5.1.1(v)) |
 | 2026-10-18 | One brand: the pink and cyan "DF" monogram (app icon, splash and the logo inside the app) | The green in-app logo is retired; issue #105 |
 | 2026-10-18 | **No remote push notifications in version 1**: local reminders only; revisit for 1.1 after testers' feedback | Issue #95 |
