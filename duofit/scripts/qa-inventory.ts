@@ -69,7 +69,7 @@ function hasVisibleText(node: ts.JsxElement): boolean {
 const LATIN_WORD = /[A-Za-z]{3,}/;
 const HEBREW = /[֐-׿]/;
 // Product and technical names that are fine in a Hebrew screen.
-const ALLOWED_LATIN = /^(DuoFit|Google|Apple|OK|SOS|Supabase|PostHog|CARTO|Vercel|e-?mail|name@example\.com|kg|km|ק"מ)$/i;
+const ALLOWED_LATIN = /^(DuoFit|Google|Apple|OK|SOS|Supabase|PostHog|Vercel|e-?mail|name@example\.com|kg|km|ק"מ)$/i;
 
 function scan(file: string): { handlers: number; byHandler: Record<string, number>; findings: Finding[] } {
   const source = fs.readFileSync(file, 'utf8');
@@ -172,8 +172,8 @@ const FLOW_MAP: Record<string, string> = {
   'src/app/(tabs)/dashboard.tsx': '7, 12, 15, 16',
 };
 
-// Findings that were looked at and are correct: the map attribution is required by the tile providers' licences.
-const ALLOWED = [/PlacesView\.tsx:\d+\s+text "© OpenStreetMap · © CARTO"/];
+// Findings that were looked at and are correct (none at the moment).
+const ALLOWED: RegExp[] = [];
 
 const files = DIRS.flatMap((dir) => listFiles(path.join(ROOT, dir))).sort();
 let total = 0;
