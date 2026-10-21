@@ -99,7 +99,6 @@ Hebrew, plain language, true to the code today. These feed the public privacy an
 | PostHog | Usage events (`signup_started`, `login_succeeded`, `profile_completed`) and error reports | Events and errors, sent to the EU host (`eu.i.posthog.com`); no account id is attached today. PostHog's SDK creates a random per-install id: **confirm in the PostHog dashboard whether it counts as a device id for the Apple label** |
 | Expo / EAS | Builds the app and, later, sends it to the stores | No member data (build tooling) |
 | Google Maps (Android) | Map tiles | The map area being viewed and the device's IP address; the member's location is not sent by DuoFit |
-| CARTO map tiles (Android, only as a fallback if Google tiles do not load) | Dark map tiles | Tile requests with the device's IP address. **A production release needs a tile provider plan** (noted in `PlacesView.tsx`) |
 | Apple Maps (iPhone) | Map | Handled by Apple |
 | E-mail provider (planned, A7) | Sign-up and reset emails | Email address |
 | Apple App Store / Google Play | Distribution | Per their own policies |

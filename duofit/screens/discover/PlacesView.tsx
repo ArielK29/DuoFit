@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, Linking, Platform, StyleSheet } from 'react-native';
-import MapView, { Marker, UrlTile } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import { MapPinOff, Zap } from 'lucide-react-native';
 import { PLACES, Place } from '@constants/places';
 import { darkMapStyle } from '@constants/mapStyle';
@@ -8,16 +8,15 @@ import { PartnerWithDistance, distanceKm } from '@hooks/usePartnerMatching';
 import { Coordinates, useLocation } from '@hooks/useLocation';
 import { getActivityStyle } from '@lib/activityStyles';
 import { DEMO_DATA } from '@lib/demo';
-import { visualLeft, visualRight, visualRightText } from '@lib/rtl';
+import { visualRight, visualRightText } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
 const REGION_DELTA = 0.07;
 const MAP_LOAD_TIMEOUT_MS = 10000;
-// Backup base map, used only if Google's tiles never load on this device. Dark
-// OpenStreetMap tiles from CARTO (free for development and light use; a
-// production release needs a tile provider plan and the attribution below).
-const FALLBACK_TILE_URL = 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
-const FALLBACK_PROBE_URL = 'https://basemaps.cartocdn.com/dark_all/0/0/0.png';
+// Only the phone's own map is used (Apple Maps on iPhone, Google Maps on Android). A third-party tile layer was tried as a backup and
+// removed: CARTO's free tiles now draw an "API KEY REQUIRED" watermark over the whole map. A neutral address that answers
+// when the phone has internet, to tell "no internet" from "the map service did not answer".
+const INTERNET_PROBE_URL = 'https://www.apple.com/library/test/success.html';
 
 async function canReach(url: string): Promise<boolean> {
   const controller = new AbortController();
@@ -61,28 +60,20 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
   const [showPlaces, setShowPlaces] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
-  const [mapReady, setMapReady] = useState(false);
   const [internetOk, setInternetOk] = useState<boolean | null>(null);
-  const [fallback, setFallback] = useState(false);
 
-  // If Google's tiles never arrive, find out why: no internet at all, or only
-  // the map service is unreachable. In the second case switch once to the
-  // backup tiles; either way show a plain message instead of a black box.
+  // If the map tiles never arrive, find out why (no internet at all, or only the map service is unreachable) and show a plain message
+  // instead of a black box.
   useEffect(() => {
     if (mapLoaded) return;
     const timeout = setTimeout(async () => {
       setLoadFailed(true);
-      const online = await canReach(FALLBACK_PROBE_URL);
-      setInternetOk(online);
-      if (online && !fallback) {
-        setMapReady(false);
-        setFallback(true);
-      }
+      setInternetOk(await canReach(INTERNET_PROBE_URL));
     }, MAP_LOAD_TIMEOUT_MS);
     return () => clearTimeout(timeout);
-  }, [mapLoaded, fallback]);
+  }, [mapLoaded]);
 
-  const showLoadMessage = loadFailed && !mapLoaded && !(fallback && mapReady);
+  const showLoadMessage = loadFailed && !mapLoaded;
   // One plain message per situation: no developer detail (whether the map started) and no text that changes while
   // it is on screen. On a real Android phone two versions of the old text were drawn on top of each other, because
   // an overlay over a map surface kept the previous frame when its text changed.
@@ -120,10 +111,16 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
         <MapView
           ref={mapRef}
           style={styles.map}
-          key={fallback ? 'fallback' : 'google'}
-          mapType={fallback ? 'none' : 'standard'}
-          customMapStyle={fallback ? undefined : darkMapStyle}
-          onMapReady={() => setMapReady(true)}
+          mapType="standard"
+          customMapStyle={darkMapStyle}
+          userInterfaceStyle="dark"
+          onMapReady={() => {
+            // Apple Maps (iPhone) does not report "all tiles loaded"; being ready is the signal there.
+            if (Platform.OS === 'ios') {
+              setMapLoaded(true);
+              setLoadFailed(false);
+            }
+          }}
           showsUserLocation={status === 'granted'}
           onPress={() => setSelectedId(null)}
           loadingEnabled
@@ -140,7 +137,6 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
             longitudeDelta: REGION_DELTA,
           }}
         >
-          {fallback && <UrlTile urlTemplate={FALLBACK_TILE_URL} maximumZ={19} tileSize={256} zIndex={-1} />}
           {showPlaces &&
             PLACES.map((place) => (
             <Marker key={place.id} coordinate={place.coords} onPress={() => focusPlace(place)}>
@@ -171,11 +167,6 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
         {showLoadMessage && (
           <View style={styles.loadFailed} pointerEvents="none">
             <Text style={styles.loadFailedText}>{loadMessage}</Text>
-          </View>
-        )}
-        {fallback && (
-          <View style={styles.attribution} pointerEvents="none">
-            <Text style={styles.attributionText}>© OpenStreetMap · © CARTO</Text>
           </View>
         )}
         {showPartners && partners.length === 0 && (
@@ -388,16 +379,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: theme.spacing.xl,
-  },
-  attribution: {
-    position: 'absolute',
-    bottom: theme.spacing.xs,
-    ...visualLeft(theme.spacing.sm),
-  },
-  attributionText: {
-    fontSize: 10,
-    fontFamily: theme.typography.label.fontFamily,
-    color: theme.colors.textTertiary,
   },
   loadFailedText: {
     fontSize: 14,
