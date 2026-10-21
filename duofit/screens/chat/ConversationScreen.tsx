@@ -58,6 +58,7 @@ function ConversationContent() {
   const markRead = useChatStore((state) => state.markRead);
   const reportDirectMessage = useChatStore((state) => state.reportMessage);
   const removeConversation = useChatStore((state) => state.removeConversation);
+  const reloadChats = useChatStore((state) => state.hydrateRemote);
 
   const [inputText, setInputText] = useState('');
   const [isPartnerTyping, setIsPartnerTyping] = useState(false);
@@ -149,6 +150,7 @@ function ConversationContent() {
           if (!useFeedStore.getState().blocked.some((member) => member.id === partnerId)) return; // the block failed: it said so already
           removeConversation(partnerId);
           router.back();
+          void reloadChats(); // the server no longer returns the blocked chat: the list follows it
         },
       },
     ]);
