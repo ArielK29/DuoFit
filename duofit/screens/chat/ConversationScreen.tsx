@@ -17,6 +17,7 @@ import { notifyInviteAnswered } from '@lib/notifications';
 import { useGroupStore } from '@hooks/useGroupStore';
 import { useFeedStore } from '@hooks/useFeedStore';
 import { askChoice } from '@lib/askChoice';
+import { createSubmitGuard } from '@lib/loadState';
 import { messageMenuKind } from '@lib/chatMenu';
 import { groupIdFromKey, isGroupKey } from '@lib/remoteGroups';
 import { theme } from '@styles/theme';
@@ -61,6 +62,8 @@ function ConversationContent() {
   const reloadChats = useChatStore((state) => state.hydrateRemote);
 
   const [inputText, setInputText] = useState('');
+  // A quick reply is one tap: a second tap within a moment (found on a phone: "איפה נפגשים?" was sent twice) is ignored.
+  const quickReplyOnce = useRef(createSubmitGuard(1500)).current;
   const [isPartnerTyping, setIsPartnerTyping] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
@@ -238,7 +241,7 @@ function ConversationContent() {
             <Pressable
               key={reply}
               style={styles.quickReply}
-              onPress={() => sendText(reply)}
+              onPress={() => quickReplyOnce(() => sendText(reply))}
               accessibilityRole="button"
               accessibilityLabel={`שלח: ${reply}`}
             >
