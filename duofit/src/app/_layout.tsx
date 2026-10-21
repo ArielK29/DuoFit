@@ -23,6 +23,7 @@ import { useAuth, isProfileComplete } from '@hooks/useAuth';
 import { startSessionSync } from '@lib/session';
 import { AnalyticsProvider } from '@lib/analytics';
 import { startLinkCapture } from '@lib/incomingLink';
+import { limitFontScaling } from '@lib/limitFontScaling';
 import { theme } from '@styles/theme';
 
 // Force RTL layout for Hebrew
@@ -43,6 +44,9 @@ SplashScreen.preventAutoHideAsync();
 
 // Catch the e-mail links (reset password, confirm e-mail) from the first moment, before any screen exists.
 startLinkCapture();
+
+// Text follows the system size only up to a limit, so large text settings do not break the layout.
+limitFontScaling();
 
 // Shared loading view for both the zustand-hydration gate and the
 // font-loading gate below, so the spinner isn't duplicated in two places.
