@@ -8,6 +8,7 @@ import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { useAuth } from '@hooks/useAuth';
 import { DEMO_DATA } from '@lib/demo';
 import { newId } from '@lib/uuid';
+import { keepLocalOnlyChat } from '@lib/chatMerge';
 import { groupIdFromKey, isGroupKey, sendGroupMessage } from '@lib/remoteGroups';
 import { notifyInviteAnswered } from '@lib/notifications';
 import {
@@ -174,9 +175,9 @@ export const useChatStore = create<ChatState>()(
           if (myId() !== me) return; // signed out (or switched account) while loading
           const local = get().conversations;
           const merged: Record<string, Conversation> = {};
-          // Chats opened on this phone that have no saved message yet stay visible.
+          // Chats opened on this phone that have no saved message yet stay visible; a chat the server stopped returning (blocked) does not.
           Object.values(local).forEach((conversation) => {
-            if (!remote[conversation.partnerId]) merged[conversation.partnerId] = conversation;
+            if (!remote[conversation.partnerId] && keepLocalOnlyChat(conversation)) merged[conversation.partnerId] = conversation;
           });
           Object.values(remote).forEach((conversation) => {
             const pending = (local[conversation.partnerId]?.messages ?? []).filter(
