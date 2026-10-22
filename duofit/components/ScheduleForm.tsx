@@ -8,6 +8,7 @@ import { PLACES } from '@constants/places';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 import { createSubmitGuard } from '@lib/loadState';
+import { scheduleHint } from '@lib/scheduleHint';
 
 // The same venues as the Matches > Places map.
 const LOCATIONS = PLACES.map((place) => place.name);
@@ -40,6 +41,7 @@ interface ScheduleFormProps {
 // (ScheduleWorkoutScreen) and chat workout invites (InviteToWorkoutScreen).
 export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConfirm }) => {
   const [scheduledAt, setScheduledAt] = useState(defaultScheduledAt);
+  const hint = scheduleHint(scheduledAt, new Date());
   // The server accepts workouts from now until 90 days ahead.
   const [pickerBounds] = useState(() => ({ min: new Date(), max: new Date(Date.now() + 89 * 24 * 3600 * 1000) }));
   const [location, setLocation] = useState<string | null>(null);
@@ -72,6 +74,9 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
             </Text>
           </Pressable>
         </View>
+        <Text style={[styles.hint, hint.warn && styles.hintWarn]} accessibilityLiveRegion="polite">
+          {hint.text}
+        </Text>
       </Card>
 
       <Card style={styles.section}>
@@ -130,6 +135,18 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     ...visualRightText,
     marginBottom: theme.spacing.md,
+  },
+  hint: {
+    width: '100%',
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textSecondary,
+    ...visualRightText,
+    marginTop: theme.spacing.sm,
+  },
+  hintWarn: {
+    color: theme.colors.warning,
   },
   dateTimeRow: {
     flexDirection: 'row',

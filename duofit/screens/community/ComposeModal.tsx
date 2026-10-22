@@ -92,7 +92,13 @@ const ComposeContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         {imageUri && (
           <View style={styles.previewWrap}>
             <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
-            <Pressable style={styles.removeImage} onPress={() => setImageUri(undefined)} accessibilityLabel="הסר תמונה">
+            <Pressable
+              style={styles.removeImage}
+              onPress={() => setImageUri(undefined)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="הסר תמונה"
+            >
               <X color={theme.colors.text} size={16} strokeWidth={2.5} />
             </Pressable>
           </View>

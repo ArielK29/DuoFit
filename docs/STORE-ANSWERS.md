@@ -37,6 +37,8 @@ Expected result: **13+** (Social Media appears at 13+, Health or Wellness at 9+)
 | Identifiers: Device ID | **Verify** | No | The analytics library keeps a random id per installation. Declare it as "Device ID, not linked, analytics" unless PostHog confirms it is not one. This is the conservative answer |
 | Contacts, Financial Info, Browsing History, Search History, Purchases, Sensitive Info | No | n/a | |
 
+Re-checked against the code on 2026-10-23: only three analytics events are sent (`signup_started`, `login_succeeded`, `profile_completed`), no `identify` call and no session replay or screen autocapture, JavaScript errors are reported (unhandled exceptions), location is read on the device only. The table above matches.
+
 Tracking across other companies' apps and sites: **No**. Data encrypted in transit: **Yes** (HTTPS and WSS). Deletion: in the app ("My account", "מחק את החשבון שלי").
 Third parties that receive data (for the policy, not the label): Supabase, Vercel (web), PostHog, map providers (`docs/OWNER-PREP.md`, section 3).
 

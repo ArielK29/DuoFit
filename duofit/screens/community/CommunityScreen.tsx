@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable, Alert, RefreshControl, StyleSheet } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { Camera, Plus } from 'lucide-react-native';
 import { HeaderActions, UserAvatar } from '@components/HeaderActions';
 import { useAuth } from '@hooks/useAuth';
 import { useCommunityStore, UserPost } from '@hooks/useCommunityStore';
 import { useFeedStore } from '@hooks/useFeedStore';
+import { useGroupStore } from '@hooks/useGroupStore';
 import { FEED_FILTERS, MEMBER_COUNT, SEED_POSTS } from '@constants/community';
 import { ChallengeSection } from '@screens/community/ChallengeSection';
 import { CommentsModal } from '@screens/community/CommentsModal';
@@ -44,9 +46,18 @@ export function CommunityScreen() {
   useEffect(() => {
     if (!DEMO_DATA) loadFeed();
   }, [loadFeed]);
+  // The groups directory changes when members join, leave or create groups on other phones, so it is reloaded every time the tab is
+  // shown and on a pull down (before, a group you had just left showed again only after a manual refresh).
+  const loadGroups = useGroupStore((state) => state.load);
+  useFocusEffect(
+    useCallback(() => {
+      if (!DEMO_DATA) loadGroups();
+    }, [loadGroups])
+  );
   const refresh = useCallback(() => {
     loadFeed();
-  }, [loadFeed]);
+    if (!DEMO_DATA) loadGroups();
+  }, [loadFeed, loadGroups]);
 
   const myPosts: FeedPost[] = userPosts.map((post: UserPost) => ({
     id: post.id,
