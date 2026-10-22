@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, Keyboard, KeyboardAvoidingView, StyleSheet } from 'react-native';
 import { Logo } from '@components/Logo';
 import { useLayout } from '@lib/useLayout';
 import { theme } from '@styles/theme';
@@ -10,18 +10,34 @@ interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
+function useKeyboardOpen(): boolean {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setOpen(true));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setOpen(false));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+  return open;
+}
+
 // Shared frame for the sign-in / sign-up / forgot-password screens.
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ subtitle, description, children }) => {
   // Small phones (375px wide) get a smaller logo so the form stays above the keyboard.
   const { isSmall } = useLayout();
+  // With the keyboard open there is room for the form only: shrink the logo and drop the description, otherwise the password field and the
+  // button end up under the keyboard (seen on a Samsung with edge-to-edge, where the window does not resize).
+  const keyboardOpen = useKeyboardOpen();
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Logo size={isSmall ? 140 : 180} />
+        <View style={[styles.header, keyboardOpen && styles.headerCompact]}>
+          <Logo size={keyboardOpen ? 72 : isSmall ? 140 : 180} />
           <Text style={styles.subtitle}>{subtitle}</Text>
-          {description && <Text style={styles.description}>{description}</Text>}
+          {description && !keyboardOpen && <Text style={styles.description}>{description}</Text>}
         </View>
         {children}
       </ScrollView>
@@ -90,6 +106,9 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: theme.spacing.xl,
+  },
+  headerCompact: {
+    marginBottom: theme.spacing.md,
   },
   subtitle: {
     fontSize: 18,

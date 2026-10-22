@@ -7,7 +7,6 @@ import {
   Pressable,
   StyleSheet,
   KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Send, CalendarPlus, Calendar, Clock, MapPin, Check, X, LogOut } from 'lucide-react-native';
@@ -172,7 +171,7 @@ function ConversationContent() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
       <View style={styles.header}>
         <Pressable style={styles.iconButton} onPress={() => router.back()} accessibilityLabel="חזרה">
           <ArrowLeft color={theme.colors.magenta} size={22} strokeWidth={2} />
