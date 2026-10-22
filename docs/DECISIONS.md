@@ -34,6 +34,7 @@ Last updated 2026-10-17. Decisions that are made are listed once, with their dat
 - **Recommendation:** buy it as soon as the device pass starts, not after. It is the one thing that blocks four others: a public privacy-policy URL (the App Store form requires one), the support email (A4), real sign-up emails (custom SMTP, issue #86, the built-in sender is rate limited), and the Google verification for the Gmail agent.
 - **Cost:** a domain is a yearly fee, usually in the range of a few tens of dollars **(verify at the registrar)**.
 - **Names checked on 2026-10-20** (public registry lookup; "free" means no registration was found, confirm at the registrar before buying): **free:** duofit.fit, duofit.io, duofit.co, duofit.me, duofit.life, getduofit.com, trainduofit.com, joinduofit.com. **Taken:** duofit.com, duofit.app, duofit.net, duofitapp.com, myduofit.com, duofit.club. Recommendation: **duofit.fit** (short, says what it is) or **getduofit.com**; the support address then is support@ the chosen domain. A .co.il name needs an Israeli registrar and was not checked reliably.
+- **Update 2026-10-22:** hold the purchase until the app name (item 4) is final; the checks above were for `DuoFit` names. Without a custom SMTP the email templates cannot be edited (Supabase blocks it), so the Hebrew sign-up and reset emails also wait for the domain.
 - **Who:** the owner buys it (Claude does not buy). Claude then wires Vercel, Supabase URLs and the SMTP steps, and runs `npm run legal:build` after `lib/contact.ts` gets the support address.
 
 ### 2. Staging Supabase project (issue #100)
@@ -45,5 +46,11 @@ Last updated 2026-10-17. Decisions that are made are listed once, with their dat
 - **Question:** who reviews the text before submission.
 - **Recommendation:** a lawyer, before the first submission. The text is a draft that is true to the code today (`lib/termsText.ts`); drafts for retention, deletion and the provider list are in `docs/OWNER-PREP.md`. Items that need the owner's dashboards are marked verify there.
 
-### 4. Gmail agent, separate list
+### 4. App name (raised by the owner 2026-10-22)
+- **Question:** keep `DuoFit` or rename, because the app serves pairs and groups ("Duo" suggests two). The owner wants the name alone to explain what the app is.
+- **Status:** open, the owner is thinking. **Do not buy the domain before the name is final.** Options looked at and the conflicts found are in `docs/RENAME-PLAN.md` (section 1); the leading candidates were `FlameMates` and `GritMates` (the owner liked the `StreakMates` style, which has near-identical existing apps). The store title can carry a Hebrew descriptor after the brand.
+- **Cost of renaming:** about half a day, nothing paid, and cheapest now: no Apple payment, no first build, no store listing and no domain yet. The bundle id cannot change after the first upload (A-1b).
+- **Who:** the owner chooses; Claude does the name check, then the rename (`docs/RENAME-PLAN.md`).
+
+### 5. Gmail agent, separate list
 Google verification of the restricted Gmail scope (a domain and a privacy page are required), the paid model before real customers, and deploying the app-return backend (gmail-agent issue 32) are tracked in the `gmail-agent` repository and in the "Gmail agent" appendix of `docs/APP-STORE-READINESS.md`.

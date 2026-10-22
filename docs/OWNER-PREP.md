@@ -35,7 +35,7 @@ Only while testing in Expo Go on a phone, also add `exp://**` and remove it befo
 
 **Why it matters:** without these entries Supabase ignores the return address the app sends and falls back to the Site URL, so the link in the email opens a website instead of the app (this is the "protected Vercel login page" finding in the plan).
 
-**Email templates** (Authentication, Email Templates). The default templates are English. Hebrew drafts to paste, keeping the `{{ .ConfirmationURL }}` placeholder exactly as written:
+**Email templates** (Authentication, Emails, Templates). **Found 2026-10-22: the dashboard shows "Set up custom SMTP to edit templates", so the templates below cannot be pasted until a custom SMTP is set up (which needs a domain, see the next paragraph).** The default templates are English. Hebrew drafts to paste, keeping the `{{ .ConfirmationURL }}` placeholder exactly as written:
 
 *Confirm sign-up*, subject: `אימות האימייל ב-DuoFit`
 ```html
