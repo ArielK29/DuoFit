@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useChatStore } from '@hooks/useChatStore';
+import { BackButton } from '@components/BackButton';
 import { ScheduleForm } from '@components/ScheduleForm';
 import { DEMO_DATA } from '@lib/demo';
 import { theme } from '@styles/theme';
@@ -31,6 +32,7 @@ export function InviteToWorkoutScreen() {
 
   return (
     <View style={styles.container}>
+      <BackButton label="ביטול" />
       <Text style={styles.title}>הזמנה לאימון</Text>
       <Text style={styles.subtitle}>עם {partnerName}</Text>
       <ScheduleForm confirmLabel="שלח הזמנה" onConfirm={handleConfirm} />

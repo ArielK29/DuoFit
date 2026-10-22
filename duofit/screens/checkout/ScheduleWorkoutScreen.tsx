@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { scheduleWorkoutReminder } from '@lib/notifications';
+import { BackButton } from '@components/BackButton';
 import { ScheduleForm } from '@components/ScheduleForm';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
@@ -28,6 +29,7 @@ export function ScheduleWorkoutScreen() {
 
   return (
     <View style={styles.container}>
+      <BackButton label="ביטול" />
       <Text style={styles.title}>קביעת אימון</Text>
       <Text style={styles.subtitle}>עם {partnerName} · {activity}</Text>
       <ScheduleForm confirmLabel="אשר תזמון" onConfirm={handleConfirm} />
