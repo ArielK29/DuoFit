@@ -7,7 +7,6 @@ import {
   Pressable,
   ScrollView,
   KeyboardAvoidingView,
-  Platform,
   StyleSheet,
 } from 'react-native';
 import { Send } from 'lucide-react-native';
@@ -96,7 +95,7 @@ const CommentsContent: React.FC<{ postId: string; authorName: string; onClose: (
   };
 
   return (
-    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.root} behavior="padding">
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="סגור" />
       <View style={styles.sheet}>
         <View style={styles.handle} />

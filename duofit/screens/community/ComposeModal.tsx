@@ -7,7 +7,6 @@ import {
   Pressable,
   Image,
   KeyboardAvoidingView,
-  Platform,
   StyleSheet,
 } from 'react-native';
 import { pickImage as pickFromLibrary } from '@lib/pickImage';
@@ -73,7 +72,7 @@ const ComposeContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.root} behavior="padding">
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="סגור" />
       <View style={styles.sheet}>
         <View style={styles.handle} />
