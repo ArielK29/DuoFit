@@ -38,7 +38,7 @@ DuoFit היא אפליקציה לאנשים שרוצים להתאמן יחד.
 
 **Category:** Health & Fitness (secondary: Social Networking)
 
-**Support URL / e-mail / privacy-policy URL:** *owner to provide* (the in-app terms and privacy text is `lib/termsText.ts`; stores also need a public web URL)
+**Support URL / e-mail / privacy-policy URL:** support `https://arielk29.github.io/duofit-legal/support.html`; privacy policy `https://arielk29.github.io/duofit-legal/privacy.html`; support e-mail `arielkorman7+duofit@gmail.com` (see STORE-ANSWERS.md, section 4). The in-app terms and privacy text is `lib/termsText.ts`.
 
 **What's new (first version):** `גרסה ראשונה של DuoFit.`
 
