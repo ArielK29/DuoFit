@@ -127,6 +127,7 @@ function scan(file: string): { handlers: number; byHandler: Record<string, numbe
 // A file with handlers that is missing here fails --check: add the file (or a new flow row) when you add a screen.
 const FLOW_MAP: Record<string, string> = {
   'components/AccountSheet.tsx': '3, 11, 18',
+  'components/BackButton.tsx': '7, 8, 12',
   'components/BottomSheet.tsx': 'all',
   'components/Button.tsx': 'all',
   'components/Card.tsx': 'all',
