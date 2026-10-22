@@ -59,11 +59,13 @@ export function DiscoverScreen() {
   const handleInterested = () => {
     if (!currentPartner) return;
     const { id, name, activities } = currentPartner;
-    interested();
     if (!DEMO_DATA) {
+      // The card stays: if the member cancels the invitation, the partner must still be on the screen (advancing here left an empty
+      // "no partners" state until a refresh).
       router.push({ pathname: '/invite-to-workout', params: { partnerId: id, partnerName: name } });
       return;
     }
+    interested();
     router.push({
       pathname: '/schedule-workout',
       params: { partnerId: id, partnerName: name, activity: activities[0] ?? 'אימון משותף' },
