@@ -1,9 +1,9 @@
 import type { TermsSection } from './termsText.ts';
 
-// The public support address. EMPTY on purpose until the owner has created the mailbox (checklist A4):
-// nothing about contact is shown, in the app or on the public pages, while it is empty. Once it is set,
-// run "npm run legal:build" to refresh the public pages.
-export const SUPPORT_EMAIL = '';
+// The public support address (checklist A4). For now an alias of the owner's own mailbox: everything sent to
+// arielkorman7+duofit@gmail.com arrives there. Replace it with a dedicated address when one exists, then run "npm run legal:build" to refresh
+// the public pages. While it is empty, no contact line is shown anywhere (in the app or on the public pages).
+export const SUPPORT_EMAIL = 'arielkorman7+duofit@gmail.com';
 
 export function contactSection(email: string): TermsSection | null {
   const address = email.trim();
