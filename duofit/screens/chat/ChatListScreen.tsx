@@ -5,6 +5,8 @@ import { BadgeCheck, Flame, PenSquare, Search, Sparkles, Users } from 'lucide-re
 import { HeaderActions } from '@components/HeaderActions';
 import { SegmentedToggle } from '@components/SegmentedToggle';
 import { useChatStore } from '@hooks/useChatStore';
+import { useFeedStore } from '@hooks/useFeedStore';
+import { isChatBlocked, omitBlockedChats } from '@lib/chatMerge';
 import { PARTNER_POOL, findPartnerById } from '@hooks/usePartnerMatching';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { NewChatSheet } from '@screens/chat/NewChatSheet';
@@ -32,6 +34,7 @@ export function ChatListScreen() {
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
   const conversations = useChatStore((state) => state.conversations);
   const loadFailed = useChatStore((state) => state.loadFailed);
+  const blocked = useFeedStore((state) => state.blocked);
   const { openSeeded, ensureConversation, createGroup } = useChatStore.getState();
 
   const [filter, setFilter] = useState<ChatFilter>('all');
@@ -39,8 +42,12 @@ export function ChatListScreen() {
   const [newChatVisible, setNewChatVisible] = useState(false);
 
   const rows = useMemo(() => {
+    // A blocked member has no row, even when a workout with them is still scheduled.
+    const blockedIds = blocked.map((member) => member.id);
     const scheduledPartners = new Map<string, string>();
-    scheduledWorkouts.forEach((workout) => scheduledPartners.set(workout.partnerId, workout.partnerName));
+    scheduledWorkouts
+      .filter((workout) => !isChatBlocked(workout.partnerId, blockedIds))
+      .forEach((workout) => scheduledPartners.set(workout.partnerId, workout.partnerName));
     const streaks = new Map(
       computePartnerStreaks(scheduledWorkouts.filter((workout) => workout.checkedIn)).map((entry) => [
         entry.partnerId,
@@ -48,13 +55,13 @@ export function ChatListScreen() {
       ])
     );
     return buildRows({
-      conversations,
+      conversations: omitBlockedChats(conversations, blockedIds),
       scheduledPartners,
       streaks,
       isVerified: (partnerId) => findPartnerById(partnerId)?.verified ?? false,
       now: new Date(),
     });
-  }, [conversations, scheduledWorkouts]);
+  }, [conversations, scheduledWorkouts, blocked]);
 
   const query = searchQuery.trim();
   const visibleRows = rows.filter(
