@@ -8,7 +8,9 @@ import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { useAuth } from '@hooks/useAuth';
 import { DEMO_DATA } from '@lib/demo';
 import { newId } from '@lib/uuid';
-import { keepLocalOnlyChat } from '@lib/chatMerge';
+import { isChatBlocked, keepLocalOnlyChat } from '@lib/chatMerge';
+import { useFeedStore } from '@hooks/useFeedStore';
+import { fetchBlocked } from '@lib/remoteCommunity';
 import { groupIdFromKey, isGroupKey, sendGroupMessage } from '@lib/remoteGroups';
 import { notifyInviteAnswered } from '@lib/notifications';
 import {
@@ -116,6 +118,7 @@ export const useChatStore = create<ChatState>()(
   persist(
     (set, get) => {
       const myId = () => useAuth.getState().user?.id ?? null;
+      const blockedIds = () => useFeedStore.getState().blocked.map((member) => member.id);
       let hydrating = false;
       const answering = new Set<string>();
 
@@ -173,11 +176,17 @@ export const useChatStore = create<ChatState>()(
         try {
           const remote = await fetchRemoteConversations(me);
           if (myId() !== me) return; // signed out (or switched account) while loading
+          // The block list may not be loaded yet (it loads with the Community tab): read it here too, so an empty row left by a block
+          // is also dropped when the app starts.
+          const fetchedBlocked = await fetchBlocked(me).catch(() => null);
+          // The chat list reads the same list, so it is shared with the feed store (it also loads on its own with the Community tab).
+          if (fetchedBlocked) useFeedStore.setState({ blocked: fetchedBlocked });
+          const blockedNow = [...new Set([...blockedIds(), ...(fetchedBlocked ?? []).map((row) => row.id)])];
           const local = get().conversations;
           const merged: Record<string, Conversation> = {};
           // Chats opened on this phone that have no saved message yet stay visible; a chat the server stopped returning (blocked) does not.
           Object.values(local).forEach((conversation) => {
-            if (!remote[conversation.partnerId] && keepLocalOnlyChat(conversation)) merged[conversation.partnerId] = conversation;
+            if (!remote[conversation.partnerId] && keepLocalOnlyChat(conversation, blockedNow)) merged[conversation.partnerId] = conversation;
           });
           Object.values(remote).forEach((conversation) => {
             const pending = (local[conversation.partnerId]?.messages ?? []).filter(
@@ -305,6 +314,8 @@ export const useChatStore = create<ChatState>()(
         // The server conversation is created with the first message, so opening a chat and
         // leaving does not put an empty chat in the other person's inbox.
         if (get().conversations[partnerId]) return;
+        // A blocked member gets no chat row (closing the chat screen after a block used to leave an empty one behind).
+        if (isChatBlocked(partnerId, blockedIds())) return;
         set({
           conversations: {
             ...get().conversations,
