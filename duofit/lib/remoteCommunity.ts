@@ -1,4 +1,5 @@
 import { supabase } from '@lib/supabase';
+import { readPickedImage } from '@lib/readLocalFile';
 
 // Server side of the community (tables and security rules: supabase/migrations/20261007_community_posts.sql).
 // The database decides what each member may see (blocked members, reported posts), the app only asks.
@@ -97,8 +98,7 @@ export async function fetchFeed(me: string): Promise<RemotePost[]> {
 }
 
 async function uploadPostImage(me: string, localUri: string): Promise<string> {
-  const response = await fetch(localUri);
-  const bytes = await response.arrayBuffer();
+  const bytes = await readPickedImage(localUri);
   const path = `${me}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
   const { error } = await supabase.storage.from(POST_IMAGES).upload(path, bytes, { contentType: 'image/jpeg' });
   if (error) throw error;
