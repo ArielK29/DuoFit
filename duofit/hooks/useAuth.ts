@@ -4,6 +4,7 @@ import { supabase } from '@lib/supabase';
 import { authErrorMessage } from '@lib/authErrors';
 import { appLinkUrl } from '@lib/appLinks';
 import type { AuthLink } from '@lib/authLinks';
+import { readPickedImage } from '@lib/readLocalFile';
 
 export type Gender = 'M' | 'F' | 'Other';
 export type FitnessLevel = 'Beginner' | 'Intermediate' | 'Advanced';
@@ -91,8 +92,7 @@ async function loadUser(session: Session | null): Promise<User | null> {
 }
 
 async function uploadAvatar(userId: string, localUri: string): Promise<string> {
-  const response = await fetch(localUri);
-  const bytes = await response.arrayBuffer();
+  const bytes = await readPickedImage(localUri);
   const path = `${userId}/avatar-${Date.now()}.jpg`;
   const { error } = await supabase.storage.from('avatars').upload(path, bytes, { contentType: 'image/jpeg', upsert: true });
   if (error) throw error;
