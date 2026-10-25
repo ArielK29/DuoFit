@@ -6,7 +6,7 @@
 // in as soon as the route graph loads, so the module is loaded lazily
 // instead, inside a try/catch, the first time a notification is actually
 // requested. Reminders silently become a no-op in Expo Go; they'll work
-// once UnityFit moves to a dev client (#15).
+// once FriendFit moves to a dev client (#15).
 type NotificationsModule = typeof import('expo-notifications');
 
 let notificationsModule: NotificationsModule | null = null;

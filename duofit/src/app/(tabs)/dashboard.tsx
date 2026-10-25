@@ -245,7 +245,7 @@ export default function Dashboard() {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.topBar}>
-          <Text style={styles.wordmark}>UnityFit</Text>
+          <Text style={styles.wordmark}>FriendFit</Text>
           <View style={styles.topBarLeft}>
             <NotificationBell />
             <View style={styles.streakPill}>

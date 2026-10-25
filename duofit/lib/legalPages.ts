@@ -56,7 +56,7 @@ function renderPrivacy(email: string): string {
     return `<h2>${escapeHtml(section.title)}</h2>\n${paragraphs}`;
   });
   return page(
-    'תנאי שימוש ופרטיות | UnityFit',
+    'תנאי שימוש ופרטיות | FriendFit',
     `<h1>תנאי שימוש ופרטיות</h1>\n<p class="meta">עודכן לאחרונה: ${escapeHtml(TERMS_UPDATED)}</p>\n${parts.join('\n')}`
   );
 }
@@ -65,15 +65,15 @@ function renderSupport(email: string): string {
   const address = email.trim();
   const contact = address ? `<p>שאלות, תקלות או בקשות? כתבו לנו: ${mailLink(address)}</p>` : '';
   return page(
-    'תמיכה | UnityFit',
-    `<h1>UnityFit: תמיכה</h1>
+    'תמיכה | FriendFit',
+    `<h1>FriendFit: תמיכה</h1>
 ${contact}
 <h2>מחיקת חשבון</h2>
 <p>מתוך האפליקציה: "החשבון שלי", ואז "מחק את החשבון שלי". המחיקה סופית ומסירה את הפרופיל, התמונות, ההודעות והנתונים האישיים שלך.</p>
 <h2>דיווח על תוכן או משתמש</h2>
 <p>מתוך האפליקציה, בלחיצה על "דווח" ליד ההודעה, הפוסט או המשתמש. אפשר גם לחסום משתמש.</p>
 <h2>מצב חירום</h2>
-<p>UnityFit אינה שירות חירום. במצב חירום חייגו 100 או 101.</p>`
+<p>FriendFit אינה שירות חירום. במצב חירום חייגו 100 או 101.</p>`
   );
 }
 

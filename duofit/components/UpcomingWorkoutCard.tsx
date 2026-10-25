@@ -44,8 +44,8 @@ interface UpcomingWorkoutCardProps {
 }
 
 // "Next workout" card, per the FitMatch reference layout — restyled with
-// UnityFit's own dark palette instead of FitMatch's light theme. FitMatch's
-// "3 confirmed participants" isn't included — UnityFit's workouts are 1-on-1,
+// FriendFit's own dark palette instead of FitMatch's light theme. FitMatch's
+// "3 confirmed participants" isn't included — FriendFit's workouts are 1-on-1,
 // not group, so there's no second/third participant to show.
 export const UpcomingWorkoutCard: React.FC<UpcomingWorkoutCardProps> = ({
   workout,

@@ -7,7 +7,7 @@
 // The list is deliberately short and limited to slurs, sexual insults, and urging someone to harm themselves.
 // It is a starting list for the owner (and the lawyer) to review, and it is the only place to edit.
 
-export const BLOCKED_MESSAGE = 'הטקסט כולל ביטוי שאינו מותר ב-UnityFit. שנה את הניסוח ונסה שוב';
+export const BLOCKED_MESSAGE = 'הטקסט כולל ביטוי שאינו מותר ב-FriendFit. שנה את הניסוח ונסה שוב';
 
 // Each entry is one word, or a phrase of words separated by a space.
 export const BLOCKED_TERMS: string[] = [

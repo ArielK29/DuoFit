@@ -1,4 +1,4 @@
-# UnityFit: the App Review account (checklist A9a, A9b, A9c, A-4e)
+# FriendFit: the App Review account (checklist A9a, A9b, A9c, A-4e)
 
 Apple's reviewer signs in and must see every screen with real data, without waiting for anybody. This is the routine. Claude prepared the data script and tested it; the accounts and the passwords are yours.
 
@@ -6,12 +6,12 @@ Apple's reviewer signs in and must see every screen with real data, without wait
 | Account | Used for | Suggested e-mail |
 |---|---|---|
 | **Reviewer** | The login that goes into the App Store Connect "Sign-in information" field | an address only for this, e.g. `review@<your domain>` or a new Gmail |
-| **Companion** ("צוות UnityFit") | A real second member, so the reviewer sees someone in Discover, a chat and a shared workout | any address you own |
+| **Companion** ("צוות FriendFit") | A real second member, so the reviewer sees someone in Discover, a chat and a shared workout | any address you own |
 
 Both are real members created in the real app (no demo flag, no invented people). Say so in the review notes: "the second account belongs to the team".
 
 ## Status 2026-10-21
-Both accounts exist (reviewer: ariel.korman7@gmail.com, "APP Review"; companion: ariel.korman.7@gmail.com, "צוות UnityFit"). The sample data was created by the real tests (a chat, a workout with both check-ins, a post from each, the plank record) and completed by hand (weight log for the reviewer, the companion's bio), so the seed script below was NOT run: it refuses when the two accounts already have a chat. It stays for a future clean pair of accounts.
+Both accounts exist (reviewer: ariel.korman7@gmail.com, "APP Review"; companion: ariel.korman.7@gmail.com, "צוות FriendFit"). The sample data was created by the real tests (a chat, a workout with both check-ins, a post from each, the plank record) and completed by hand (weight log for the reviewer, the companion's bio), so the seed script below was NOT run: it refuses when the two accounts already have a chat. It stays for a future clean pair of accounts.
 
 ## Steps
 1. **Create both accounts in the app** (sign up, confirm the e-mail, finish the profile). Use a strong password for each. Claude never sees them: use a password manager (A9c) and never type them in a chat or a file in Git. The password helper that copies one to the clipboard without showing it is available on request.

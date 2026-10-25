@@ -153,7 +153,7 @@ export function CommunityScreen() {
           <View style={styles.headerText}>
             <Text style={styles.title}>קהילה</Text>
             <Text style={styles.subtitle}>
-              {MEMBER_COUNT === null ? 'הקהילה של UnityFit' : `${MEMBER_COUNT.toLocaleString('he-IL')} מתאמנים בתל אביב והסביבה`}
+              {MEMBER_COUNT === null ? 'הקהילה של FriendFit' : `${MEMBER_COUNT.toLocaleString('he-IL')} מתאמנים בתל אביב והסביבה`}
             </Text>
           </View>
           <HeaderActions />

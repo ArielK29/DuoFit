@@ -1,4 +1,4 @@
-# UnityFit
+# FriendFit
 
 A Hebrew-language (right-to-left, dark-only) fitness-buddy app: find a training partner near you, send a workout invitation, chat, join groups, post to a community feed and track your own progress. Built with Expo (React Native) and Supabase. Phone only (iPhone first, then Android); a web build exists for previews.
 
@@ -84,4 +84,4 @@ The full rules are in [CLAUDE.md](CLAUDE.md) (and [AGENTS.md](AGENTS.md) for oth
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Decisions made and decisions still open |
 
 ## Related repositories
-- `gmail-agent`: a separate product (a Gmail assistant: web page plus Supabase Edge Functions); its mobile app is `gmail-agent-mobile`. They have their own repos and databases; nothing is shared with UnityFit.
+- `gmail-agent`: a separate product (a Gmail assistant: web page plus Supabase Edge Functions); its mobile app is `gmail-agent-mobile`. They have their own repos and databases; nothing is shared with FriendFit.

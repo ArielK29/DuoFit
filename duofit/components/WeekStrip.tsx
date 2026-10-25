@@ -23,7 +23,7 @@ interface WeekStripProps {
   activeDates: Set<number>; // startOfDay() timestamps with a completed workout
 }
 
-// Weekly day strip, per the FitMatch reference layout — restyled with UnityFit's
+// Weekly day strip, per the FitMatch reference layout — restyled with FriendFit's
 // own dark palette instead of FitMatch's light theme.
 export const WeekStrip: React.FC<WeekStripProps> = ({ activeDates }) => {
   const today = startOfDay(new Date());

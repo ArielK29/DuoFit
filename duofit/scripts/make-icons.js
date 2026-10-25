@@ -1,4 +1,4 @@
-// Regenerates the app icons from the brand monogram (logo/unityfit-icon.svg: 'UF' in Anton on the pink-black-cyan gradient).
+// Regenerates the app icons from the brand monogram (logo/friendfit-icon.svg: 'FF' in Anton on the pink-black-cyan gradient).
 // Not part of the app: run it from an empty temp folder with `npm i sharp opentype.js`, then:
 //   node make-icons.js <output folder> <path to Anton_400Regular.ttf from @expo-google-fonts/anton>
 // iOS icon is full-bleed and has NO alpha channel (Apple requires that); Android gets background, foreground (66% safe zone) and monochrome layers.
@@ -9,15 +9,15 @@ const opentype = require('opentype.js');
 const out = process.argv[2];
 const fontPath = process.argv[3];
 const buf = fs.readFileSync(fontPath); const f = opentype.parse(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
-const SIZE = 620, SPACING = 4; // the same text settings as logo/unityfit-icon.svg
-const width = f.getAdvanceWidth('UF', SIZE, { letterSpacing: SPACING / SIZE });
-const base = f.getPath('UF', 0, 0, SIZE, { letterSpacing: SPACING / SIZE });
+const SIZE = 620, SPACING = 4; // the same text settings as logo/friendfit-icon.svg
+const width = f.getAdvanceWidth('FF', SIZE, { letterSpacing: SPACING / SIZE });
+const base = f.getPath('FF', 0, 0, SIZE, { letterSpacing: SPACING / SIZE });
 const box = base.getBoundingBox();
 const GRAD = `<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF00A8"/><stop offset="55%" stop-color="#050505"/><stop offset="100%" stop-color="#00E5FF"/></linearGradient></defs>`;
 // the monogram path, placed so its box is centered at (cx, cy) and scaled to the given width
 function mark(cx, cy, w) {
   const k = w / (box.x2 - box.x1);
-  const p = f.getPath('UF', 0, 0, SIZE, { letterSpacing: SPACING / SIZE });
+  const p = f.getPath('FF', 0, 0, SIZE, { letterSpacing: SPACING / SIZE });
   const d = p.toPathData(3);
   const tx = cx - ((box.x1 + box.x2) / 2) * k, ty = cy - ((box.y1 + box.y2) / 2) * k;
   return { d, tf: `translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k.toFixed(5)})` };
@@ -48,5 +48,5 @@ async function png(svg, file, size, opaque) {
   const mf = mark(512, cyIcon, wide);
   await png(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">${GRAD}<rect width="1024" height="1024" rx="224" fill="url(#bg)"/><path d="${mf.d}" transform="${mf.tf}" fill="#F5F5F5"/></svg>`, 'favicon.png', 196, false);
   // The logo shown inside the app (login screens): the same rounded monogram as the icon, 512 px with transparent corners.
-  await png(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">${GRAD}<rect width="1024" height="1024" rx="224" fill="url(#bg)"/><path d="${mf.d}" transform="${mf.tf}" fill="#F5F5F5"/></svg>`, 'unityfit-logo.png', 512, false);
+  await png(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">${GRAD}<rect width="1024" height="1024" rx="224" fill="url(#bg)"/><path d="${mf.d}" transform="${mf.tf}" fill="#F5F5F5"/></svg>`, 'friendfit-logo.png', 512, false);
 })();

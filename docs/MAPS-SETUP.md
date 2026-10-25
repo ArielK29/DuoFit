@@ -1,4 +1,4 @@
-# UnityFit: map setup (B9)
+# FriendFit: map setup (B9)
 
 What is done, and the one part that needs the owner.
 
@@ -10,7 +10,7 @@ What is done, and the one part that needs the owner.
 
 ## What the owner does (Android release only, not needed for the iPhone version)
 1. In Google Cloud Console, create or choose a project and **enable "Maps SDK for Android"**. Google asks for a billing account for Maps; the monthly free usage is usually enough for a small app **(verify current Maps Platform pricing)**.
-2. Create an **API key** and restrict it: application restriction "Android apps" with the package `com.arielk29.unityfit` and the SHA-1 fingerprint of the signing key (shown by `eas credentials` once the Expo account and the first Android build exist), and API restriction "Maps SDK for Android" only.
+2. Create an **API key** and restrict it: application restriction "Android apps" with the package `com.arielk29.friendfit` and the SHA-1 fingerprint of the signing key (shown by `eas credentials` once the Expo account and the first Android build exist), and API restriction "Maps SDK for Android" only.
 3. Add the key as an **EAS environment variable** named `GOOGLE_MAPS_ANDROID_API_KEY` for the `preview` and `production` environments (visibility "sensitive"). Never in the repository, never in chat.
 4. Claude then checks the first Android build's manifest for the key and the map on a real phone.
 
