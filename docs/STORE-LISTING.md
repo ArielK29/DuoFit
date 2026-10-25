@@ -1,21 +1,21 @@
-# FriendFit: store listing draft (Hebrew), for issue #12
+# FitFriend: store listing draft (Hebrew), for issue #12
 
 Draft written on 2026-10-12 from what the app does today. **Nothing here has been submitted.** The owner reviews the wording, adds the screenshots and the privacy-policy URL (needs the domain, #88), then pastes it into App Store Connect and Google Play Console. Update the "data" tables whenever a feature changes what is collected.
 
 ## Texts
 
-**App name (max 30):** `FriendFit`
+**App name (max 30):** `FitFriend`
 
 **Subtitle, App Store (max 30):** `שותפים לאימון, קרוב אליך`
 
 **Short description, Google Play (max 80):** `מצא שותף או קבוצה לאימון, קבע אימון משותף והתקדם יחד.`
 
 **Promotional text, App Store (max 170):**
-`אין עם מי להתאמן? FriendFit מחברת בין אנשים שמתאמנים באותה רמה, באותן פעילויות ובאותו אזור. שלח הזמנה, קבע שעה ומקום והגע.`
+`אין עם מי להתאמן? FitFriend מחברת בין אנשים שמתאמנים באותה רמה, באותן פעילויות ובאותו אזור. שלח הזמנה, קבע שעה ומקום והגע.`
 
 **Full description (max 4000):**
 ```
-FriendFit היא אפליקציה לאנשים שרוצים להתאמן יחד.
+FitFriend היא אפליקציה לאנשים שרוצים להתאמן יחד.
 
 מה אפשר לעשות:
 • למצוא שותפים לאימון לפי פעילות, רמת כושר וקרבה
@@ -38,9 +38,9 @@ FriendFit היא אפליקציה לאנשים שרוצים להתאמן יחד.
 
 **Category:** Health & Fitness (secondary: Social Networking)
 
-**Support URL / e-mail / privacy-policy URL:** support `https://arielk29.github.io/duofit-legal/support.html`; privacy policy `https://arielk29.github.io/duofit-legal/privacy.html`; support e-mail `arielkorman7+friendfit@gmail.com` (see STORE-ANSWERS.md, section 4). The in-app terms and privacy text is `lib/termsText.ts`.
+**Support URL / e-mail / privacy-policy URL:** support `https://arielk29.github.io/duofit-legal/support.html`; privacy policy `https://arielk29.github.io/duofit-legal/privacy.html`; support e-mail `arielkorman7+fitfriend@gmail.com` (see STORE-ANSWERS.md, section 4). The in-app terms and privacy text is `lib/termsText.ts`.
 
-**What's new (first version):** `גרסה ראשונה של FriendFit.`
+**What's new (first version):** `גרסה ראשונה של FitFriend.`
 
 ## Age rating (suggestion, the owner answers the questionnaires)
 The app has user-generated content (chat, groups, community posts with photos) and meets strangers in person, with report and block tools.
@@ -69,8 +69,8 @@ Other answers:
 - No ads, no data sale.
 
 ## Permission texts already in `app.json`
-- Photos: "כדי לבחור תמונת פרופיל, FriendFit זקוק לגישה לתמונות שלך."
-- Location (when in use): "FriendFit משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך."
+- Photos: "כדי לבחור תמונת פרופיל, FitFriend זקוק לגישה לתמונות שלך."
+- Location (when in use): "FitFriend משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך."
 - Notifications: the app asks for permission to show **local** notifications: a reminder 30 minutes before a shared workout (`lib/notifications.ts`, scheduled on the device, no push token, no server). Messages and invitations are shown inside the app only. No data-safety line is needed for a local reminder. If real push notifications are ever built (messages when the app is closed), add a push-token table with RLS, EAS push credentials and a data-safety line (issue #95).
 
 ## Screenshots (owner / device needed)

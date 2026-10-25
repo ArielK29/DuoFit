@@ -1,4 +1,4 @@
-// FriendFit Theme Configuration
+// FitFriend Theme Configuration
 // Dark-only mode (no light mode support)
 
 import { colors } from '../constants/colors';

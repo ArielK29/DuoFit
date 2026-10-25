@@ -1,4 +1,4 @@
-# FriendFit — Code Architecture
+# FitFriend — Code Architecture
 
 _Snapshot as of 2026-09-26, branch `feature/login` (uncommitted work included)._
 

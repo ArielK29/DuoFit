@@ -1,4 +1,4 @@
-// FriendFit Spacing Scale
+// FitFriend Spacing Scale
 // Reference: ../01-DESIGN-TOKENS.json (8px base unit)
 
 export const spacing = {

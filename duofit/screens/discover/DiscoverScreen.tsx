@@ -197,13 +197,13 @@ export function DiscoverScreen() {
                   headline="אין שותפים קרובים"
                   subheading={
                     noPartnersYet
-                      ? 'FriendFit רק התחילה. הזמן חברים להצטרף ותמצאו אחד את השני'
+                      ? 'FitFriend רק התחילה. הזמן חברים להצטרף ותמצאו אחד את השני'
                       : 'נסה להרחיב את הסינון או לנסות שוב מאוחר יותר'
                   }
                   ctaLabel={noPartnersYet ? 'הזמן חברים' : isDefault(filters) ? 'רענן חיפוש' : 'נקה סינון'}
                   onCtaPress={() => {
                     if (noPartnersYet) {
-                      shareInvite('אני מחפש שותף לאימונים ב-FriendFit. בוא להתאמן ביחד!');
+                      shareInvite('אני מחפש שותף לאימונים ב-FitFriend. בוא להתאמן ביחד!');
                       return;
                     }
                     setFilters(DEFAULT_FILTERS);

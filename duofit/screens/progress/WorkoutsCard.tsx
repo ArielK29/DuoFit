@@ -43,7 +43,7 @@ export const WorkoutsCard: React.FC<WorkoutsCardProps> = ({ completedIso, goal, 
 
   const weeks = RANGE_WEEKS[range];
   const metWeeks = countWeeksMetGoal(completedIso, goal, weeks, now);
-  // Every workout in FriendFit is scheduled with a partner.
+  // Every workout in FitFriend is scheduled with a partner.
   const withPartner = completedIso.length > 0 ? ' — 100% מהאימונים היו עם שותף' : '';
 
   return (

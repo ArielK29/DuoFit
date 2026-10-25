@@ -1,7 +1,7 @@
-# Claude Instructions for FriendFit
+# Claude Instructions for FitFriend
 
 ## Project Overview
-FriendFit is a Hebrew-language fitness buddy matching app built with React Native + Expo. This document guides AI assistants on project standards, structure, and workflow.
+FitFriend is a Hebrew-language fitness buddy matching app built with React Native + Expo. This document guides AI assistants on project standards, structure, and workflow.
 
 ---
 

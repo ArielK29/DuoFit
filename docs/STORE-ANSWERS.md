@@ -1,4 +1,4 @@
-# FriendFit: answers for the App Store Connect questionnaires (B16), draft of 2026-10-20
+# FitFriend: answers for the App Store Connect questionnaires (B16), draft of 2026-10-20
 
 The owner answers the forms; this is the prepared list, written from what the app does today. Texts for the listing itself (name, subtitle, description, keywords) are in [STORE-LISTING.md](STORE-LISTING.md). Wording of the questions was read from Apple's page on 2026-10-20 (age ratings); re-check each question in App Store Connect, because Apple changes them. **Nothing has been submitted.**
 
@@ -48,7 +48,7 @@ Third parties that receive data (for the policy, not the label): Supabase, Verce
 ## 4. Other forms
 - **Content rights:** the app contains no third-party content except what members upload. Answer: no third-party content that needs a licence; members' content is theirs (see the terms, "התוכן שלך").
 - **Advertising identifier (IDFA):** not used. Answer: No.
-- **Support URL, privacy policy URL:** live since 2026-10-22 on GitHub Pages, in the small public repository `ArielK29/duofit-legal` (only these two pages and an index): support `https://arielk29.github.io/duofit-legal/support.html`, privacy policy `https://arielk29.github.io/duofit-legal/privacy.html`. Support e-mail: `arielkorman7+friendfit@gmail.com` (an alias of the owner's mailbox). Marketing URL is optional and not needed. When the pages change (`npm run legal:build` in `duofit/`), copy `public/privacy.html` and `public/support.html` to that repository.
+- **Support URL, privacy policy URL:** live since 2026-10-22 on GitHub Pages, in the small public repository `ArielK29/duofit-legal` (only these two pages and an index): support `https://arielk29.github.io/duofit-legal/support.html`, privacy policy `https://arielk29.github.io/duofit-legal/privacy.html`. Support e-mail: `arielkorman7+fitfriend@gmail.com` (an alias of the owner's mailbox). Marketing URL is optional and not needed. When the pages change (`npm run legal:build` in `duofit/`), copy `public/privacy.html` and `public/support.html` to that repository.
 - **Sign-in information for the reviewer:** a real reviewer account (A9), credentials only in the App Store Connect field, never in this repository. Reviewer notes draft: `docs/APPLE-REVIEW-AUDIT.md`.
 - **Version release:** recommended manual release, so the first public day is chosen after approval.
 

@@ -49,7 +49,7 @@ interface PlacesViewProps {
 // Map view of Discover: partner pins (tap for a preview, then profile or an
 // invite), numbered venue pins, and the list of venues. Venue names are real;
 // the counts are example numbers (no live check-ins yet) and there are no
-// promotions — FriendFit has no agreement with any of these businesses.
+// promotions — FitFriend has no agreement with any of these businesses.
 export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpenPartner, onInvitePartner }) => {
   const mapRef = useRef<MapView>(null);
   const { status } = useLocation();
@@ -176,7 +176,7 @@ export const PlacesView: React.FC<PlacesViewProps> = ({ origin, partners, onOpen
         )}
         {DEMO_DATA && (
           <View style={styles.caption} pointerEvents="none">
-            <Text style={styles.captionText}>מספר = מתאמני FriendFit שם עכשיו (לדוגמה)</Text>
+            <Text style={styles.captionText}>מספר = מתאמני FitFriend שם עכשיו (לדוגמה)</Text>
           </View>
         )}
       </View>

@@ -29,7 +29,7 @@ const length = (text: string) => [...text].length; // characters, not UTF-16 uni
 
 test('App name: at most 30 characters', () => {
   assert.ok(length(inlineValue('App name (max 30)')) <= 30);
-  assert.equal(inlineValue('App name (max 30)'), 'FriendFit');
+  assert.equal(inlineValue('App name (max 30)'), 'FitFriend');
 });
 
 test('App Store subtitle: at most 30 characters', () => {

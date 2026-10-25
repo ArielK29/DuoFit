@@ -1,6 +1,6 @@
-# AGENTS.md: FriendFit (instructions for coding agents: Codex, Claude Code and others)
+# AGENTS.md: FitFriend (instructions for coding agents: Codex, Claude Code and others)
 
-FriendFit is a Hebrew-language (RTL) fitness-buddy matching app: Expo 57, React Native 0.86, expo-router, Supabase. The app lives in `duofit/`, the database in `supabase/`.
+FitFriend is a Hebrew-language (RTL) fitness-buddy matching app: Expo 57, React Native 0.86, expo-router, Supabase. The app lives in `duofit/`, the database in `supabase/`.
 
 **The full project rules are in [CLAUDE.md](./CLAUDE.md). Read it first.** It is the single source of truth (branch strategy, design system files 01-08, code standards, Snyk, Supabase RLS rules). This file only adds what other agents need and the Expo skills setup. If the two ever disagree, CLAUDE.md wins.
 

@@ -1,4 +1,4 @@
-// FriendFit Color Palette - Dark Mode Only
+// FitFriend Color Palette - Dark Mode Only
 // Reference: ../01-DESIGN-TOKENS.json
 
 export const colors = {
