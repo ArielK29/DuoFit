@@ -1,4 +1,4 @@
-// DuoFit Color Palette - Dark Mode Only
+// UnityFit Color Palette - Dark Mode Only
 // Reference: ../01-DESIGN-TOKENS.json
 
 export const colors = {

@@ -1,4 +1,4 @@
-# DuoFit: Google Play plan (checklist A14), prepared 2026-10-23
+# UnityFit: Google Play plan (checklist A14), prepared 2026-10-23
 
 Android is not part of version 1 (decision A-1a: iPhone only). This plan exists because Google's rule for new personal developer accounts has a long lead time, so the clock should start early and in parallel with the iPhone work. Nothing here is started; every step that costs money or creates an account is the owner's.
 
@@ -9,7 +9,7 @@ An **organisation** account (needs a D-U-N-S number and a registered business) i
 
 ## 2. What the owner has to do (nothing before the iPhone build is ready)
 1. Create the Google Play Console account (one-time fee, about 25 dollars, **verify at sign-up**) and complete the identity check. Needs the owner's Google account and an ID.
-2. Create the app "DuoFit" (name still open, see `docs/DECISIONS.md` item 4), Hebrew as the default language, free, category Health & Fitness.
+2. Create the app "UnityFit" (name still open, see `docs/DECISIONS.md` item 4), Hebrew as the default language, free, category Health & Fitness.
 3. Recruit 15 to 20 testers with Gmail addresses (family, friends, the sport groups the owner belongs to). Share the opt-in link Google gives for the closed test.
 
 ## 3. What Claude prepares, with no cost and no account
@@ -34,4 +34,4 @@ An **organisation** account (needs a D-U-N-S number and a registered business) i
 ## 5. Known open points
 - The Android pass is not finished (`docs/QA-RUN-2.md`): flows 2, 6, 8 and 9, the text-size check on the Samsung, TalkBack.
 - The map needs the Google key; without it the Android map shows the "map did not load" message.
-- The app name may change (`docs/RENAME-PLAN.md`); decide it before creating the Play listing, because the package name cannot change after the first upload (`com.arielk29.duofit`, decision A-1b).
+- The app name may change (`docs/RENAME-PLAN.md`); decide it before creating the Play listing, because the package name cannot change after the first upload (`com.arielk29.unityfit`, decision A-1b).
