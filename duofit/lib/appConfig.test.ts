@@ -13,10 +13,10 @@ function plugin(name: string): Record<string, unknown> {
 }
 
 test('identity: version 1.0.0, the agreed bundle id on both platforms, the app link scheme, iPhone only', () => {
-  assert.equal(config.name, 'UnityFit');
+  assert.equal(config.name, 'FitFriend');
   assert.equal(config.version, '1.0.0');
-  assert.equal(config.ios.bundleIdentifier, 'com.arielk29.unityfit');
-  assert.equal(config.android.package, 'com.arielk29.unityfit');
+  assert.equal(config.ios.bundleIdentifier, 'com.arielk29.fitfriend');
+  assert.equal(config.android.package, 'com.arielk29.fitfriend');
   assert.equal(config.scheme, 'duofit');
   assert.equal(config.ios.supportsTablet, false);
   assert.equal(config.orientation, 'portrait');

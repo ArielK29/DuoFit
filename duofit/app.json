@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "UnityFit",
+    "name": "FitFriend",
     "slug": "duofit",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,7 +12,7 @@
     "ios": {
       "supportsTablet": false,
       "userInterfaceStyle": "dark",
-      "bundleIdentifier": "com.arielk29.unityfit",
+      "bundleIdentifier": "com.arielk29.fitfriend",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleDevelopmentRegion": "he",
@@ -24,7 +24,7 @@
     },
     "android": {
       "userInterfaceStyle": "dark",
-      "package": "com.arielk29.unityfit",
+      "package": "com.arielk29.fitfriend",
       "adaptiveIcon": {
         "backgroundColor": "#050505",
         "backgroundImage": "./assets/images/android-icon-background.png",
@@ -48,7 +48,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "כדי לבחור תמונת פרופיל או תמונה לפוסט, UnityFit זקוקה לגישה לתמונות שלך.",
+          "photosPermission": "כדי לבחור תמונת פרופיל או תמונה לפוסט, FitFriend זקוקה לגישה לתמונות שלך.",
           "cameraPermission": false,
           "microphonePermission": false
         }
@@ -56,7 +56,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "UnityFit משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך.",
+          "locationWhenInUsePermission": "FitFriend משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך.",
           "locationAlwaysAndWhenInUsePermission": false,
           "locationAlwaysPermission": false,
           "motionUsagePermission": false

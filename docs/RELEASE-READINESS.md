@@ -1,4 +1,4 @@
-# UnityFit – Release readiness report (issue #12)
+# FitFriend – Release readiness report (issue #12)
 
 Checked on **2026-10-11** against `main` (commit `51ff04f`). Only things that were actually run or read on that day are marked "verified". Everything else is listed under "Not verified". The owner's own steps (accounts, EAS, store listing) are in [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
 
@@ -13,7 +13,7 @@ Checked on **2026-10-11** against `main` (commit `51ff04f`). Only things that we
 | RLS | **Pass**: 17 tables in `public`, 0 without RLS, 0 with RLS but no policy |
 | Storage | **Pass**: `avatars` and `post-images` limited to 5 MB and jpeg/png/webp (both buckets are public-read by design) |
 | Secrets in the app folder | **Pass**: no `service_role`, secret keys or private keys found in `duofit/` |
-| EAS / app config | **Pass (read only)**: `development`, `preview`, `production` profiles; bundle id and package `com.arielk29.unityfit`; production `autoIncrement` |
+| EAS / app config | **Pass (read only)**: `development`, `preview`, `production` profiles; bundle id and package `com.arielk29.fitfriend`; production `autoIncrement` |
 | Supabase URL configuration | **Pass**: Site URL and Redirect URL point to `https://duofit-duofit-brown.vercel.app` |
 | Web (Vercel) | **Up**: HTTP 200, HSTS, `x-content-type-options`, `x-frame-options`, `referrer-policy` present; **no `Content-Security-Policy` header** |
 

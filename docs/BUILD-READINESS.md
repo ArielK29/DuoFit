@@ -1,4 +1,4 @@
-# UnityFit: first build readiness (B14, B15), 2026-10-20
+# FitFriend: first build readiness (B14, B15), 2026-10-20
 
 Everything that can be checked without an Apple account is checked. The build itself, the Apple login for certificates and every EAS action need the owner's approval each time.
 
@@ -8,7 +8,7 @@ Everything that can be checked without an Apple account is checked. The build it
 | JavaScript bundle for **Android** (`npx expo export --platform android`) | Compiles, Hermes bytecode 8.3 MB |
 | JavaScript bundle for **iOS** (`npx expo export --platform ios`) | Compiles, Hermes bytecode 8.1 MB |
 | `npx expo-doctor` | 21 of 21 checks pass |
-| Config (`app.json` + `app.config.js`) | Bundle id and package `com.arielk29.unityfit`, version 1.0.0, Hebrew only, camera and microphone blocked, ATS arbitrary loads off, EAS project id `e2d60da9-...` (project `ariel_korman/duofit`) |
+| Config (`app.json` + `app.config.js`) | Bundle id and package `com.arielk29.fitfriend`, version 1.0.0, Hebrew only, camera and microphone blocked, ATS arbitrary loads off, EAS project id `e2d60da9-...` (project `ariel_korman/duofit`) |
 | Unit tests, types, lint, CI | 100 tests; CI runs on every pull request |
 | Snyk | Code 0 issues; dependencies 4 findings, all build and lint tooling (`docs/RELEASE-READINESS.md`) |
 

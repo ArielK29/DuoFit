@@ -8,7 +8,7 @@ interface LogoProps {
 export const Logo: React.FC<LogoProps> = ({ size = 160 }) => {
   return (
     <Image
-      source={require('../assets/images/unityfit-logo.png')}
+      source={require('../assets/images/fitfriend-logo.png')}
       style={{ width: size, height: size }}
       contentFit="contain"
     />

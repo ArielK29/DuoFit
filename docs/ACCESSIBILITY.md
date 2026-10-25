@@ -1,4 +1,4 @@
-# UnityFit: accessibility check (B12), 2026-10-17
+# FitFriend: accessibility check (B12), 2026-10-17
 
 What can be checked without a phone is checked and locked by tests. What needs a phone is listed at the end.
 

@@ -1,4 +1,4 @@
-// UnityFit Typography
+// FitFriend Typography
 // Reference: ../01-DESIGN-TOKENS.json
 // Fonts: Anton, Heebo (Hebrew), Space Grotesk, JetBrains Mono
 //

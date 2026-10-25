@@ -12,7 +12,7 @@ test('privacy page: right-to-left Hebrew document with every section of the in-a
   assert.match(html, /^<!doctype html>/i);
   assert.match(html, /<html lang="he" dir="rtl">/);
   assert.match(html, /<meta name="viewport"/);
-  assert.match(html, /<title>[^<]*UnityFit[^<]*<\/title>/);
+  assert.match(html, /<title>[^<]*FitFriend[^<]*<\/title>/);
   assert.ok(html.includes(TERMS_UPDATED));
   for (const section of TERMS_SECTIONS) {
     assert.ok(html.includes(section.title), section.title);

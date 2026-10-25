@@ -1,7 +1,7 @@
 import { DEMO_DATA } from '@lib/demo';
 import { theme } from '@styles/theme';
 
-// Everything here is example data — UnityFit has no backend, user directory or
+// Everything here is example data — FitFriend has no backend, user directory or
 // social graph yet (#15). The Community tab is labeled "תצוגה מקדימה" because
 // of it. The user's own actions (likes, joins, posts, plank record) are real
 // and live in useCommunityStore.
@@ -86,7 +86,7 @@ const DEMO_POSTS: CommunityPost[] = [
     activity: 'כוח',
     timeAgo: 'אתמול',
     place: 'תל אביב',
-    text: 'חודש ראשון עם UnityFit: 14 אימונים, 0 הברזות. כשמישהו מחכה לך ב-18:00 אתה פשוט מגיע.',
+    text: 'חודש ראשון עם FitFriend: 14 אימונים, 0 הברזות. כשמישהו מחכה לך ב-18:00 אתה פשוט מגיע.',
     likes: 132,
     comments: 34,
   },

@@ -1,7 +1,7 @@
-# Claude Instructions for UnityFit
+# Claude Instructions for FitFriend
 
 ## Project Overview
-UnityFit is a Hebrew-language fitness buddy matching app built with React Native + Expo. This document guides AI assistants on project standards, structure, and workflow.
+FitFriend is a Hebrew-language fitness buddy matching app built with React Native + Expo. This document guides AI assistants on project standards, structure, and workflow.
 
 ---
 

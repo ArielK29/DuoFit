@@ -1,4 +1,4 @@
-# UnityFit: QA flows (every button, every flow)
+# FitFriend: QA flows (every button, every flow)
 
 Used for checklist item B8 in [APP-STORE-READINESS.md](APP-STORE-READINESS.md). Run each flow on a real Android phone and a real iPhone (Expo Go first, then the TestFlight build). Mark each cell: OK, FAIL (with a screenshot and a one-line note) or n/a. A flow passes only when every step does what the expected column says, with no crash, no blank screen, no English text and nothing hidden under the notch, the keyboard or the tab bar. The release needs a full pass on both phones.
 

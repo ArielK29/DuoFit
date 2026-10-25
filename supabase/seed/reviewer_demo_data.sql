@@ -3,7 +3,7 @@
 --
 -- Before running, replace the two placeholders below with the e-mail addresses of YOUR two accounts, both made by you in the app:
 --   __REVIEWER_EMAIL__   the account whose login goes into the App Store Connect "Sign-in information" field
---   __COMPANION_EMAIL__  a second account you own ("UnityFit team"), so the reviewer sees a real second member, a chat and a shared workout
+--   __COMPANION_EMAIL__  a second account you own ("FitFriend team"), so the reviewer sees a real second member, a chat and a shared workout
 -- (Real members only: no invented people. Both accounts are yours and are described as such in the review notes.)
 --
 -- What it fills: both profiles (complete, so each finds the other in Discover), a chat with two messages and a workout invitation
@@ -38,7 +38,7 @@ begin
   update public.profiles set display_name = 'מבחן App Review', bio = 'חשבון בדיקה עבור סוקרי Apple.', gender = 'F',
          fitness_level = 'Intermediate', favorite_activities = array['ריצה', 'כוח']
    where id = r;
-  update public.profiles set display_name = 'צוות UnityFit', bio = 'חשבון של צוות UnityFit, כדי שתוכלו לנסות שיחה והזמנה לאימון.', gender = 'M',
+  update public.profiles set display_name = 'צוות FitFriend', bio = 'חשבון של צוות FitFriend, כדי שתוכלו לנסות שיחה והזמנה לאימון.', gender = 'M',
          fitness_level = 'Intermediate', favorite_activities = array['ריצה', 'כוח', 'רכיבה']
    where id = c;
 
@@ -46,7 +46,7 @@ begin
   if r < c then a := r; b := c; else a := c; b := r; end if;
   insert into public.conversations (user_a, user_b) values (a, b) returning id into conv;
   insert into public.messages (conversation_id, sender_id, kind, body, created_at)
-    values (conv, c, 'text', 'היי! ברוכים הבאים ל-UnityFit. רוצים לנסות לקבוע אימון?', now() - interval '2 hours'),
+    values (conv, c, 'text', 'היי! ברוכים הבאים ל-FitFriend. רוצים לנסות לקבוע אימון?', now() - interval '2 hours'),
            (conv, r, 'text', 'שלום, נשמע מצוין. מתי נוח?', now() - interval '90 minutes');
   insert into public.messages (id, conversation_id, sender_id, kind, invite, created_at)
     values (inv, conv, c, 'invite',

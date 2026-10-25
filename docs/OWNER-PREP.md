@@ -1,4 +1,4 @@
-# UnityFit: prepared material for the owner's checklist (A-items)
+# FitFriend: prepared material for the owner's checklist (A-items)
 
 Written 2026-10-17 from the code and the Supabase migrations in this repo. **Nothing here has been published, sent or entered anywhere.** Each section is a draft for the owner to approve, or for the lawyer (A12) to review. Facts marked **(verify)** could not be confirmed from the repo and must be checked in the named dashboard before anyone relies on them.
 
@@ -11,10 +11,10 @@ Related: [APP-STORE-READINESS.md](APP-STORE-READINESS.md) (the plan), [STORE-LIS
 | Item | Recommended answer | Why |
 |---|---|---|
 | A-1a Scope of version 1 | iPhone only, Hebrew only, no iPad (`supportsTablet: false`), sign-up and sign-in as today, **no payments** | Smallest surface for Apple review; matches the code |
-| A-1b Bundle id | `com.arielk29.unityfit` (already in `app.json` for iOS and Android) | Cannot change after the first upload |
-| A-1c Name and category | Name `UnityFit`; primary category Health & Fitness, secondary Social Networking | Matches `STORE-LISTING.md`. Check the name is free in App Store Connect |
+| A-1b Bundle id | `com.arielk29.fitfriend` (already in `app.json` for iOS and Android) | Cannot change after the first upload |
+| A-1c Name and category | Name `FitFriend`; primary category Health & Fitness, secondary Social Networking | Matches `STORE-LISTING.md`. Check the name is free in App Store Connect |
 | A-1d Seller | Decision needed from the owner: **individual** (the legal name is shown as the developer; simplest and fastest) or **registered business** (needs a D-U-N-S number, takes longer, name of the business is shown). For a first version, individual is the usual choice; it can be moved to a company later but that is a transfer process | Affects the developer name in the store, taxes, and later Polar for the Gmail agent |
-| A-1e One-line honest description | "UnityFit connects people who want to train together: find a partner, set a workout, chat and track progress. It is not a medical service; the SOS button only opens the phone dialer." | Matches the terms ("not a medical service") and the SOS behaviour |
+| A-1e One-line honest description | "FitFriend connects people who want to train together: find a partner, set a workout, chat and track progress. It is not a medical service; the SOS button only opens the phone dialer." | Matches the terms ("not a medical service") and the SOS behaviour |
 
 ---
 
@@ -37,17 +37,17 @@ Only while testing in Expo Go on a phone, also add `exp://**` and remove it befo
 
 **Email templates** (Authentication, Emails, Templates). **Found 2026-10-22: the dashboard shows "Set up custom SMTP to edit templates", so the templates below cannot be pasted until a custom SMTP is set up (which needs a domain, see the next paragraph).** The default templates are English. Hebrew drafts to paste, keeping the `{{ .ConfirmationURL }}` placeholder exactly as written:
 
-*Confirm sign-up*, subject: `אימות האימייל ב-UnityFit`
+*Confirm sign-up*, subject: `אימות האימייל ב-FitFriend`
 ```html
 <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6;">
-  <h2>ברוך הבא ל-UnityFit</h2>
+  <h2>ברוך הבא ל-FitFriend</h2>
   <p>כדי להשלים את ההרשמה, לחץ על הקישור:</p>
   <p><a href="{{ .ConfirmationURL }}">אמת את האימייל</a></p>
-  <p>אם לא נרשמת ל-UnityFit, אפשר להתעלם מההודעה.</p>
+  <p>אם לא נרשמת ל-FitFriend, אפשר להתעלם מההודעה.</p>
 </div>
 ```
 
-*Reset password*, subject: `איפוס הסיסמה ב-UnityFit`
+*Reset password*, subject: `איפוס הסיסמה ב-FitFriend`
 ```html
 <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6;">
   <h2>איפוס סיסמה</h2>
@@ -57,7 +57,7 @@ Only while testing in Expo Go on a phone, also add `exp://**` and remove it befo
 </div>
 ```
 
-**Custom SMTP** (Authentication, SMTP Settings): the built-in sender is rate limited and not meant for real users (`RELEASE-READINESS.md`). Needs a mail provider (for example Resend) and a domain with SPF and DKIM records. Suggested sender: name `UnityFit`, address `no-reply@<domain>`. Blocked on A3 (domain) and A4 (support mailbox).
+**Custom SMTP** (Authentication, SMTP Settings): the built-in sender is rate limited and not meant for real users (`RELEASE-READINESS.md`). Needs a mail provider (for example Resend) and a domain with SPF and DKIM records. Suggested sender: name `FitFriend`, address `no-reply@<domain>`. Blocked on A3 (domain) and A4 (support mailbox).
 
 **Known risk, not a bug in the app:** some mail programs open links automatically to scan them. A one-time link can then be "used" before the member clicks it and the app shows the "link expired" screen. The app handles it (plain Hebrew message, login and resend are one tap away). If testers report it often, the fix is to switch the templates to the token-hash form; that is a separate small change.
 
@@ -92,13 +92,13 @@ Hebrew, plain language, true to the code today. These feed the public privacy an
 
 ### A-3d. Service providers named in the text
 
-| Provider | What it does for UnityFit | Data it sees |
+| Provider | What it does for FitFriend | Data it sees |
 |---|---|---|
 | Supabase | Database, sign-in, picture storage, server functions | Everything the member enters in the app, stored in the project `wtheyjuqpidgrgehplgw`; region **(verify in Supabase project settings)** |
 | Vercel | Hosts the web version of the app | Standard web request data (IP address, browser) |
 | PostHog | Usage events (`signup_started`, `login_succeeded`, `profile_completed`) and error reports | Events and errors, sent to the EU host (`eu.i.posthog.com`); no account id is attached today. PostHog's SDK creates a random per-install id: **confirm in the PostHog dashboard whether it counts as a device id for the Apple label** |
 | Expo / EAS | Builds the app and, later, sends it to the stores | No member data (build tooling) |
-| Google Maps (Android) | Map tiles | The map area being viewed and the device's IP address; the member's location is not sent by UnityFit |
+| Google Maps (Android) | Map tiles | The map area being viewed and the device's IP address; the member's location is not sent by FitFriend |
 | Apple Maps (iPhone) | Map | Handled by Apple |
 | E-mail provider (planned, A7) | Sign-up and reset emails | Email address |
 | Apple App Store / Google Play | Distribution | Per their own policies |
@@ -119,11 +119,11 @@ Hebrew, plain language, true to the code today. These feed the public privacy an
 
 ### A-3f. Public support page (draft text)
 
-> **UnityFit: תמיכה**
+> **FitFriend: תמיכה**
 > שאלות, תקלות או בקשות? כתבו לנו: `<support email>` (נענה תוך `<N>` ימי עבודה).
 > **מחיקת חשבון:** מתוך האפליקציה: "החשבון שלי", ואז "מחק את החשבון שלי". אפשר גם לבקש במייל מהכתובת שאיתה נרשמתם; נמחק תוך 30 יום.
 > **דיווח על תוכן או משתמש:** מתוך האפליקציה, בלחיצה על "דווח" ליד ההודעה, הפוסט או המשתמש.
-> **מצב חירום:** UnityFit אינה שירות חירום. במצב חירום חייגו 100 או 101.
+> **מצב חירום:** FitFriend אינה שירות חירום. במצב חירום חייגו 100 או 101.
 
 Decision for the owner: who answers during Apple's review (A-3f / A-4e). Blocked on A3 and A4 for the address.
 

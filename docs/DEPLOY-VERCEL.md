@@ -1,6 +1,6 @@
-# Deploying UnityFit (web) to Vercel
+# Deploying FitFriend (web) to Vercel
 
-Vercel hosts the **web version** of UnityFit (a static export of the Expo app). The phone apps (iOS/Android) are separate (Expo/EAS). In the browser the map is a placeholder and share/location behave differently; everything else is the same app.
+Vercel hosts the **web version** of FitFriend (a static export of the Expo app). The phone apps (iOS/Android) are separate (Expo/EAS). In the browser the map is a placeholder and share/location behave differently; everything else is the same app.
 
 ## How it is built
 - `duofit/vercel.json` tells Vercel what to do: `npx expo export --platform web`, output folder `dist`, every URL falls back to `index.html` (single-page app), plus basic security headers.

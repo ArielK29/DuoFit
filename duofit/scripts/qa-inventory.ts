@@ -69,7 +69,7 @@ function hasVisibleText(node: ts.JsxElement): boolean {
 const LATIN_WORD = /[A-Za-z]{3,}/;
 const HEBREW = /[֐-׿]/;
 // Product and technical names that are fine in a Hebrew screen.
-const ALLOWED_LATIN = /^(UnityFit|Google|Apple|OK|SOS|Supabase|PostHog|Vercel|e-?mail|name@example\.com|kg|km|ק"מ)$/i;
+const ALLOWED_LATIN = /^(FitFriend|Google|Apple|OK|SOS|Supabase|PostHog|Vercel|e-?mail|name@example\.com|kg|km|ק"מ)$/i;
 
 function scan(file: string): { handlers: number; byHandler: Record<string, number>; findings: Finding[] } {
   const source = fs.readFileSync(file, 'utf8');
