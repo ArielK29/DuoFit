@@ -1,7 +1,7 @@
-# Claude Instructions for DuoFit
+# Claude Instructions for UnityFit
 
 ## Project Overview
-DuoFit is a Hebrew-language fitness buddy matching app built with React Native + Expo. This document guides AI assistants on project standards, structure, and workflow.
+UnityFit is a Hebrew-language fitness buddy matching app built with React Native + Expo. This document guides AI assistants on project standards, structure, and workflow.
 
 ---
 

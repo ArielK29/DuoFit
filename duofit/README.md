@@ -1,4 +1,4 @@
-# DuoFit app
+# UnityFit app
 
 The setup, commands and house rules are in the [root README](../README.md). Quick start:
 

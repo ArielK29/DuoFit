@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const buildConfig = require('../app.config.js') as (input: { config: Record<string, any> }) => Record<string, any>;
 
-const base = () => ({ name: 'DuoFit', android: { package: 'com.arielk29.duofit' }, ios: { bundleIdentifier: 'com.arielk29.duofit' } });
+const base = () => ({ name: 'UnityFit', android: { package: 'com.arielk29.unityfit' }, ios: { bundleIdentifier: 'com.arielk29.unityfit' } });
 
 function withKey(value: string | undefined) {
   const before = process.env.GOOGLE_MAPS_ANDROID_API_KEY;
@@ -28,9 +28,9 @@ test('without the variable the config is returned as it is (no key anywhere in t
 test('with the variable the Android map key is set and nothing else changes', () => {
   const result = withKey('  test-key-123  ');
   assert.equal(result.android.config.googleMaps.apiKey, 'test-key-123', 'trimmed');
-  assert.equal(result.android.package, 'com.arielk29.duofit');
+  assert.equal(result.android.package, 'com.arielk29.unityfit');
   assert.deepEqual(result.ios, base().ios);
-  assert.equal(result.name, 'DuoFit');
+  assert.equal(result.name, 'UnityFit');
 });
 
 test('an existing android.config entry is kept next to the key', () => {

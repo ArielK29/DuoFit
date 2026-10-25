@@ -1,4 +1,4 @@
-# DuoFit: App Store review audit (guidelines read from Apple's page on 2026-10-17)
+# UnityFit: App Store review audit (guidelines read from Apple's page on 2026-10-17)
 
 The app checked against the guidelines that apply to it, with the wording quoted from [developer.apple.com/app-store/review/guidelines](https://developer.apple.com/app-store/review/guidelines/). Apple revises these; re-read before submitting. Draft of the notes for the reviewer is at the end.
 
@@ -39,7 +39,7 @@ Apple: the policy must "Identify what data, if any, the app/service collects, ho
 - The link in the app exists (account sheet, sign-up). The link in App Store Connect needs the domain.
 
 ## 2.1 and the reviewer
-Apple: "include demo account info (and turn on your back-end service!) if your app includes a login". A built-in demo mode is allowed only "with prior approval by Apple", and DuoFit must never ship its demo flag, so the way is a real reviewer account.
+Apple: "include demo account info (and turn on your back-end service!) if your app includes a login". A built-in demo mode is allowed only "with prior approval by Apple", and UnityFit must never ship its demo flag, so the way is a real reviewer account.
 - The account (A9a) must stay active during the whole review, with a complete profile, one conversation, one scheduled workout, one post and a progress entry (A9b), and its details are written in the App Review notes, never in the repository (A9c).
 - Another real member must exist for the reviewer to find in Discover. Otherwise the Discover tab shows "no partners yet". A second account owned by the owner, with a profile, solves it.
 
@@ -53,7 +53,7 @@ Packages with native iOS code and **no** manifest file: expo-image-picker, expo-
 The app's own data answers (email, name, photos, user content, health and fitness, usage data, diagnostics) are in `docs/STORE-LISTING.md`.
 
 ## Draft: notes for App Review (to paste into App Store Connect, no credentials here)
-> DuoFit helps people find training partners. Sign in with the reviewer account given in the "Sign-in information" fields. The app is in Hebrew (right to left).
+> UnityFit helps people find training partners. Sign in with the reviewer account given in the "Sign-in information" fields. The app is in Hebrew (right to left).
 >
 > How to see the main features: Discover (find a partner, filters, map of places), tap a member to see the profile and send a workout invitation; Chat; Community (posts, groups, weekly challenge); Progress (weight, goals); "My account" (top of the screen) has Block list, Terms and Privacy, Sign out and Delete my account.
 >

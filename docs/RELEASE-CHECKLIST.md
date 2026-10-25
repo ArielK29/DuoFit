@@ -1,9 +1,9 @@
-# DuoFit – Release checklist (App Store / Google Play)
+# UnityFit – Release checklist (App Store / Google Play)
 
 What is already prepared in the repo (issue #12) and what the owner must do himself.
 
 ## Already done in the repo
-- `duofit/app.json`: iOS `bundleIdentifier` and Android `package` = `com.arielk29.duofit` (cannot be changed after the first upload to the stores).
+- `duofit/app.json`: iOS `bundleIdentifier` and Android `package` = `com.arielk29.unityfit` (cannot be changed after the first upload to the stores).
 - `ITSAppUsesNonExemptEncryption = false` (the app uses only standard HTTPS), so Apple does not ask the export-compliance question on every build.
 - `expo-location` plugin with a Hebrew permission text, and the `expo-notifications` plugin.
 - `duofit/eas.json`: the `development`, `preview` and `production` profiles each use the EAS environment with the same name (for the `EXPO_PUBLIC_*` variables).

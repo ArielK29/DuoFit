@@ -1,12 +1,12 @@
-# DuoFit: App Store readiness plan (two checklists)
+# UnityFit: App Store readiness plan (two checklists)
 
 Written 2026-10-16 from the code as it is today. "Verified" means read in the code or run on that day; everything else is marked **to verify**. This file is the canonical, versioned plan (agents read it); the owner works from a Hebrew copy on Google Drive with the same item numbers (A1.. = owner, B1.. = software). Earlier material: [RELEASE-READINESS.md](RELEASE-READINESS.md) (what was verified on 2026-10-11/12) and [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
 
 Goal: the first App Store release must pass Apple review the first time. Apple rejects for small things (a button that does nothing, a placeholder, a missing link), so every flow and every button is part of the plan (B8).
 
 ## Decisions already made
-- **Payments (owner, 2026-10-16): subscriptions are sold only on the web.** The mobile apps give access to an existing account. DuoFit itself has no payments. For the Gmail agent mobile app: no price, no "upgrade" button and no link to the web checkout inside the app (Apple and Google steer in-app digital purchases to their own billing; showing plan status is fine). Reasoning: Apple takes a commission (15% through the Small Business Program for small developers, otherwise 30%; **to verify** the current terms before choosing in-app purchase) and the web checkout (Polar) already works. Rules differ by country and change: re-read App Review Guidelines 3.1.1 and 3.1.3 before submitting. Tracked in gmail-agent issue 31.
-- **Order:** DuoFit first (no payments, simplest review), then the Gmail agent app.
+- **Payments (owner, 2026-10-16): subscriptions are sold only on the web.** The mobile apps give access to an existing account. UnityFit itself has no payments. For the Gmail agent mobile app: no price, no "upgrade" button and no link to the web checkout inside the app (Apple and Google steer in-app digital purchases to their own billing; showing plan status is fine). Reasoning: Apple takes a commission (15% through the Small Business Program for small developers, otherwise 30%; **to verify** the current terms before choosing in-app purchase) and the web checkout (Polar) already works. Rules differ by country and change: re-read App Review Guidelines 3.1.1 and 3.1.3 before submitting. Tracked in gmail-agent issue 31.
+- **Order:** UnityFit first (no payments, simplest review), then the Gmail agent app.
 
 ## Verified state (2026-10-16)
 | Area | State |
@@ -15,7 +15,7 @@ Goal: the first App Store release must pass Apple review the first time. Apple r
 | Snyk dependencies | 5 high findings, all transitive build/lint tooling, no fix available |
 | Expo Doctor | 20/21: `expo` 57.0.26 and 7 other packages are behind their patch versions (`npx expo install --fix`) |
 | RLS and security advisors | all 17 tables protected; only advisor warning: leaked-password protection (Supabase Pro) |
-| Bundle id / package | `com.arielk29.duofit`, version `0.1.0`, `supportsTablet: false` (no iPad screenshots needed), dark only, export-compliance flag set |
+| Bundle id / package | `com.arielk29.unityfit`, version `0.1.0`, `supportsTablet: false` (no iPad screenshots needed), dark only, export-compliance flag set |
 | EAS | `eas.json` has development, preview, production; no Expo project linked, no build ever run |
 | Account deletion inside the app | exists (account sheet, Edge Function `delete-account`) |
 | Report and block for community content | exists (see terms text; **to verify** the UI on a device) |
@@ -38,7 +38,7 @@ Order = what blocks the most. Costs are indicative; **verify** on the day.
 |---|---|---|
 | A1 | Apple Developer Program account (yearly fee), Apple ID with two-factor; choose individual or organization | Nothing can be built for TestFlight or the store without it. Individual accounts show the owner's legal name as the seller |
 | A2 | Decide the seller identity (individual or registered business) | Affects the Apple developer name, tax and, later, Polar payouts (gmail-agent issue 27) |
-| A3 | Buy one domain (DuoFit issue 88) | Public privacy and support pages, support e-mail, custom SMTP, public web app, Google verification for the Gmail agent |
+| A3 | Buy one domain (UnityFit issue 88) | Public privacy and support pages, support e-mail, custom SMTP, public web app, Google verification for the Gmail agent |
 | A4 | Create the support e-mail (for example support@domain) and approve it as the contact in the terms | Apple needs a support URL; apps with user content need a published contact (guideline 1.2) |
 | A5 | Expo account (free), then `eas login` and `eas init` in `duofit/` | Claude guides; the login is the owner's. The free plan has a build quota and a slower queue (**to verify**) |
 | A6 | Create the EAS environment variables for preview and production (public keys only; list in RELEASE-CHECKLIST.md). **Never** `EXPO_PUBLIC_DEMO_DATA` | Builds read them |
@@ -47,7 +47,7 @@ Order = what blocks the most. Costs are indicative; **verify** on the day.
 | A9 | Create 2 or 3 test members with sample data for screenshots, and one **reviewer account** (credentials only in App Store Connect review notes, never in the repo) | Real builds must not use demo data; empty screens make poor screenshots; Apple reviewers need to sign in |
 | A10 | Approve the Hebrew store texts, the app name, subtitle and category, and answer the age-rating and privacy ("nutrition label") questionnaires in App Store Connect | Claude drafts every answer (B16); the forms are the owner's account |
 | A11 | Take or approve the App Store screenshots (iPhone sizes currently required: **to verify** in App Store Connect) | Must show the real app |
-| A12 | Legal review of the terms and privacy text by a lawyer (DuoFit issue 96) | Draft exists and is consistent with the code |
+| A12 | Legal review of the terms and privacy text by a lawyer (UnityFit issue 96) | Draft exists and is consistent with the code |
 | A13 | Decide the optional items: leaked-password protection (Supabase Pro), real push notifications (issue 95), staging Supabase (issue 100) | Not required for the first release |
 | A14 | Google Play Console account (one-time fee) for the Android release; a new personal account may need a closed test with a minimum number of testers for several days before production (the lesson video says 12 testers for 14 days: **to verify**) | Start early, it only needs time |
 | A15 | Submission day: approve `eas build` and `eas submit` (Claude runs them only after approval), attach the build in App Store Connect, press Submit for review, answer the reviewer quickly | Apple review usually takes 1 to 3 days; plan one resubmission |
@@ -57,7 +57,7 @@ P0 = would fail review or blocks the release. P1 = quality that reviewers and us
 
 | # | P | Action | Done when | Depends on |
 |---|---|---|---|---|
-| B1 | P0 | Replace the default Expo icon, Android adaptive icon (foreground, background, monochrome), splash and favicon with the DuoFit brand from `logo/duofit-icon.svg`. 1024 px icon without alpha and without rounded corners | Icons look right on a phone and in a build preview; no alpha | none |
+| B1 | P0 | Replace the default Expo icon, Android adaptive icon (foreground, background, monochrome), splash and favicon with the UnityFit brand from `logo/duofit-icon.svg`. 1024 px icon without alpha and without rounded corners | Icons look right on a phone and in a build preview; no alpha | none |
 | B2 | P0 | Remove or really implement the "coming soon" venue-scheduling button (wire it to the existing scheduling form, or hide it) | No placeholder text anywhere (search for "soon" and similar) | none |
 | B3 | P0 | Finish password reset: deep link, new-password screen, `PASSWORD_RECOVERY` handling, errors in Hebrew | Request, e-mail, link opens the app, new password saved, can sign in | A7 (redirect URLs) |
 | B4 | P0 | Sign-up confirmation: the link opens the app (or a public "confirmed" page); keep resend; a clear "check your mail" screen | A new member can register, confirm and sign in on a real phone | A3, A7 |
@@ -79,7 +79,7 @@ P0 = would fail review or blocks the release. P1 = quality that reviewers and us
 2.1 app completeness (crashes, dead buttons, a working demo account) · 2.2 no beta or placeholder features · 2.3 accurate metadata and screenshots (no other brands, no misleading text) · 4.0 design, 4.2 minimum functionality · 5.1.1 privacy (policy link in the app and in App Store Connect, purpose strings for permissions, account deletion inside the app) · 1.2 user-generated content (terms, report, block, published contact, timely response) · 3.1.1 and 3.1.3 payments · 4.8 sign in with other services (not needed: e-mail and password only).
 
 ## Comparison with the lesson's own gap table (the teacher's agent report)
-| Area | Teacher's app | DuoFit |
+| Area | Teacher's app | UnityFit |
 |---|---|---|
 | Basic functionality | green | green on Android; iPhone pending |
 | EAS and signing | red (no project id, no accounts) | same: no project linked, no accounts |
@@ -96,9 +96,9 @@ P0 = would fail review or blocks the release. P1 = quality that reviewers and us
 | Beta and review | none | none (B15) |
 
 ## Added from the lesson's reference checklist (teacher's App Store document, 2026-10-16)
-The teacher's document is organized in five stages with "answers" boxes. Everything in it applies to DuoFit. These items were missing above and are now part of the plan (stage numbers match the Hebrew copy):
+The teacher's document is organized in five stages with "answers" boxes. Everything in it applies to UnityFit. These items were missing above and are now part of the plan (stage numbers match the Hebrew copy):
 
-**Stage 1, product decisions to close first (owner answers, one line each):** scope of v1 (iPhone only, Hebrew only, no iPad; sign-in and sign-up as they are; no payments); the bundle identifier (already `com.arielk29.duofit`, cannot change after the first upload); app name, primary and secondary category (suggestion: Health and Fitness, secondary Social Networking: **to verify** availability of the name); who the seller is (individual or business); a one-line honest description of what the app does and does not do (it is not a medical service, SOS opens the dialer only).
+**Stage 1, product decisions to close first (owner answers, one line each):** scope of v1 (iPhone only, Hebrew only, no iPad; sign-in and sign-up as they are; no payments); the bundle identifier (already `com.arielk29.unityfit`, cannot change after the first upload); app name, primary and secondary category (suggestion: Health and Fitness, secondary Social Networking: **to verify** availability of the name); who the seller is (individual or business); a one-line honest description of what the app does and does not do (it is not a medical service, SOS opens the dialer only).
 
 **Stage 2, Apple accounts:** the membership is active (not only registered); the owner's role in App Store Connect is Account Holder, Admin or App Manager; **all updated agreements in "Agreements, Tax, and Banking" are accepted** (an unaccepted agreement can block uploads and releases); an organization account needs D-U-N-S verification and legal-entity details; two-factor authentication is on and the owner is present for it when needed; the bundle id and the App Store Connect API key are created only after the owner approves these external actions.
 

@@ -14,7 +14,7 @@ export interface Place {
 }
 
 // Real Tel Aviv venues with approximate coordinates. No promotions or
-// partnership claims: DuoFit has no agreement with any of them.
+// partnership claims: UnityFit has no agreement with any of them.
 export const PLACES: Place[] = [
   {
     id: 'holmes-dizengoff',

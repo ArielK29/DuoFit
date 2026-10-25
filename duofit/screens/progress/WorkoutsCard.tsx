@@ -43,7 +43,7 @@ export const WorkoutsCard: React.FC<WorkoutsCardProps> = ({ completedIso, goal, 
 
   const weeks = RANGE_WEEKS[range];
   const metWeeks = countWeeksMetGoal(completedIso, goal, weeks, now);
-  // Every workout in DuoFit is scheduled with a partner.
+  // Every workout in UnityFit is scheduled with a partner.
   const withPartner = completedIso.length > 0 ? ' — 100% מהאימונים היו עם שותף' : '';
 
   return (

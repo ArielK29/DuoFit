@@ -1,4 +1,4 @@
-// DuoFit Theme Configuration
+// UnityFit Theme Configuration
 // Dark-only mode (no light mode support)
 
 import { colors } from '../constants/colors';
