@@ -38,7 +38,7 @@ FitFriend היא אפליקציה לאנשים שרוצים להתאמן יחד.
 
 **Category:** Health & Fitness (secondary: Social Networking)
 
-**Support URL / e-mail / privacy-policy URL:** support `https://arielk29.github.io/duofit-legal/support.html`; privacy policy `https://arielk29.github.io/duofit-legal/privacy.html`; support e-mail `arielkorman7+fitfriend@gmail.com` (see STORE-ANSWERS.md, section 4). The in-app terms and privacy text is `lib/termsText.ts`.
+**Support URL / e-mail / privacy-policy URL:** support `https://legal.getfitfriend.app/support.html`; privacy policy `https://legal.getfitfriend.app/privacy.html`; support e-mail `arielkorman7+fitfriend@gmail.com` (see STORE-ANSWERS.md, section 4). The in-app terms and privacy text is `lib/termsText.ts`.
 
 **What's new (first version):** `גרסה ראשונה של FitFriend.`
 

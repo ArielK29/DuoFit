@@ -18,7 +18,7 @@ An **organisation** account (needs a D-U-N-S number and a registered business) i
 | Store texts (title, short and full description) | Drafted and length-tested: `docs/STORE-LISTING.md`, `lib/storeListing.test.ts` |
 | Data safety form answers | Same answers as the Apple "App Privacy" section of `docs/STORE-ANSWERS.md`; re-checked against the code on 2026-10-23: three analytics events, no account id attached, JavaScript error reports, location read on the device only, deletion inside the app |
 | Content rating questionnaire | Social features with user content, chat, no ads, no purchases: answers in `docs/STORE-ANSWERS.md`, section 1 |
-| Privacy policy URL and account deletion URL | Public pages exist: `https://arielk29.github.io/duofit-legal/privacy.html` and `support.html` (Google also asks for a web page that explains how to delete the account and data; `support.html` has it) |
+| Privacy policy URL and account deletion URL | Public pages exist: `https://legal.getfitfriend.app/privacy.html` and `support.html` (Google also asks for a web page that explains how to delete the account and data; `support.html` has it) |
 | Reviewer access | The two review accounts in `docs/REVIEWER-ACCOUNT.md` work for Google as well |
 | Android build | `eas.json` has a `preview` profile with an APK and a `production` profile for the store bundle. **A build costs EAS quota and needs the owner's approval** |
 | Google Maps key | Needed for the map on Android (`docs/MAPS-SETUP.md`); the owner creates it in Google Cloud and sets the EAS variable |
