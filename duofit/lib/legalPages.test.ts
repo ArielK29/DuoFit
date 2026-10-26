@@ -59,7 +59,7 @@ test('contactSection: nothing without an email, a contact section with one', () 
 
 test('the in-app text names the providers and the retention rule', () => {
   const all = TERMS_SECTIONS.map((s) => `${s.title} ${s.body.join(' ')}`).join(' ');
-  for (const name of ['Supabase', 'Vercel', 'PostHog']) assert.ok(all.includes(name), name);
+  for (const name of ['Supabase', 'Vercel', 'PostHog', 'Resend']) assert.ok(all.includes(name), name);
   assert.match(all, /200/, 'notifications kept: newest 200');
   assert.match(all, /אין פרסומות/);
 });
