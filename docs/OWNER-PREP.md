@@ -37,6 +37,8 @@ Only while testing in Expo Go on a phone, also add `exp://**` and remove it befo
 
 **Email templates** (Authentication, Emails, Templates). **Found 2026-10-22: the dashboard shows "Set up custom SMTP to edit templates", so the templates below cannot be pasted until a custom SMTP is set up (which needs a domain, see the next paragraph).** The default templates are English. Hebrew drafts to paste, keeping the `{{ .ConfirmationURL }}` placeholder exactly as written:
 
+**Done 2026-10-26:** the domain `getfitfriend.app` exists, Resend is verified, the custom SMTP is saved in Supabase (sender `no-reply@getfitfriend.app`, host `smtp.resend.com`, port 465, user `resend`; the API key is stored encrypted and was never shared), and both templates below are in place in Hebrew (subjects: `אימות האימייל ב-FitFriend`, `איפוס הסיסמה ב-FitFriend`). Keep the key out of the repository and the chat; rotate it in Resend if it is ever exposed.
+
 *Confirm sign-up*, subject: `אימות האימייל ב-FitFriend`
 ```html
 <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6;">

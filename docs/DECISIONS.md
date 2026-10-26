@@ -31,6 +31,7 @@ Last updated 2026-10-17. Decisions that are made are listed once, with their dat
 ## Open
 
 ### 1. Domain (issue #88). **Needed before the store submission**
+- **DONE 2026-10-25/26:** the owner bought **`getfitfriend.app`** on Vercel ($9.99 the first year, renews at $15, receipt 2640-8730-9920, expires 2027-10-25, auto-renew on). Connected: `legal.getfitfriend.app` serves the public privacy and support pages (GitHub Pages, HTTPS enforced); Resend sends the sign-up and reset e-mails from `no-reply@getfitfriend.app` (DKIM, SPF verified, 2026-10-26, custom SMTP in Supabase with the two Hebrew templates, checked with a real reset e-mail). Still open: a dedicated support mailbox (`support@getfitfriend.app` needs a forwarding service with an account of the owner; the Gmail alias is used until then).
 - **Question:** buy one domain now or later. The owner said "later, when the app is ready 100%".
 - **Recommendation:** buy it as soon as the device pass starts, not after. It is the one thing that blocks four others: a public privacy-policy URL (the App Store form requires one), the support email (A4), real sign-up emails (custom SMTP, issue #86, the built-in sender is rate limited), and the Google verification for the Gmail agent.
 - **Cost:** a domain is a yearly fee, usually in the range of a few tens of dollars **(verify at the registrar)**.
