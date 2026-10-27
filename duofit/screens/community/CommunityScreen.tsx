@@ -255,7 +255,8 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
-    alignItems: 'flex-end',
+    // 'flex-start' is the right edge in RTL; 'flex-end' pushed the title into the emergency button
+    alignItems: 'flex-start',
   },
   title: {
     fontSize: 34,

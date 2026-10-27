@@ -42,8 +42,14 @@ export const HeaderActions: React.FC<{ trailing?: React.ReactNode }> = ({ traili
 
   return (
   <View style={styles.row}>
-    <Pressable style={styles.sosButton} onPress={confirmEmergencyCall} accessibilityLabel="חירום">
-      <Text style={styles.sosText}>SOS</Text>
+    <Pressable
+      style={styles.sosButton}
+      onPress={confirmEmergencyCall}
+      accessibilityRole="button"
+      accessibilityLabel="מצב חירום"
+      accessibilityHint="פותח בחירה בין משטרה למד״א. השיחה מתחילה רק אחרי שתאשר"
+    >
+      <Text style={styles.sosText}>חירום</Text>
     </Pressable>
     {trailing === undefined ? <UserAvatar onPress={openAccount} /> : trailing}
   </View>
