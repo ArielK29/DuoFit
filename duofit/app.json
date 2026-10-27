@@ -59,7 +59,7 @@
           "locationWhenInUsePermission": "FitFriend משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך.",
           "locationAlwaysAndWhenInUsePermission": false,
           "locationAlwaysPermission": false,
-          "motionUsagePermission": false
+          "motionUsagePermission": "FitFriend לא אוספת נתוני תנועה מהמכשיר ולא מבקשת גישה אליהם. ההסבר הזה נדרש על ידי רכיב המיקום של המערכת."
         }
       ],
       "expo-notifications",
