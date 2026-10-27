@@ -1,13 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Alert, Platform, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { File } from 'expo-file-system';
 import { useRouter } from 'expo-router';
 import { BottomSheet } from '@components/BottomSheet';
 import { Button } from '@components/Button';
 import { useAccountSheet } from '@hooks/useAccountSheet';
 import { useAuth } from '@hooks/useAuth';
 import { useFeedStore } from '@hooks/useFeedStore';
+import { logError } from '@lib/analytics';
 import { DEMO_DATA } from '@lib/demo';
+import { pickImage } from '@lib/pickImage';
 import { visualRightText } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
@@ -19,10 +22,14 @@ export const AccountSheet: React.FC = () => {
   const user = useAuth((state) => state.user);
   const signOut = useAuth((state) => state.signOut);
   const deleteAccount = useAuth((state) => state.deleteAccount);
+  const saveProfile = useAuth((state) => state.saveProfile);
+  const setAuthError = useAuth((state) => state.setError);
   const isLoading = useAuth((state) => state.isLoading);
   const error = useAuth((state) => state.error);
   const blocked = useFeedStore((state) => state.blocked);
   const unblock = useFeedStore((state) => state.unblock);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   // The list of blocked members is loaded with the community feed; make sure it is there.
   useEffect(() => {
@@ -38,6 +45,35 @@ export const AccountSheet: React.FC = () => {
   const handleSignOut = async () => {
     close();
     await signOut();
+  };
+
+  // Replace the profile photo of a signed-in member: pick a square crop, upload it, save it.
+  const changePhoto = async () => {
+    setPhotoError(null);
+    let uri: string | null = null;
+    try {
+      uri = await pickImage('avatar', { square: true });
+      if (!uri) return;
+      setPhotoBusy(true);
+      const saved = await saveProfile({ localAvatarUri: uri });
+      if (!saved) {
+        setAuthError(null); // the message below is shown instead of the store's one
+        setPhotoError('לא הצלחנו לשמור את התמונה. נסה שוב');
+      }
+    } catch (err) {
+      logError('avatar_change_failed', { error: String(err) });
+      setPhotoError('לא הצלחנו לפתוח את גלריית התמונות');
+    } finally {
+      setPhotoBusy(false);
+      // The upload has its own copy; drop the temporary one from the document folder.
+      if (uri && Platform.OS !== 'web') {
+        try {
+          new File(uri).delete();
+        } catch {
+          // Best-effort cleanup: a missing file is not fatal.
+        }
+      }
+    }
   };
 
   const runDelete = async () => {
@@ -75,6 +111,19 @@ export const AccountSheet: React.FC = () => {
           <Text style={styles.email}>{user?.email}</Text>
         </View>
       </View>
+      {!DEMO_DATA && (
+        <View style={styles.photoWrap}>
+          <Button
+            label="החלף תמונת פרופיל"
+            variant="secondary"
+            size="lg"
+            loading={photoBusy}
+            disabled={photoBusy || isLoading}
+            onPress={changePhoto}
+          />
+          {!!photoError && <Text style={styles.error}>{photoError}</Text>}
+        </View>
+      )}
       <Text style={styles.note}>הנתונים שלך שמורים בחשבון הזה. כשתתנתק, הנתונים המקומיים במכשיר יימחקו.</Text>
       <View style={styles.buttons}>
         <Button label="תנאי שימוש ופרטיות" variant="secondary" size="lg" onPress={openTerms} />
@@ -102,6 +151,9 @@ export const AccountSheet: React.FC = () => {
 const styles = StyleSheet.create({
   buttons: {
     gap: theme.spacing.sm,
+  },
+  photoWrap: {
+    marginBottom: theme.spacing.lg,
   },
   blockedWrap: {
     marginTop: theme.spacing.xl,
