@@ -224,6 +224,12 @@ The Snyk MCP server is configured for Claude Code (`snyk mcp`, tools `snyk_code_
 
 ---
 
+## Marketing videos (Reels / TikTok)
+
+Before editing any talking-head video, read `docs/TALKING_HEAD.md` and follow its five steps (ffmpeg + Whisper, cut retakes and silence, one-word-at-a-time captions, Remotion captions, log every owner correction in that file). Skills are in `.claude/skills/`. Never push footage of people to this public repo.
+
+---
+
 ## Database, Permissions & RLS (Supabase)
 
 Official Supabase skills are installed in `.claude/skills/` (`supabase`, `supabase-postgres-best-practices`; pinned in `skills-lock.json`). **Read the `supabase` skill before any task that touches the database, auth, storage, policies or migrations.** Project ref: `wtheyjuqpidgrgehplgw`.
