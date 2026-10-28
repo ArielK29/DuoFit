@@ -35,7 +35,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ subtitle, description, c
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={[styles.header, keyboardOpen && styles.headerCompact]}>
-          <Logo size={keyboardOpen ? 72 : isSmall ? 140 : 180} />
+          <Logo width={keyboardOpen ? 110 : isSmall ? 220 : 280} />
           <Text style={styles.subtitle}>{subtitle}</Text>
           {description && !keyboardOpen && <Text style={styles.description}>{description}</Text>}
         </View>
