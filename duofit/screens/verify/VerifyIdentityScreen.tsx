@@ -7,14 +7,14 @@ import { Input } from '@components/Input';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 import { pickImage } from '@lib/pickImage';
-import { takeSelfie, discardSelfie } from '@lib/takeSelfie';
+import { recordVerificationVideo, discardLocalFile, MAX_VIDEO_SECONDS, type VideoResult } from '@lib/takeVerificationVideo';
 import { submitIdentityCheck } from '@lib/remoteIdentity';
 import { trackEvent, logError } from '@lib/analytics';
-import { MIN_AGE, formatBirthDate, isAdult, parseBirthDate, pickGesture } from '@lib/identity';
+import { MIN_AGE, formatBirthDate, isAdult, parseBirthDate, pickChallengeCode, pickGesture } from '@lib/identity';
 import { useAuth, isVerified } from '@hooks/useAuth';
 
-// The gate every member passes before using the app: an adult (18+) and a real person (live selfie with a random gesture).
-// A reviewer compares the selfie with the profile photo; only the profile photo and a "verified" badge are ever shown to others.
+// The gate every member passes before using the app: an adult (18+) and a real person (a short live video with a random gesture).
+// A reviewer compares the short video with the profile photo; only the profile photo and a "verified" badge are ever shown to others.
 export const VerifyIdentityScreen: React.FC = () => {
   const router = useRouter();
   const user = useAuth((state) => state.user);
@@ -26,7 +26,8 @@ export const VerifyIdentityScreen: React.FC = () => {
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
   const [gesture] = useState(() => pickGesture());
-  const [selfie, setSelfie] = useState<string | undefined>(undefined);
+  const [code] = useState(() => pickChallengeCode());
+  const [video, setVideo] = useState<Exclude<VideoResult, 'denied' | null> | undefined>(undefined);
   const [newAvatar, setNewAvatar] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +57,7 @@ export const VerifyIdentityScreen: React.FC = () => {
     try {
       const uri = await pickImage('avatar', { square: true });
       if (uri) {
-        discardSelfie(newAvatar);
+        discardLocalFile(newAvatar);
         setNewAvatar(uri);
       }
     } catch (err) {
@@ -65,21 +66,21 @@ export const VerifyIdentityScreen: React.FC = () => {
     }
   };
 
-  const shoot = async () => {
+  const record = async () => {
     setError(null);
     setCameraDenied(false);
     try {
-      const result = await takeSelfie();
+      const result = await recordVerificationVideo();
       if (result === 'denied') {
         setCameraDenied(true);
         return;
       }
       if (result) {
-        discardSelfie(selfie);
-        setSelfie(result.uri);
+        discardLocalFile(video?.uri);
+        setVideo(result);
       }
     } catch (err) {
-      logError('verify_selfie_failed', { error: String(err) });
+      logError('verify_video_failed', { error: String(err) });
       setError('לא הצלחנו לפתוח את המצלמה. נסה שוב');
     }
   };
@@ -100,8 +101,8 @@ export const VerifyIdentityScreen: React.FC = () => {
       setError('הוסף תמונת פרופיל עם הפנים שלך');
       return;
     }
-    if (!selfie) {
-      setError('צלם סלפי עם התנועה שמופיעה על המסך');
+    if (!video) {
+      setError('הקלט סרטון קצר לפי ההוראות שעל המסך');
       return;
     }
 
@@ -115,10 +116,18 @@ export const VerifyIdentityScreen: React.FC = () => {
           return;
         }
       }
-      await submitIdentityCheck({ userId: user.id, birthDate: formatBirthDate(birth), gesture: gesture.id, localSelfieUri: selfie });
+      await submitIdentityCheck({
+        userId: user.id,
+        birthDate: formatBirthDate(birth),
+        gesture: gesture.id,
+        code,
+        localVideoUri: video.uri,
+        contentType: video.contentType,
+        extension: video.extension,
+      });
       trackEvent('identity_submitted');
-      discardSelfie(selfie);
-      setSelfie(undefined);
+      discardLocalFile(video.uri);
+      setVideo(undefined);
       await refreshVerification();
     } catch (err) {
       logError('identity_submit_failed', { error: String(err) });
@@ -159,7 +168,7 @@ export const VerifyIdentityScreen: React.FC = () => {
           <View style={styles.rejectedCard}>
             <Text style={styles.rejectedTitle}>הבקשה הקודמת לא אושרה</Text>
             {user?.verificationRejectReason ? <Text style={styles.rejectedText}>{user.verificationRejectReason}</Text> : null}
-            <Text style={styles.rejectedText}>אפשר לנסות שוב עם סלפי ברור ותמונת פרופיל עם הפנים שלך.</Text>
+            <Text style={styles.rejectedText}>אפשר לנסות שוב עם סרטון ברור ותמונת פרופיל עם הפנים שלך.</Text>
           </View>
         )}
 
@@ -185,18 +194,22 @@ export const VerifyIdentityScreen: React.FC = () => {
           <Text style={styles.helperBeside}>זו התמונה שאחרים יראו. כדי שיהיה קל לזהות אותך בפגישה, בחר תמונה ברורה עם הפנים.</Text>
         </View>
 
-        <Text style={styles.sectionLabel}>3. סלפי מהמצלמה</Text>
+        <Text style={styles.sectionLabel}>3. סרטון קצר מהמצלמה</Text>
         <View style={styles.gestureCard}>
           <Text style={styles.gestureEmoji}>{gesture.emoji}</Text>
-          <Text style={styles.gestureText}>צלם סלפי כשאתה עושה: {gesture.label}</Text>
+          <Text style={styles.gestureText}>
+            הקלט {MAX_VIDEO_SECONDS} שניות: הסתכל למצלמה, הפנה את הראש לאט ימינה ואז שמאלה, ואז עשה: {gesture.label}
+          </Text>
+          <Text style={styles.codeLabel}>ותגיד בקול את המספר:</Text>
+          <Text style={styles.code}>{code}</Text>
         </View>
-        {selfie ? <Image source={{ uri: selfie }} style={styles.selfiePreview} contentFit="cover" /> : null}
-        <Button label={selfie ? 'צלם מחדש' : 'פתח מצלמה'} variant="secondary" onPress={shoot} disabled={busy} />
+        {video ? <Text style={styles.videoReady}>✓ הסרטון נשמר ומוכן לשליחה</Text> : null}
+        <Button label={video ? 'הקלט מחדש' : 'פתח מצלמה'} variant="secondary" onPress={record} disabled={busy} />
         {cameraDenied ? (
-          <Text style={styles.errorText}>אין הרשאה למצלמה. אפשר לאשר אותה בהגדרות הטלפון, תחת FitFriend.</Text>
+          <Text style={styles.errorText}>אין הרשאה למצלמה או למיקרופון. אפשר לאשר אותן בהגדרות הטלפון, תחת FitFriend.</Text>
         ) : null}
         <Text style={styles.helper}>
-          הסלפי מוצג רק לצוות הבדיקה, לא לחברים אחרים, ונמחק מיד אחרי ההחלטה. אחרים יראו רק את תמונת הפרופיל ותג "מאומת".
+          הסרטון (כולל הקול) מוצג רק לצוות הבדיקה, לא לחברים אחרים, ונמחק מיד אחרי ההחלטה. אחרים יראו רק את תמונת הפרופיל ותג "מאומת".
         </Text>
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -293,11 +306,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: theme.spacing.sm,
   },
-  selfiePreview: {
-    width: 160,
-    height: 160,
-    borderRadius: theme.borderRadius.md,
-    alignSelf: 'center',
+  codeLabel: {
+    fontSize: 14,
+    fontFamily: theme.typography.label.fontFamily,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginTop: theme.spacing.md,
+  },
+  code: {
+    fontSize: 40,
+    letterSpacing: 8,
+    fontFamily: theme.typography.labelBold.fontFamily,
+    color: theme.colors.cyan,
+    textAlign: 'center',
+  },
+  videoReady: {
+    color: theme.colors.cyan,
+    textAlign: 'center',
+    fontSize: 14,
+    fontFamily: theme.typography.labelBold.fontFamily,
     marginBottom: theme.spacing.md,
   },
   errorText: {

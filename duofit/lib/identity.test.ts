@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ageOn, isAdult, parseBirthDate, formatBirthDate, pickGesture, GESTURES, canUseApp, parseVerificationStatus } from './identity.ts';
+import { ageOn, isAdult, parseBirthDate, formatBirthDate, pickGesture, pickChallengeCode, GESTURES, canUseApp, parseVerificationStatus } from './identity.ts';
 
 const today = new Date(2026, 9, 29); // 29 Oct 2026 (month is 0-based)
 
@@ -61,4 +61,10 @@ test('canUseApp: only an approved member gets in; pending, rejected and none sta
   assert.equal(canUseApp('pending'), false);
   assert.equal(canUseApp('rejected'), false);
   assert.equal(canUseApp('none'), false);
+});
+
+test('pickChallengeCode: always exactly three digits, never starting with 0, and follows the random source', () => {
+  assert.equal(pickChallengeCode(() => 0), '100');
+  assert.equal(pickChallengeCode(() => 0.999999), '999');
+  for (let i = 0; i < 200; i++) assert.match(pickChallengeCode(), /^[1-9][0-9]{2}$/);
 });

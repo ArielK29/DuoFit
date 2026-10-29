@@ -57,7 +57,7 @@ export const AccountSheet: React.FC = () => {
   // The badge belongs to the face that was checked, so a new photo means a new check: ask first.
   const startChangePhoto = () => {
     const title = 'להחליף תמונת פרופיל?';
-    const message = 'תמונה חדשה מחייבת אימות מחדש עם סלפי, ועד שיאשרו אותה לא תוכל להשתמש באפליקציה.';
+    const message = 'תמונה חדשה מחייבת אימות מחדש עם סרטון קצר, ועד שיאשרו אותה לא תוכל להשתמש באפליקציה.';
     if (Platform.OS === 'web') {
       if (typeof window !== 'undefined' && window.confirm(`${title}
 

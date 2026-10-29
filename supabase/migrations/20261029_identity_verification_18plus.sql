@@ -5,11 +5,11 @@
 -- Test: supabase/tests/rls_identity_test.sql (rolled back; every line must say good).
 --
 -- What this adds (the owner's rule: nobody uses the app before an adult, real-person check):
---  1. identity_checks: birth date (18+), the random gesture the member was asked to show, the path of the private selfie,
+--  1. identity_checks: birth date (18+), the random gesture the member was asked to show, the path of the private video,
 --     and the decision (pending / approved / rejected) made by an admin.
 --  2. app_admins: the people who may review (written only by SQL, never by the app).
 --  3. profiles.verified: the public badge, set only by the decision trigger (a member can never write it).
---  4. A private storage bucket for the selfies: the member writes and reads own folder, admins read all and delete after review.
+--  4. A private storage bucket for the videos: the member writes and reads own folder, admins read all and delete after review.
 --  5. Server-side gate: an unverified member cannot read other members, start a chat, post, join or create a group.
 
 -- ---------------------------------------------------------------------------------------------------------------------
@@ -44,15 +44,17 @@ create table public.identity_checks (
   user_id uuid primary key references auth.users (id) on delete cascade,
   birth_date date not null,
   gesture text not null check (gesture in ('thumb_up', 'peace', 'wave', 'fist', 'ear', 'three')),
-  selfie_path text,
+  video_path text,
+  -- the 3-digit number the member had to say out loud in the video (a clip made in advance cannot contain it)
+  challenge_code text not null check (challenge_code ~ '^[0-9]{3}$'),
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   reject_reason text check (reject_reason is null or char_length(reject_reason) <= 200),
   submitted_at timestamptz not null default now(),
   reviewed_at timestamptz,
   reviewed_by uuid references auth.users (id) on delete set null,
-  -- the selfie must live in the member's own folder: <uid>/<file>.jpg
-  constraint identity_checks_selfie_path_check
-    check (selfie_path is null or selfie_path ~ ('^' || user_id::text || '/[A-Za-z0-9._-]+\.jpg$'))
+  -- the video must live in the member's own folder: <uid>/<file>.mp4 or .mov
+  constraint identity_checks_video_path_check
+    check (video_path is null or video_path ~ ('^' || user_id::text || '/[A-Za-z0-9._-]+\.(mp4|mov)$'))
 );
 alter table public.identity_checks enable row level security;
 revoke all on table public.identity_checks from anon;
@@ -92,7 +94,8 @@ begin
     -- An admin decides about somebody else: only the decision fields may change.
     new.birth_date := old.birth_date;
     new.gesture := old.gesture;
-    new.selfie_path := old.selfie_path;
+    new.video_path := old.video_path;
+    new.challenge_code := old.challenge_code;
     new.submitted_at := old.submitted_at;
     new.reviewed_at := now();
     new.reviewed_by := (select auth.uid());
@@ -114,7 +117,8 @@ begin
     new.status := 'approved';
     new.birth_date := old.birth_date;
     new.gesture := old.gesture;
-    new.selfie_path := old.selfie_path;
+    new.video_path := old.video_path;
+    new.challenge_code := old.challenge_code;
     new.submitted_at := old.submitted_at;
     new.reviewed_at := old.reviewed_at;
     new.reviewed_by := old.reviewed_by;
@@ -182,24 +186,24 @@ revoke execute on function private.i_am_verified() from public, anon;
 grant execute on function private.i_am_verified() to authenticated;
 
 -- ---------------------------------------------------------------------------------------------------------------------
--- 4. Private bucket for the selfies
+-- 4. Private bucket for the videos
 -- ---------------------------------------------------------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('identity-selfies', 'identity-selfies', false, 5242880, array['image/jpeg']);
+values ('identity-videos', 'identity-videos', false, 20971520, array['video/mp4', 'video/quicktime']);
 
 -- Member: own folder only. Upsert needs insert + select + update.
-create policy identity_selfies_insert_own on storage.objects for insert to authenticated
-  with check (bucket_id = 'identity-selfies' and (storage.foldername(name))[1] = (select auth.uid())::text);
-create policy identity_selfies_select_own on storage.objects for select to authenticated
-  using (bucket_id = 'identity-selfies' and (storage.foldername(name))[1] = (select auth.uid())::text);
-create policy identity_selfies_update_own on storage.objects for update to authenticated
-  using (bucket_id = 'identity-selfies' and (storage.foldername(name))[1] = (select auth.uid())::text)
-  with check (bucket_id = 'identity-selfies' and (storage.foldername(name))[1] = (select auth.uid())::text);
+create policy identity_videos_insert_own on storage.objects for insert to authenticated
+  with check (bucket_id = 'identity-videos' and (storage.foldername(name))[1] = (select auth.uid())::text);
+create policy identity_videos_select_own on storage.objects for select to authenticated
+  using (bucket_id = 'identity-videos' and (storage.foldername(name))[1] = (select auth.uid())::text);
+create policy identity_videos_update_own on storage.objects for update to authenticated
+  using (bucket_id = 'identity-videos' and (storage.foldername(name))[1] = (select auth.uid())::text)
+  with check (bucket_id = 'identity-videos' and (storage.foldername(name))[1] = (select auth.uid())::text);
 -- Admins: read everything to review, delete after the decision.
-create policy identity_selfies_select_admin on storage.objects for select to authenticated
-  using (bucket_id = 'identity-selfies' and (select private.is_admin()));
-create policy identity_selfies_delete_admin on storage.objects for delete to authenticated
-  using (bucket_id = 'identity-selfies' and (select private.is_admin()));
+create policy identity_videos_select_admin on storage.objects for select to authenticated
+  using (bucket_id = 'identity-videos' and (select private.is_admin()));
+create policy identity_videos_delete_admin on storage.objects for delete to authenticated
+  using (bucket_id = 'identity-videos' and (select private.is_admin()));
 
 -- ---------------------------------------------------------------------------------------------------------------------
 -- 5. Server-side gate: no verified badge, no contact
@@ -260,13 +264,13 @@ alter policy post_likes_insert_own on public.post_likes
 create policy profiles_select_admin on public.profiles for select to authenticated using ((select private.is_admin()));
 
 -- The badge belongs to the face that was checked. When a verified member changes his profile photo the check is withdrawn,
--- the member goes back to the gate and sends a new selfie.
+-- the member goes back to the gate and sends a new video.
 create function private.profiles_avatar_change_rechecks()
 returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 begin
   update public.identity_checks
      set status = 'rejected',
@@ -276,7 +280,7 @@ begin
    where user_id = new.id and status = 'approved';
   return new;
 end;
-$;
+$$;
 revoke execute on function private.profiles_avatar_change_rechecks() from public, anon, authenticated;
 create trigger profiles_avatar_change_rechecks after update of avatar_url on public.profiles
   for each row when (old.avatar_url is distinct from new.avatar_url)
@@ -286,7 +290,7 @@ create trigger profiles_avatar_change_rechecks after update of avatar_url on pub
 -- After apply (run by hand, once):
 --   * make the owner an admin:        insert into public.app_admins (user_id) values ('<owner user id>');
 --   * approve the reviewer + team test accounts so they keep working:
---       insert into public.identity_checks (user_id, birth_date, gesture, status) values ('<id>', '1990-01-01', 'thumb_up', 'approved');
+--       insert into public.identity_checks (user_id, birth_date, gesture, challenge_code, status) values ('<id>', '1990-01-01', 'thumb_up', '123', 'approved');
 --       (the guard trigger does not limit SQL-editor / service-role inserts)
 --   * run supabase/tests/rls_identity_test.sql and the security advisors; every line must be good / 0 findings.
 -- ---------------------------------------------------------------------------------------------------------------------

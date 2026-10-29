@@ -26,14 +26,14 @@ begin
   set local role authenticated;
   ok := false;
   begin
-    insert into public.identity_checks (user_id, birth_date, gesture) values (a, (current_date - interval '17 years 364 days')::date, 'peace');
+    insert into public.identity_checks (user_id, birth_date, gesture, challenge_code) values (a, (current_date - interval '17 years 364 days')::date, 'peace', '111');
   exception when others then ok := true;
   end;
   res := res || '1 a 17-year-old is refused (expect refused): ' || case when ok then 'good' else 'BAD' end || E'\n';
 
   -- 2 an adult sends a check; even if the app writes status approved it starts as pending
-  insert into public.identity_checks (user_id, birth_date, gesture, status, selfie_path)
-  values (a, (current_date - interval '18 years')::date, 'peace', 'approved', a::text || '/s1.jpg');
+  insert into public.identity_checks (user_id, birth_date, gesture, challenge_code, status, video_path)
+  values (a, (current_date - interval '18 years')::date, 'peace', '222', 'approved', a::text || '/v1.mp4');
   select status into st from public.identity_checks where user_id = a;
   res := res || '2 a self-declared approved becomes pending (expect pending): ' || st || ' ' || case when st = 'pending' then 'good' else 'BAD' end || E'\n';
 
@@ -60,8 +60,8 @@ begin
   -- b sends a check too
   perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
   set local role authenticated;
-  insert into public.identity_checks (user_id, birth_date, gesture, selfie_path)
-  values (b, '1990-01-01', 'thumb_up', b::text || '/s1.jpg');
+  insert into public.identity_checks (user_id, birth_date, gesture, challenge_code, video_path)
+  values (b, '1990-01-01', 'thumb_up', '333', b::text || '/v1.mp4');
   reset role;
 
   -- 6 nobody is verified yet: nobody sees anybody
@@ -101,7 +101,7 @@ begin
   -- 11 b is rejected, sends a new check, the admin approves: now a and b see each other
   perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
   set local role authenticated;
-  update public.identity_checks set selfie_path = b::text || '/s2.jpg', gesture = 'fist' where user_id = b;
+  update public.identity_checks set video_path = b::text || '/v2.mov', gesture = 'fist' where user_id = b;
   select status into st from public.identity_checks where user_id = b;
   res := res || '11 b resubmits after a rejection (expect pending): ' || st || ' ' || case when st = 'pending' then 'good' else 'BAD' end || E'\n';
   reset role;
@@ -142,37 +142,37 @@ begin
   end;
   res := res || '16 a (verified) can start a chat with b (expect allowed): ' || case when ok then 'good' else 'BAD ' || coalesce(sp, '') end || E'\n';
 
-  -- 17 an approved member cannot swap the photo afterwards
-  update public.identity_checks set selfie_path = a::text || '/other.jpg', birth_date = '1980-01-01' where user_id = a;
-  select selfie_path into sp from public.identity_checks where user_id = a;
-  res := res || '17 a approved member cannot swap the selfie (expect s1.jpg): ' || sp || ' ' || case when sp = a::text || '/s1.jpg' then 'good' else 'BAD' end || E'\n';
+  -- 17 an approved member cannot swap the video afterwards
+  update public.identity_checks set video_path = a::text || '/other.mp4', birth_date = '1980-01-01' where user_id = a;
+  select video_path into sp from public.identity_checks where user_id = a;
+  res := res || '17 a approved member cannot swap the video (expect v1.mp4): ' || sp || ' ' || case when sp = a::text || '/v1.mp4' then 'good' else 'BAD' end || E'\n';
   reset role;
 
-  -- 18 selfie storage: own folder yes, somebody else's folder no, admin reads, other member does not
+  -- 18 video storage: own folder yes, somebody else's folder no, admin reads, other member does not
   perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
   set local role authenticated;
   ok := true;
   begin
-    insert into storage.objects (bucket_id, name, owner) values ('identity-selfies', a::text || '/s1.jpg', a);
+    insert into storage.objects (bucket_id, name, owner) values ('identity-videos', a::text || '/v1.mp4', a);
   exception when others then ok := false; sp := sqlerrm;
   end;
-  res := res || '18a a stores a selfie in his own folder (expect allowed): ' || case when ok then 'good' else 'BAD ' || coalesce(sp, '') end || E'\n';
+  res := res || '18a a stores a video in his own folder (expect allowed): ' || case when ok then 'good' else 'BAD ' || coalesce(sp, '') end || E'\n';
   ok := false;
   begin
-    insert into storage.objects (bucket_id, name, owner) values ('identity-selfies', b::text || '/x.jpg', a);
+    insert into storage.objects (bucket_id, name, owner) values ('identity-videos', b::text || '/x.mp4', a);
   exception when others then ok := true;
   end;
   res := res || '18b a cannot store into the folder of b (expect refused): ' || case when ok then 'good' else 'BAD' end || E'\n';
   reset role;
   perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
   set local role authenticated;
-  select count(*) into n from storage.objects where bucket_id = 'identity-selfies' and name like a::text || '/%';
-  res := res || '18c b cannot read the selfie of a (expect 0): ' || n || ' ' || case when n = 0 then 'good' else 'BAD' end || E'\n';
+  select count(*) into n from storage.objects where bucket_id = 'identity-videos' and name like a::text || '/%';
+  res := res || '18c b cannot read the video of a (expect 0): ' || n || ' ' || case when n = 0 then 'good' else 'BAD' end || E'\n';
   reset role;
   perform set_config('request.jwt.claims', json_build_object('sub', c, 'role', 'authenticated')::text, true);
   set local role authenticated;
-  select count(*) into n from storage.objects where bucket_id = 'identity-selfies' and name like a::text || '/%';
-  res := res || '18d the admin reads the selfie of a (expect 1): ' || n || ' ' || case when n = 1 then 'good' else 'BAD' end || E'\n';
+  select count(*) into n from storage.objects where bucket_id = 'identity-videos' and name like a::text || '/%';
+  res := res || '18d the admin reads the video of a (expect 1): ' || n || ' ' || case when n = 1 then 'good' else 'BAD' end || E'\n';
   reset role;
 
   -- 19 the admin reads the name of a member who is not verified (to review him)
@@ -190,9 +190,9 @@ begin
   res := res || '20a a new profile photo withdraws the approval (expect rejected): ' || st || ' ' || case when st = 'rejected' then 'good' else 'BAD' end || E'\n';
   select count(*) into n from public.profiles where id = b;
   res := res || '20b a no longer sees b until the new check is approved (expect 0): ' || n || ' ' || case when n = 0 then 'good' else 'BAD' end || E'\n';
-  update public.identity_checks set selfie_path = a::text || '/s3.jpg', gesture = 'wave' where user_id = a;
+  update public.identity_checks set video_path = a::text || '/v3.mp4', gesture = 'wave' where user_id = a;
   select status into st from public.identity_checks where user_id = a;
-  res := res || '20c a sends a new selfie (expect pending): ' || st || ' ' || case when st = 'pending' then 'good' else 'BAD' end || E'\n';
+  res := res || '20c a sends a new video (expect pending): ' || st || ' ' || case when st = 'pending' then 'good' else 'BAD' end || E'\n';
   reset role;
   select count(*) into n from public.profiles where id = a and verified;
   res := res || '20d the badge of a stays off until approved (expect 0): ' || n || ' ' || case when n = 0 then 'good' else 'BAD' end || E'\n';

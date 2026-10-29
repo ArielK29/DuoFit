@@ -1,12 +1,12 @@
 import { supabase } from '@lib/supabase';
-import { readPickedImage } from '@lib/readLocalFile';
+import { readLocalFile } from '@lib/readLocalFile';
 import { parseVerificationStatus, type VerificationStatus } from '@lib/identity';
 
-// The selfie is only for the reviewer. Once the decision is made the picture is removed from storage, so the
+// The video is only for the reviewer. Once the decision is made the file is removed from storage, so the
 // server keeps the decision and the date, not a face. (Owner/lawyer can change this to keep it for a limited time.)
-const DELETE_SELFIE_AFTER_DECISION = true;
+const DELETE_VIDEO_AFTER_DECISION = true;
 
-const BUCKET = 'identity-selfies';
+const BUCKET = 'identity-videos';
 
 export interface MyVerification {
   status: VerificationStatus;
@@ -32,18 +32,21 @@ export interface IdentitySubmission {
   userId: string;
   birthDate: string; // yyyy-mm-dd
   gesture: string;
-  localSelfieUri: string;
+  code: string; // the 3-digit number shown on the screen that the member says out loud
+  localVideoUri: string;
+  contentType: string; // video/mp4 or video/quicktime
+  extension: 'mp4' | 'mov';
 }
 
-// Uploads the private selfie and records the check (or replaces a rejected one). The server refuses under-18 birth dates.
+// Uploads the private video and records the check (or replaces a rejected one). The server refuses under-18 birth dates.
 export async function submitIdentityCheck(input: IdentitySubmission): Promise<void> {
-  const bytes = await readPickedImage(input.localSelfieUri);
-  const path = `${input.userId}/selfie-${Date.now()}.jpg`;
-  const upload = await supabase.storage.from(BUCKET).upload(path, bytes, { contentType: 'image/jpeg', upsert: false });
+  const bytes = await readLocalFile(input.localVideoUri);
+  const path = `${input.userId}/video-${Date.now()}.${input.extension}`;
+  const upload = await supabase.storage.from(BUCKET).upload(path, bytes, { contentType: input.contentType, upsert: false });
   if (upload.error) throw upload.error;
   const { error } = await supabase
     .from('identity_checks')
-    .upsert({ user_id: input.userId, birth_date: input.birthDate, gesture: input.gesture, selfie_path: path }, { onConflict: 'user_id' });
+    .upsert({ user_id: input.userId, birth_date: input.birthDate, gesture: input.gesture, challenge_code: input.code, video_path: path }, { onConflict: 'user_id' });
   if (error) throw error;
 }
 
@@ -53,7 +56,8 @@ export interface PendingCheck {
   avatarUrl?: string;
   birthDate: string;
   gesture: string;
-  selfiePath: string | null;
+  code: string;
+  videoPath: string | null;
   submittedAt: string;
 }
 
@@ -61,7 +65,7 @@ export interface PendingCheck {
 export async function listPendingChecks(): Promise<PendingCheck[] | null> {
   const { data, error } = await supabase
     .from('identity_checks')
-    .select('user_id, birth_date, gesture, selfie_path, submitted_at')
+    .select('user_id, birth_date, gesture, challenge_code, video_path, submitted_at')
     .eq('status', 'pending')
     .order('submitted_at', { ascending: true })
     .limit(50);
@@ -78,13 +82,14 @@ export async function listPendingChecks(): Promise<PendingCheck[] | null> {
       avatarUrl: (profile?.avatar_url as string | null | undefined) ?? undefined,
       birthDate: row.birth_date as string,
       gesture: row.gesture as string,
-      selfiePath: (row.selfie_path as string | null) ?? null,
+      code: row.challenge_code as string,
+      videoPath: (row.video_path as string | null) ?? null,
       submittedAt: row.submitted_at as string,
     };
   });
 }
 
-export async function selfieUrl(path: string): Promise<string | null> {
+export async function videoUrl(path: string): Promise<string | null> {
   const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 300);
   return error ? null : data.signedUrl;
 }
@@ -95,9 +100,9 @@ export async function decideCheck(check: PendingCheck, status: 'approved' | 'rej
     .update({ status, reject_reason: status === 'rejected' ? (reason ?? '').trim().slice(0, 200) || null : null })
     .eq('user_id', check.userId);
   if (error) return false;
-  if (DELETE_SELFIE_AFTER_DECISION && check.selfiePath) {
+  if (DELETE_VIDEO_AFTER_DECISION && check.videoPath) {
     // Best effort: the decision already counts even if the file removal fails; it is retried on the next decision.
-    await supabase.storage.from(BUCKET).remove([check.selfiePath]);
+    await supabase.storage.from(BUCKET).remove([check.videoPath]);
   }
   return true;
 }

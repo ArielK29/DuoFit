@@ -9,3 +9,8 @@ export async function readPickedImage(localUri: string): Promise<ArrayBuffer> {
   assertLooksLikeImage(bytes);
   return bytes;
 }
+
+// The bytes of any local file the app itself recorded (the verification video). Same reason as above for not using fetch on the phone.
+export async function readLocalFile(localUri: string): Promise<ArrayBuffer> {
+  return Platform.OS === 'web' ? await (await fetch(localUri)).arrayBuffer() : await new File(localUri).arrayBuffer();
+}

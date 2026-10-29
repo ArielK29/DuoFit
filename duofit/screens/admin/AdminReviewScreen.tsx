@@ -1,20 +1,21 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Linking } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Button } from '@components/Button';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 import { gestureById, ageOn } from '@lib/identity';
-import { decideCheck, listPendingChecks, selfieUrl, type PendingCheck } from '@lib/remoteIdentity';
+import { decideCheck, listPendingChecks, videoUrl, type PendingCheck } from '@lib/remoteIdentity';
 import { useAuth } from '@hooks/useAuth';
 
 // Reasons the reviewer can pick; the text is shown to the member so he knows what to fix.
 const REJECT_REASONS = [
-  'הסלפי לא ברור. צלם באור טוב ובמבט ישר למצלמה',
-  'התנועה שביקשנו לא מופיעה בסלפי',
-  'הפנים בסלפי לא תואמות לתמונת הפרופיל',
+  'הסרטון לא ברור. צלם באור טוב ובמבט ישר למצלמה',
+  'התנועה שביקשנו לא מופיעה בסרטון',
+  'הפנים בסרטון לא תואמות לתמונת הפרופיל',
   'תמונת הפרופיל לא מציגה פנים ברורות',
+  'לא נשמע המספר שביקשנו בסרטון',
   'לא הצלחנו לאמת שהגיל מעל 18',
 ];
 
@@ -53,7 +54,7 @@ export const AdminReviewScreen: React.FC = () => {
           <Text style={styles.backText}>חזרה</Text>
         </Pressable>
         <Text style={styles.title}>בדיקות אימות</Text>
-        <Text style={styles.subtitle}>לכל חבר חדש: האם תמונת הפרופיל והסלפי הם אותו אדם, התנועה תואמת, והוא נראה בגיר.</Text>
+        <Text style={styles.subtitle}>לכל חבר חדש: האם תמונת הפרופיל והסרטון הם אותו אדם, התנועה תואמת, והוא נראה בגיר.</Text>
 
         {loading ? <ActivityIndicator color={theme.colors.cyan} style={styles.spinner} /> : null}
         {failed ? <Text style={styles.empty}>לא הצלחנו לטעון. נסה שוב</Text> : null}
@@ -73,27 +74,35 @@ export const AdminReviewScreen: React.FC = () => {
 };
 
 const CheckCard: React.FC<{ item: PendingCheck; onDone: () => void }> = ({ item, onDone }) => {
-  const [selfie, setSelfie] = useState<string | null>(null);
+  const [video, setVideo] = useState<string | null>(null);
   const [missing, setMissing] = useState(false);
+  // The admin must open the video before approving.
+  const [watched, setWatched] = useState(false);
   const [rejecting, setRejecting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    if (!item.selfiePath) {
+    if (!item.videoPath) {
       setMissing(true);
       return;
     }
-    selfieUrl(item.selfiePath).then((url) => {
+    videoUrl(item.videoPath).then((url) => {
       if (!alive) return;
-      if (url) setSelfie(url);
+      if (url) setVideo(url);
       else setMissing(true);
     });
     return () => {
       alive = false;
     };
-  }, [item.selfiePath]);
+  }, [item.videoPath]);
+
+  const watch = () => {
+    if (!video) return;
+    setWatched(true);
+    Linking.openURL(video);
+  };
 
   const gesture = gestureById(item.gesture);
   const [y, m, d] = item.birthDate.split('-').map(Number);
@@ -116,18 +125,23 @@ const CheckCard: React.FC<{ item: PendingCheck; onDone: () => void }> = ({ item,
       <Text style={styles.meta}>
         התנועה שהתבקשה: {gesture ? `${gesture.emoji} ${gesture.label}` : item.gesture}
       </Text>
+      <Text style={styles.meta}>המספר שהיה צריך להישמע בסרטון: {item.code}</Text>
       <View style={styles.photos}>
         <View style={styles.photoBox}>
           <Text style={styles.photoLabel}>תמונת פרופיל</Text>
           {item.avatarUrl ? <Image source={{ uri: item.avatarUrl }} style={styles.photo} contentFit="cover" /> : <View style={[styles.photo, styles.noPhoto]} />}
         </View>
         <View style={styles.photoBox}>
-          <Text style={styles.photoLabel}>סלפי</Text>
-          {selfie ? (
-            <Image source={{ uri: selfie }} style={styles.photo} contentFit="cover" />
-          ) : (
-            <View style={[styles.photo, styles.noPhoto]}>{missing ? <Text style={styles.meta}>אין קובץ</Text> : <ActivityIndicator color={theme.colors.cyan} />}</View>
-          )}
+          <Text style={styles.photoLabel}>סרטון</Text>
+          <View style={[styles.photo, styles.noPhoto]}>
+            {video ? (
+              <Button label={watched ? 'צפה שוב' : 'צפה בסרטון'} variant="secondary" size="sm" onPress={watch} />
+            ) : missing ? (
+              <Text style={styles.meta}>אין קובץ</Text>
+            ) : (
+              <ActivityIndicator color={theme.colors.cyan} />
+            )}
+          </View>
         </View>
       </View>
 
@@ -144,7 +158,7 @@ const CheckCard: React.FC<{ item: PendingCheck; onDone: () => void }> = ({ item,
       ) : (
         <View style={styles.actions}>
           <View style={styles.actionButton}>
-            <Button label="אשר" onPress={() => decide('approved')} loading={busy} disabled={busy || missing} />
+            <Button label="אשר" onPress={() => decide('approved')} loading={busy} disabled={busy || missing || !watched} />
           </View>
           <View style={styles.actionButton}>
             <Button label="דחה" variant="danger" onPress={() => setRejecting(true)} disabled={busy} />

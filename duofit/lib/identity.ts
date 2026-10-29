@@ -40,11 +40,11 @@ export function formatBirthDate(date: Date): string {
 export interface Gesture {
   id: string;
   emoji: string;
-  // What the member is asked to do in the selfie (shown on screen and to the reviewer).
+  // What the member is asked to do in the video (shown on screen and to the reviewer).
   label: string;
 }
 
-// A random simple gesture in the selfie shows that the photo was taken now, by the person in front of the camera.
+// A random simple gesture in the short video shows that it was recorded now, by the person in front of the camera.
 export const GESTURES: Gesture[] = [
   { id: 'thumb_up', emoji: '👍', label: 'אגודל למעלה' },
   { id: 'peace', emoji: '✌️', label: 'שתי אצבעות בסימן ניצחון' },
@@ -53,6 +53,13 @@ export const GESTURES: Gesture[] = [
   { id: 'ear', emoji: '🙉', label: 'יד אחת על האוזן' },
   { id: 'three', emoji: '🤟', label: 'שלוש אצבעות למעלה' },
 ];
+
+// A random 3-digit number the member must say out loud in the video. A video made in advance (or by an AI tool) cannot contain it,
+// because the number is only shown on the screen at the moment of recording.
+export function pickChallengeCode(random: () => number = Math.random): string {
+  const n = 100 + Math.min(899, Math.floor(random() * 900));
+  return String(n);
+}
 
 export function gestureById(id: string | null | undefined): Gesture | undefined {
   return GESTURES.find((g) => g.id === id);
