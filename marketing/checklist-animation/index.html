@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>FitFriend checklist animation</title>
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #050505; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  #cam { position: absolute; inset: 0; transform-origin: 540px 900px; will-change: transform, filter; }
+  #floor { position: absolute; inset: -200px; background:
+      radial-gradient(70% 50% at 50% 40%, #3a3a3f 0%, #232326 60%, #151517 100%); }
+  #board { position: absolute; left: 110px; top: 300px; width: 860px; height: 1320px; border-radius: 28px;
+    background: linear-gradient(135deg, #c8955a, #a9773f); box-shadow: 0 40px 80px rgba(0,0,0,.55); }
+  #clip { position: absolute; left: 330px; top: 262px; width: 420px; height: 110px; border-radius: 18px;
+    background: linear-gradient(180deg, #d9dce0, #8d9197 55%, #c3c6cb); box-shadow: 0 10px 20px rgba(0,0,0,.4); }
+  #paper { position: absolute; left: 160px; top: 400px; width: 760px; height: 1120px; background: #f6f6f3;
+    box-shadow: 0 6px 16px rgba(0,0,0,.25);
+    background-image: repeating-linear-gradient(180deg, transparent 0 94px, #d9dde6 94px 96px); background-position: 0 120px; }
+  .ink { color: #23262e; font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", "DejaVu Sans", sans-serif; }
+  #title { position: absolute; top: 60px; left: 0; right: 0; text-align: center; font-size: 74px; font-weight: 700; color: #3a3f4b; }
+  .line { position: absolute; right: 50px; left: 130px; display: flex; flex-direction: row; align-items: baseline;
+    font-size: 52px; white-space: nowrap; }
+  .num { margin-inline-start: 0; margin-inline-end: 22px; }
+  .part { position: relative; display: inline-block; margin-inline-end: 16px; }
+  .strike { position: absolute; right: -6px; top: 56%; height: 7px; width: 0; background: #23262e; border-radius: 4px; transform: rotate(-2deg); }
+  .box { position: absolute; left: -115px; top: 4px; width: 78px; height: 78px; border: 5px solid #23262e; border-radius: 10px; }
+  .box svg { position: absolute; left: -10px; top: -26px; width: 110px; height: 110px; overflow: visible; }
+  .box path { fill: none; stroke: #1c8a3a; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
+  #pen { position: absolute; width: 420px; height: 36px; transform-origin: 8px 18px; }
+  #end { position: absolute; inset: 0; background: radial-gradient(60% 40% at 50% 38%, rgba(163,255,57,.20), transparent 70%), #050505;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
+  #end img { width: 560px; height: auto; }
+  #end h1 { font: 700 96px/1.15 system-ui, "DejaVu Sans", sans-serif; color: #F5F5F5; margin: 50px 0 0; text-align: center; }
+  #end h1 span { color: #A3FF39; }
+  #end p { font: 600 52px system-ui, "DejaVu Sans", sans-serif; color: #A8A8A8; margin: 40px 0 0; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="cam">
+    <div id="floor"></div>
+    <div id="board"></div><div id="clip"></div>
+    <div id="paper" class="ink">
+      <div id="title" data-ev="title">יעדים 2026</div>
+
+      <div class="line" style="top:215px" id="l1">
+        <span class="num">.1</span>
+        <span class="part" data-ev="1a">ללכת לחדר</span>
+        <span class="part" data-ev="1b">מחר<i class="strike" data-ev="1s"></i></span>
+        <span class="part" data-ev="1c">היום</span>
+        <div class="box" data-ev="1v"><svg viewBox="0 0 110 110"><path d="M18 58 L44 86 L96 20" /></svg></div>
+      </div>
+      <div class="line" style="top:405px" id="l2">
+        <span class="num">.2</span>
+        <span class="part" data-ev="2a">לרדת</span>
+        <span class="part" data-ev="2b">10 קילו<i class="strike" data-ev="2s"></i></span>
+        <span class="part" data-ev="2c">מהספה</span>
+        <div class="box" data-ev="2v"><svg viewBox="0 0 110 110"><path d="M18 58 L44 86 L96 20" /></svg></div>
+      </div>
+      <div class="line" style="top:595px" id="l3">
+        <span class="num">.3</span>
+        <span class="part" data-ev="3a">להתאמן</span>
+        <span class="part" data-ev="3b">לבד<i class="strike" data-ev="3s"></i></span>
+        <span class="part" data-ev="3c">עם מישהו</span>
+        <div class="box" data-ev="3v"><svg viewBox="0 0 110 110"><path d="M18 58 L44 86 L96 20" /></svg></div>
+      </div>
+      <div class="line" style="top:785px" id="l4">
+        <span class="num">.4</span>
+        <span class="part" data-ev="4a">למצוא את המישהו</span>
+        <div class="box" data-ev="4v"><svg viewBox="0 0 110 110"><path d="M18 58 L44 86 L96 20" /></svg></div>
+      </div>
+    </div>
+    <svg id="pen" viewBox="0 0 420 36"><rect x="0" y="9" width="420" height="18" rx="9" fill="#1b6fe0"/><rect x="0" y="9" width="70" height="18" rx="6" fill="#b9bdc4"/><polygon points="0,18 -26,18 0,13" fill="#222"/></svg>
+  </div>
+  <div id="end">
+    <img src="logo.png" alt="FitFriend">
+    <h1>אין עם מי להתאמן?<br><span>עכשיו יש.</span></h1>
+    <p>בקרוב · הקישור בביו</p>
+  </div>
+</div>
+<script>
+// Event timeline: [id, start, duration, kind]. kind: wipe (text reveals right to left), strike, check.
+const EV = [
+  ['title', 0.2, 0.7, 'wipe'],
+  ['1a', 0.9, 0.9, 'wipe'], ['1b', 1.8, 0.4, 'wipe'], ['1s', 2.3, 0.35, 'strike'], ['1c', 2.7, 0.4, 'wipe'], ['1v', 3.2, 0.4, 'check'],
+  ['2a', 3.9, 0.5, 'wipe'], ['2b', 4.4, 0.6, 'wipe'], ['2s', 5.1, 0.35, 'strike'], ['2c', 5.5, 0.5, 'wipe'], ['2v', 6.0, 0.4, 'check'],
+  ['3a', 6.7, 0.6, 'wipe'], ['3b', 7.3, 0.4, 'wipe'], ['3s', 7.8, 0.35, 'strike'], ['3c', 8.2, 0.6, 'wipe'], ['3v', 8.9, 0.4, 'check'],
+  ['4a', 9.6, 1.1, 'wipe'], ['4v', 11.2, 0.8, 'check'],
+];
+const WHIP_START = 12.9, END_IN = 13.5, TOTAL = 16.5;
+const el = id => document.querySelector(`[data-ev="${id}"]`);
+const ease = x => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
+const cam = document.getElementById('cam'), pen = document.getElementById('pen'), end = document.getElementById('end');
+const paper = document.getElementById('paper');
+let penPos = { x: 760, y: 1400 };
+
+function anchor(e, kind, p) {
+  // returns the pen tip position (scene coordinates) for an active event
+  const r = e.getBoundingClientRect();
+  const c = cam.getBoundingClientRect();
+  const k = c.width / 1080; // current camera scale
+  const toScene = (x, y) => ({ x: (x - c.left) / k, y: (y - c.top) / k });
+  if (kind === 'wipe') return toScene(r.right - p * r.width, r.bottom - 6);
+  if (kind === 'strike') return toScene(r.right - p * r.width, r.top + r.height * 0.58);
+  return toScene(r.left + r.width * (0.2 + 0.6 * p), r.top + r.height * (0.55 + 0.1 * Math.sin(p * 6)));
+}
+
+function render(t) {
+  // reset camera for measuring, then apply
+  cam.style.transform = 'none'; cam.style.filter = 'none';
+  let active = null;
+  for (const [id, s, d, kind] of EV) {
+    const e = el(id), p = ease((t - s) / d);
+    if (kind === 'wipe') { e.style.clipPath = `inset(-20% 0 -20% ${(1 - p) * 100}%)`; e.style.visibility = t >= s ? 'visible' : 'hidden'; }
+    if (kind === 'strike') { e.style.width = `${p * 112}%`; }
+    if (kind === 'check') {
+      const path = e.querySelector('path'); const len = 160;
+      path.style.strokeDasharray = len; path.style.strokeDashoffset = len * (1 - p);
+    }
+    if (t >= s && t <= s + d + 0.05) active = { e, kind, p: Math.min(1, (t - s) / d) };
+  }
+  if (active) penPos = anchor(active.e, active.kind, active.p);
+  else if (t < 0.2) penPos = { x: 800, y: 1500 };
+  // pen: tip follows the active spot, body goes up and to the right
+  pen.style.left = (penPos.x + 26) + 'px'; pen.style.top = (penPos.y - 18) + 'px';
+  pen.style.transform = 'rotate(-38deg)';
+  pen.style.opacity = t < END_FADE_PEN() ? 1 : 0;
+
+  // camera: tight on the paper, gentle drift, then rise and pull back, then whip pan to the end card
+  let scale = 1.18 - 0.03 * (t / 12), ty = 0, blur = 0, ox = 0;
+  if (t > 12.2) { const p = ease((t - 12.2) / 0.9); scale = 1.15 - 0.55 * p; ty = -90 * p; }
+  if (t > WHIP_START) { const p = ease((t - WHIP_START) / 0.7); ty += 2200 * p; blur = 34 * Math.sin(Math.min(1, (t - WHIP_START) / 0.7) * Math.PI); }
+  cam.style.transformOrigin = '540px 960px';
+  cam.style.transform = `translate(${ox}px, ${ty}px) scale(${scale})`;
+  cam.style.filter = blur > 0.5 ? `blur(${blur}px)` : 'none';
+  const ep = ease((t - (END_IN)) / 0.9);
+  end.style.opacity = t >= WHIP_START ? Math.min(1, ease((t - WHIP_START - 0.15) / 0.5)) : 0;
+  end.style.transform = `scale(${0.94 + 0.06 * ep})`;
+  end.style.filter = t < END_IN ? `blur(${Math.max(0, 22 * (1 - ease((t - WHIP_START) / 0.7)))}px)` : 'none';
+}
+function END_FADE_PEN() { return WHIP_START; }
+window.render = render; window.TOTAL = TOTAL;
+render(0);
+</script>
+</body>
+</html>
