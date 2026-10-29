@@ -66,8 +66,9 @@
       </div>
       <div class="line" style="top:785px" id="l4">
         <span class="num">.4</span>
-        <span class="part" data-ev="4a">להיות</span>
-        <span class="part" dir="ltr" style="margin-inline-end:0"><span class="part" data-ev="4b" data-dir="ltr" style="margin-inline-end:0">Fit</span><span class="part" data-ev="4c" data-dir="ltr" style="margin-inline-end:0">Friend</span></span>
+        <span class="part" data-ev="4a">למצוא</span>
+        <span class="part" data-ev="4b">מישהו<i class="strike" data-ev="4s"></i></span>
+        <span class="part" dir="ltr" data-ev="4c" data-dir="ltr" style="margin-inline-end:0">FitFriend</span>
         <div class="box" data-ev="4v"><svg viewBox="0 0 110 110"><path d="M18 58 L44 86 L96 20" /></svg></div>
       </div>
     </div>
@@ -86,9 +87,9 @@ const EV = [
   ['1a', 0.9, 0.9, 'wipe'], ['1b', 1.8, 0.4, 'wipe'], ['1s', 2.3, 0.35, 'strike'], ['1c', 2.7, 0.4, 'wipe'], ['1v', 3.2, 0.4, 'check'],
   ['2a', 3.9, 0.5, 'wipe'], ['2b', 4.4, 0.6, 'wipe'], ['2s', 5.1, 0.35, 'strike'], ['2c', 5.5, 0.5, 'wipe'], ['2v', 6.0, 0.4, 'check'],
   ['3a', 6.7, 0.6, 'wipe'], ['3b', 7.3, 0.4, 'wipe'], ['3s', 7.8, 0.35, 'strike'], ['3c', 8.2, 0.6, 'wipe'], ['3v', 8.9, 0.4, 'check'],
-  ['4a', 9.6, 0.5, 'wipe'], ['4b', 10.1, 0.4, 'wipe'], ['4c', 11.0, 0.6, 'wipe'], ['4v', 11.9, 0.8, 'check'],
+  ['4a', 9.6, 0.6, 'wipe'], ['4b', 10.2, 0.5, 'wipe'], ['4s', 11.0, 0.35, 'strike'], ['4c', 11.6, 0.7, 'wipe'], ['4v', 12.5, 0.8, 'check'],
 ];
-const WHIP_START = 13.3, END_IN = 13.9, TOTAL = 16.9;
+const WHIP_START = 13.9, END_IN = 14.5, TOTAL = 17.5;
 const el = id => document.querySelector(`[data-ev="${id}"]`);
 const ease = x => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 const cam = document.getElementById('cam'), pen = document.getElementById('pen'), end = document.getElementById('end');
@@ -129,7 +130,7 @@ function render(t) {
 
   // camera: tight on the paper, gentle drift, then rise and pull back, then whip pan to the end card
   let scale = 1.18 - 0.03 * (t / 12), ty = 0, blur = 0, ox = 0;
-  if (t > 12.6) { const p = ease((t - 12.6) / 0.9); scale = 1.15 - 0.55 * p; ty = -90 * p; }
+  if (t > 13.2) { const p = ease((t - 13.2) / 0.9); scale = 1.15 - 0.55 * p; ty = -90 * p; }
   if (t > WHIP_START) { const p = ease((t - WHIP_START) / 0.7); ty += 2200 * p; blur = 34 * Math.sin(Math.min(1, (t - WHIP_START) / 0.7) * Math.PI); }
   cam.style.transformOrigin = '540px 960px';
   cam.style.transform = `translate(${ox}px, ${ty}px) scale(${scale})`;
