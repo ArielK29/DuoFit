@@ -16,9 +16,11 @@ interface DiscoverRow {
   gender: 'M' | 'F' | 'Other';
   fitness_level: FitnessLevel;
   favorite_activities: string[];
+  // Set by the server after the identity check (and only verified members are returned at all).
+  verified?: boolean;
 }
 
-const COLUMNS = 'id, display_name, bio, avatar_url, gender, fitness_level, favorite_activities';
+const COLUMNS = 'id, display_name, bio, avatar_url, gender, fitness_level, favorite_activities, verified';
 const PAGE_SIZE = 100;
 
 function toPartner(row: DiscoverRow): Partner {
@@ -30,6 +32,7 @@ function toPartner(row: DiscoverRow): Partner {
     fitnessLevel: row.fitness_level,
     activities: row.favorite_activities ?? [],
     avatar: row.avatar_url ?? undefined,
+    verified: row.verified === true,
   };
 }
 

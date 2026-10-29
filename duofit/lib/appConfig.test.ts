@@ -12,9 +12,9 @@ function plugin(name: string): Record<string, unknown> {
   return Array.isArray(entry) ? (entry[1] ?? {}) : {};
 }
 
-test('identity: version 1.0.0, the agreed bundle id on both platforms, the app link scheme, iPhone only', () => {
+test('identity: version 1.0.1, the agreed bundle id on both platforms, the app link scheme, iPhone only', () => {
   assert.equal(config.name, 'FitFriend');
-  assert.equal(config.version, '1.0.0');
+  assert.equal(config.version, '1.0.1');
   assert.equal(config.ios.bundleIdentifier, 'com.arielk29.fitfriend');
   assert.equal(config.android.package, 'com.arielk29.fitfriend');
   assert.equal(config.scheme, 'duofit');
