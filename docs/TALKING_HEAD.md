@@ -23,6 +23,8 @@ Based on a workflow reel the owner shared (five steps). Skills used: `ghost-edit
 - Subtitles show one word at a time.
 - Output is vertical 1080x1920. If the source is smaller, say so: it will look soft; ask for the original file.
 - Keep the face centered in frame when cropping to 9:16.
+- Whole reel is 18 seconds at most. The checklist animation is about 8 s for the list and transition plus 2.5 s end card, leaving about 7.5 s for the owner's own footage.
+- In the checklist animation every line removes one word and adds one word, and the sentence must make sense both before and after the deletion.
 - Never push raw or edited footage of a person to the public repo; save it in the session or a private place and ask first.
 
 ## Log of corrections
@@ -30,3 +32,4 @@ Based on a workflow reel the owner shared (five steps). Skills used: `ghost-edit
 | Date | Video | Correction |
 |---|---|---|
 | 2026-10-28 | first test | Rules 1-5 above defined from the shared reel. |
+| 2026-10-29 | checklist reel | Total 18 s. One word out, one word in on each line; line 4 ends with FitFriend; line 3 is a single struck word (לבטל) replaced by להגיע. |

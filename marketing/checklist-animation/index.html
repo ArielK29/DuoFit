@@ -59,9 +59,8 @@
       </div>
       <div class="line" style="top:595px" id="l3">
         <span class="num">.3</span>
-        <span class="part" data-ev="3a">להתאמן</span>
-        <span class="part" data-ev="3b">לבד<i class="strike" data-ev="3s"></i></span>
-        <span class="part" data-ev="3c">בקבוצה</span>
+        <span class="part" data-ev="3b">לבטל<i class="strike" data-ev="3s"></i></span>
+        <span class="part" data-ev="3c">להגיע</span>
         <div class="box" data-ev="3v"><svg viewBox="0 0 110 110"><path d="M18 58 L44 86 L96 20" /></svg></div>
       </div>
       <div class="line" style="top:785px" id="l4">
@@ -83,13 +82,13 @@
 <script>
 // Event timeline: [id, start, duration, kind]. kind: wipe (text reveals right to left), strike, check.
 const EV = [
-  ['title', 0.2, 0.7, 'wipe'],
-  ['1a', 0.9, 0.9, 'wipe'], ['1b', 1.8, 0.4, 'wipe'], ['1s', 2.3, 0.35, 'strike'], ['1c', 2.7, 0.4, 'wipe'], ['1v', 3.2, 0.4, 'check'],
-  ['2a', 3.9, 0.5, 'wipe'], ['2b', 4.4, 0.6, 'wipe'], ['2s', 5.1, 0.35, 'strike'], ['2c', 5.5, 0.5, 'wipe'], ['2v', 6.0, 0.4, 'check'],
-  ['3a', 6.7, 0.6, 'wipe'], ['3b', 7.3, 0.4, 'wipe'], ['3s', 7.8, 0.35, 'strike'], ['3c', 8.2, 0.6, 'wipe'], ['3v', 8.9, 0.4, 'check'],
-  ['4a', 9.6, 0.6, 'wipe'], ['4b', 10.2, 0.5, 'wipe'], ['4s', 11.0, 0.35, 'strike'], ['4c', 11.6, 0.7, 'wipe'], ['4v', 12.5, 0.8, 'check'],
+  ['title', 0.1, 0.3, 'wipe'],
+  ['1a', 0.4, 0.4, 'wipe'], ['1b', 0.8, 0.2, 'wipe'], ['1s', 1.1, 0.15, 'strike'], ['1c', 1.3, 0.2, 'wipe'], ['1v', 1.6, 0.2, 'check'],
+  ['2a', 2.0, 0.3, 'wipe'], ['2b', 2.3, 0.3, 'wipe'], ['2s', 2.7, 0.15, 'strike'], ['2c', 2.95, 0.25, 'wipe'], ['2v', 3.3, 0.2, 'check'],
+  ['3b', 3.7, 0.25, 'wipe'], ['3s', 4.05, 0.15, 'strike'], ['3c', 4.3, 0.3, 'wipe'], ['3v', 4.7, 0.2, 'check'],
+  ['4a', 5.1, 0.3, 'wipe'], ['4b', 5.4, 0.25, 'wipe'], ['4s', 5.75, 0.15, 'strike'], ['4c', 6.0, 0.4, 'wipe'], ['4v', 6.5, 0.6, 'check'],
 ];
-const WHIP_START = 13.9, END_IN = 14.5, TOTAL = 17.5;
+const WHIP_START = 7.8, END_IN = 8.4, TOTAL = 10.8;
 const el = id => document.querySelector(`[data-ev="${id}"]`);
 const ease = x => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 const cam = document.getElementById('cam'), pen = document.getElementById('pen'), end = document.getElementById('end');
@@ -130,7 +129,7 @@ function render(t) {
 
   // camera: tight on the paper, gentle drift, then rise and pull back, then whip pan to the end card
   let scale = 1.18 - 0.03 * (t / 12), ty = 0, blur = 0, ox = 0;
-  if (t > 13.2) { const p = ease((t - 13.2) / 0.9); scale = 1.15 - 0.55 * p; ty = -90 * p; }
+  if (t > 7.2) { const p = ease((t - 7.2) / 0.6); scale = 1.15 - 0.55 * p; ty = -90 * p; }
   if (t > WHIP_START) { const p = ease((t - WHIP_START) / 0.7); ty += 2200 * p; blur = 34 * Math.sin(Math.min(1, (t - WHIP_START) / 0.7) * Math.PI); }
   cam.style.transformOrigin = '540px 960px';
   cam.style.transform = `translate(${ox}px, ${ty}px) scale(${scale})`;
