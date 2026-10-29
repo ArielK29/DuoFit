@@ -27,6 +27,10 @@
   .box svg { position: absolute; left: -10px; top: -26px; width: 110px; height: 110px; overflow: visible; }
   .box path { fill: none; stroke: #1c8a3a; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
   #pen { position: absolute; width: 420px; height: 36px; transform-origin: 8px 18px; }
+  #hook { position: absolute; left: 60px; right: 60px; top: 70px; text-align: center; font: 800 70px/1.2 system-ui, "DejaVu Sans", sans-serif;
+    color: #F5F5F5; background: rgba(5,5,5,.96); border-radius: 28px; padding: 26px 24px; opacity: 0; z-index: 5; }
+  #counter { position: absolute; left: 0; right: 0; bottom: 130px; margin: 0 auto; width: max-content; font: 800 64px system-ui, "DejaVu Sans", sans-serif;
+    color: #050505; background: #A3FF39; border-radius: 999px; padding: 8px 40px; opacity: 0; z-index: 5; direction: ltr; }
   #end { position: absolute; inset: 0; background: radial-gradient(60% 40% at 50% 38%, rgba(163,255,57,.20), transparent 70%), #050505;
     display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
   #end img { width: 560px; height: auto; }
@@ -73,6 +77,8 @@
     </div>
     <svg id="pen" viewBox="0 0 420 36"><rect x="0" y="9" width="420" height="18" rx="9" fill="#1b6fe0"/><rect x="0" y="9" width="70" height="18" rx="6" fill="#b9bdc4"/><polygon points="0,18 -26,18 0,13" fill="#222"/></svg>
   </div>
+  <div id="hook">מחקתי 4 מילים מרשימת היעדים שלי</div>
+  <div id="counter">1/4</div>
   <div id="end">
     <img src="logo.png" alt="FitFriend">
     <h1>אין עם מי להתאמן?<br><span>עכשיו יש.</span></h1>
@@ -134,6 +140,11 @@ function render(t) {
   cam.style.transformOrigin = '540px 960px';
   cam.style.transform = `translate(${ox}px, ${ty}px) scale(${scale})`;
   cam.style.filter = blur > 0.5 ? `blur(${blur}px)` : 'none';
+  const hook = document.getElementById('hook'), counter = document.getElementById('counter');
+  hook.style.opacity = t < 0.15 ? t / 0.15 : t < 1.5 ? 1 : t < 1.8 ? 1 - (t - 1.5) / 0.3 : 0;
+  const strikes = [1.1, 2.7, 4.05, 5.75]; const n = strikes.filter(x => t >= x).length;
+  counter.textContent = `${n}/4`;
+  counter.style.opacity = n > 0 && t < 7.2 ? 1 : (t >= 7.2 && t < 7.5 ? 1 - (t - 7.2) / 0.3 : 0);
   const ep = ease((t - (END_IN)) / 0.9);
   end.style.opacity = t >= WHIP_START ? Math.min(1, ease((t - WHIP_START - 0.15) / 0.5)) : 0;
   end.style.transform = `scale(${0.94 + 0.06 * ep})`;
