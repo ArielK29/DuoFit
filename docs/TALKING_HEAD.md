@@ -32,4 +32,4 @@ Based on a workflow reel the owner shared (five steps). Skills used: `ghost-edit
 | Date | Video | Correction |
 |---|---|---|
 | 2026-10-28 | first test | Rules 1-5 above defined from the shared reel. |
-| 2026-10-29 | checklist reel | Total 18 s. One word out, one word in on each line; line 4 ends with FitFriend; line 3 is a single struck word (לבטל) replaced by להגיע. |
+| 2026-10-29 | checklist reel | Total 18 s. One word out, one word in on each line; line 4 ends with FitFriend; line 3 is a single struck word (לבטל) replaced by להגיע; line 2 is לקבוע קפה → אימון. |
