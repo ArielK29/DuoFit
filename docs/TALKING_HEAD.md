@@ -34,3 +34,4 @@ Based on a workflow reel the owner shared (five steps). Skills used: `ghost-edit
 | 2026-10-28 | first test | Rules 1-5 above defined from the shared reel. |
 | 2026-10-29 | checklist reel | Total 18 s. One word out, one word in on each line; line 4 ends with FitFriend; line 3 is a single struck word (לבטל) replaced by להגיע; line 2 is לקבוע קפה → אימון. |
 | 2026-10-29 | checklist reel | Total length changed from 18 s to 22 s; about 11 s for the owner's footage. |
+| 2026-10-29 | checklist reel (real paper) | Owner's paper has 4 lines and 6 deleted words (1, 1, 3, 1). Hook says 6 words; the counter counts deletions 1/6 to 6/6, not lines. Line 3 deletes three words, an exception to one-out-one-in. |
