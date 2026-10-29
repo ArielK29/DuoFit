@@ -24,8 +24,9 @@ test('identity: version 1.0.0, the agreed bundle id on both platforms, the app l
 
 test('permission texts: Hebrew, say what the app does, and only for what the app really uses', () => {
   const photos = plugin('expo-image-picker').photosPermission as string;
+  const camera = plugin('expo-image-picker').cameraPermission as string;
   const location = plugin('expo-location').locationWhenInUsePermission as string;
-  for (const text of [photos, location]) {
+  for (const text of [photos, location, camera]) {
     assert.match(text, HEBREW);
     assert.doesNotMatch(text, /\$\(PRODUCT_NAME\)/, 'no template placeholder');
     assert.ok(text.endsWith('.'), text);
@@ -33,9 +34,9 @@ test('permission texts: Hebrew, say what the app does, and only for what the app
   assert.match(photos, /תמונת פרופיל/);
   assert.match(photos, /פוסט/, 'pictures are also used for community posts');
   assert.match(location, /שותפים/);
-  // Only the photo library is used (never the camera or the microphone) and location only while the app is open.
+  assert.match(camera, /סלפי/, 'the camera is only used for the identity selfie');
+  // The camera is used only for the identity selfie, never the microphone; location only while the app is open.
   const picker = plugin('expo-image-picker');
-  assert.equal(picker.cameraPermission, false);
   assert.equal(picker.microphonePermission, false);
   const loc = plugin('expo-location');
   assert.equal(loc.locationAlwaysAndWhenInUsePermission, false);

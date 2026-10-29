@@ -254,6 +254,35 @@ alter policy post_likes_insert_own on public.post_likes
   );
 
 -- ---------------------------------------------------------------------------------------------------------------------
+-- 6. Admins read the name and photo of the member they check; a new profile photo needs a new check
+-- ---------------------------------------------------------------------------------------------------------------------
+-- (Column privileges still limit this to the public profile columns.)
+create policy profiles_select_admin on public.profiles for select to authenticated using ((select private.is_admin()));
+
+-- The badge belongs to the face that was checked. When a verified member changes his profile photo the check is withdrawn,
+-- the member goes back to the gate and sends a new selfie.
+create function private.profiles_avatar_change_rechecks()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  update public.identity_checks
+     set status = 'rejected',
+         reject_reason = 'החלפת תמונת הפרופיל מחייבת אימות מחדש',
+         reviewed_at = now(),
+         reviewed_by = null
+   where user_id = new.id and status = 'approved';
+  return new;
+end;
+$;
+revoke execute on function private.profiles_avatar_change_rechecks() from public, anon, authenticated;
+create trigger profiles_avatar_change_rechecks after update of avatar_url on public.profiles
+  for each row when (old.avatar_url is distinct from new.avatar_url)
+  execute function private.profiles_avatar_change_rechecks();
+
+-- ---------------------------------------------------------------------------------------------------------------------
 -- After apply (run by hand, once):
 --   * make the owner an admin:        insert into public.app_admins (user_id) values ('<owner user id>');
 --   * approve the reviewer + team test accounts so they keep working:

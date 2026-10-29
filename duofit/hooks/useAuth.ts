@@ -5,6 +5,9 @@ import { authErrorMessage } from '@lib/authErrors';
 import { appLinkUrl } from '@lib/appLinks';
 import type { AuthLink } from '@lib/authLinks';
 import { readPickedImage } from '@lib/readLocalFile';
+import { DEMO_DATA } from '@lib/demo';
+import { canUseApp, type VerificationStatus } from '@lib/identity';
+import { fetchMyVerification } from '@lib/remoteIdentity';
 
 export type Gender = 'M' | 'F' | 'Other';
 export type FitnessLevel = 'Beginner' | 'Intermediate' | 'Advanced';
@@ -19,6 +22,15 @@ export interface User {
   fitnessLevel?: FitnessLevel;
   favoriteActivities: string[];
   createdAt: string;
+  // Adults-only gate: the member must pass the identity check (birth date 18+ and a live selfie) before using the app.
+  verification: VerificationStatus;
+  verificationRejectReason?: string;
+  isAdmin: boolean;
+}
+
+// An approved member passed the identity check. Demo builds (invented people, never shipped) skip it.
+export function isVerified(user: User | null): boolean {
+  return !!user && (DEMO_DATA || canUseApp(user.verification));
 }
 
 // A signed-in user still has to finish the onboarding form (gender, level, activities).
@@ -37,7 +49,13 @@ interface ProfileRow {
   created_at: string;
 }
 
-function toUser(row: ProfileRow, email: string): User {
+interface VerificationInfo {
+  verification: VerificationStatus;
+  verificationRejectReason?: string;
+  isAdmin: boolean;
+}
+
+function toUser(row: ProfileRow, email: string, info: VerificationInfo): User {
   return {
     id: row.id,
     email,
@@ -48,6 +66,7 @@ function toUser(row: ProfileRow, email: string): User {
     fitnessLevel: row.fitness_level ?? undefined,
     favoriteActivities: row.favorite_activities ?? [],
     createdAt: row.created_at,
+    ...info,
   };
 }
 
@@ -81,14 +100,24 @@ export interface AuthState {
   updatePassword: (password: string) => Promise<boolean>;
   resendConfirmation: (email: string) => Promise<boolean>;
   saveProfile: (update: ProfileUpdate) => Promise<boolean>;
+  // Re-reads the identity check (after sending one, and while waiting for the decision).
+  refreshVerification: () => Promise<void>;
   setError: (error: string | null) => void;
 }
 
-async function loadUser(session: Session | null): Promise<User | null> {
+async function loadUser(session: Session | null, previous: User | null): Promise<User | null> {
   if (!session) return null;
   const { data, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
   if (error || !data) return null;
-  return toUser(data as ProfileRow, session.user.email ?? '');
+  // If the check cannot be read (bad connection) keep what we knew for the same member, so an approved member is not sent back to the gate.
+  const fetched = await fetchMyVerification(session.user.id);
+  const known = previous && previous.id === session.user.id ? previous : null;
+  const info: VerificationInfo = fetched
+    ? { verification: fetched.status, verificationRejectReason: fetched.rejectReason, isAdmin: fetched.isAdmin }
+    : known
+      ? { verification: known.verification, verificationRejectReason: known.verificationRejectReason, isAdmin: known.isAdmin }
+      : { verification: 'none', isAdmin: false };
+  return toUser(data as ProfileRow, session.user.email ?? '', info);
 }
 
 async function uploadAvatar(userId: string, localUri: string): Promise<string> {
@@ -109,7 +138,7 @@ export const useAuth = create<AuthState>()((set, get) => ({
   // Restores the saved session once, then keeps the store in sync with Supabase.
   initialize: () => {
     const apply = async (session: Session | null) => {
-      const user = await loadUser(session);
+      const user = await loadUser(session, get().user);
       set({ user, isAuthenticated: !!user, isReady: true });
     };
 
@@ -256,12 +285,27 @@ export const useAuth = create<AuthState>()((set, get) => ({
       const { data, error } = await supabase.from('profiles').update(row).eq('id', current.id).select('*').single();
       if (error) throw error;
 
-      set({ user: toUser(data as ProfileRow, current.email), isLoading: false });
+      set({
+        user: toUser(data as ProfileRow, current.email, {
+          verification: current.verification,
+          verificationRejectReason: current.verificationRejectReason,
+          isAdmin: current.isAdmin,
+        }),
+        isLoading: false,
+      });
       return true;
     } catch (err) {
       set({ isLoading: false, error: authErrorMessage(err as { message?: string }) });
       return false;
     }
+  },
+
+  refreshVerification: async () => {
+    const current = get().user;
+    if (!current) return;
+    const fetched = await fetchMyVerification(current.id);
+    if (!fetched) return;
+    set({ user: { ...current, verification: fetched.status, verificationRejectReason: fetched.rejectReason, isAdmin: fetched.isAdmin } });
   },
 
   setError: (error) => set({ error }),

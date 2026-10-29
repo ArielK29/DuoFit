@@ -175,6 +175,28 @@ begin
   res := res || '18d the admin reads the selfie of a (expect 1): ' || n || ' ' || case when n = 1 then 'good' else 'BAD' end || E'\n';
   reset role;
 
+  -- 19 the admin reads the name of a member who is not verified (to review him)
+  perform set_config('request.jwt.claims', json_build_object('sub', c, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  select count(*) into n from public.profiles where id = d;
+  res := res || '19 the admin can read the profile of d, who is not verified (expect 1): ' || n || ' ' || case when n = 1 then 'good' else 'BAD' end || E'\n';
+  reset role;
+
+  -- 20 a (approved) changes the profile photo: the check is withdrawn, the badge goes off, a is back at the gate
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  update public.profiles set avatar_url = 'https://example.invalid/new.jpg' where id = a;
+  select status into st from public.identity_checks where user_id = a;
+  res := res || '20a a new profile photo withdraws the approval (expect rejected): ' || st || ' ' || case when st = 'rejected' then 'good' else 'BAD' end || E'\n';
+  select count(*) into n from public.profiles where id = b;
+  res := res || '20b a no longer sees b until the new check is approved (expect 0): ' || n || ' ' || case when n = 0 then 'good' else 'BAD' end || E'\n';
+  update public.identity_checks set selfie_path = a::text || '/s3.jpg', gesture = 'wave' where user_id = a;
+  select status into st from public.identity_checks where user_id = a;
+  res := res || '20c a sends a new selfie (expect pending): ' || st || ' ' || case when st = 'pending' then 'good' else 'BAD' end || E'\n';
+  reset role;
+  select count(*) into n from public.profiles where id = a and verified;
+  res := res || '20d the badge of a stays off until approved (expect 0): ' || n || ' ' || case when n = 0 then 'good' else 'BAD' end || E'\n';
+
   raise exception E'RESULTS (rolled back):\n%', res;
 end;
 $test$;

@@ -6,7 +6,7 @@
 //  - the service role key is only used here, on the server (Supabase provides it to the function; it is never in the app);
 //  - the request must explicitly say { "confirm": true }.
 //
-// What it removes: the profile picture files in storage, then the auth user. The database does the rest by
+// What it removes: the profile picture files and any identity selfie in storage, then the auth user. The database does the rest by
 // cascading: profile, conversations and their messages, read markers, weight log, goals and plank record,
 // community posts, comments, likes, blocks and reports.
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -49,8 +49,8 @@ Deno.serve(async (req: Request) => {
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
   // 1. The member's picture files: profile pictures and community post pictures (storage files are not
-  //    removed by the database cascade). A member can have at most 500 posts, so one page of 1000 is enough.
-  for (const bucket of ['avatars', 'post-images']) {
+  //    removed by the database cascade) and a selfie that was not reviewed yet. A member can have at most 500 posts, so one page of 1000 is enough.
+  for (const bucket of ['avatars', 'post-images', 'identity-selfies']) {
     const { data: files, error: listError } = await admin.storage.from(bucket).list(userId, { limit: 1000 });
     if (listError) return reply(500, { error: 'could not list files' });
     if (files && files.length > 0) {

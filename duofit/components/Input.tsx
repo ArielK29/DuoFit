@@ -56,6 +56,7 @@ export const Input: React.FC<InputProps> = ({
     },
     input: {
       flex: 1,
+      minWidth: 0, // lets the text box shrink inside a narrow column (the browser gives it a default width otherwise)
       color: theme.colors.text,
       fontSize: 16,
       paddingVertical: theme.spacing.sm,

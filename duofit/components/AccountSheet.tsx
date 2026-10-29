@@ -23,6 +23,7 @@ export const AccountSheet: React.FC = () => {
   const signOut = useAuth((state) => state.signOut);
   const deleteAccount = useAuth((state) => state.deleteAccount);
   const saveProfile = useAuth((state) => state.saveProfile);
+  const refreshVerification = useAuth((state) => state.refreshVerification);
   const setAuthError = useAuth((state) => state.setError);
   const isLoading = useAuth((state) => state.isLoading);
   const error = useAuth((state) => state.error);
@@ -42,12 +43,33 @@ export const AccountSheet: React.FC = () => {
     router.push('/terms');
   };
 
+  const openAdminReview = () => {
+    close();
+    router.push('/admin-review');
+  };
+
   const handleSignOut = async () => {
     close();
     await signOut();
   };
 
   // Replace the profile photo of a signed-in member: pick a square crop, upload it, save it.
+  // The badge belongs to the face that was checked, so a new photo means a new check: ask first.
+  const startChangePhoto = () => {
+    const title = 'להחליף תמונת פרופיל?';
+    const message = 'תמונה חדשה מחייבת אימות מחדש עם סלפי, ועד שיאשרו אותה לא תוכל להשתמש באפליקציה.';
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm(`${title}
+
+${message}`)) changePhoto();
+      return;
+    }
+    Alert.alert(title, message, [
+      { text: 'ביטול', style: 'cancel' },
+      { text: 'המשך', onPress: changePhoto },
+    ]);
+  };
+
   const changePhoto = async () => {
     setPhotoError(null);
     let uri: string | null = null;
@@ -59,6 +81,10 @@ export const AccountSheet: React.FC = () => {
       if (!saved) {
         setAuthError(null); // the message below is shown instead of the store's one
         setPhotoError('לא הצלחנו לשמור את התמונה. נסה שוב');
+      } else {
+        // A new profile photo needs a new identity check (the server sets the member back to the gate); pick that up now.
+        await refreshVerification();
+        close();
       }
     } catch (err) {
       logError('avatar_change_failed', { error: String(err) });
@@ -119,13 +145,14 @@ export const AccountSheet: React.FC = () => {
             size="lg"
             loading={photoBusy}
             disabled={photoBusy || isLoading}
-            onPress={changePhoto}
+            onPress={startChangePhoto}
           />
           {!!photoError && <Text style={styles.error}>{photoError}</Text>}
         </View>
       )}
       <Text style={styles.note}>הנתונים שלך שמורים בחשבון הזה. כשתתנתק, הנתונים המקומיים במכשיר יימחקו.</Text>
       <View style={styles.buttons}>
+        {user?.isAdmin && <Button label="בדיקות אימות (מנהל)" variant="secondary" size="lg" onPress={openAdminReview} />}
         <Button label="תנאי שימוש ופרטיות" variant="secondary" size="lg" onPress={openTerms} />
         <Button label="התנתק" variant="secondary" size="lg" onPress={handleSignOut} />
       </View>

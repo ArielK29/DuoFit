@@ -49,7 +49,7 @@
         "expo-image-picker",
         {
           "photosPermission": "כדי לבחור תמונת פרופיל או תמונה לפוסט, FitFriend זקוקה לגישה לתמונות שלך.",
-          "cameraPermission": false,
+          "cameraPermission": "FitFriend צריכה את המצלמה רק כדי לצלם סלפי אחד לאימות שאתה אדם אמיתי ובגיר. הסלפי מוצג לצוות הבדיקה בלבד ונמחק אחרי ההחלטה.",
           "microphonePermission": false
         }
       ],
