@@ -2,7 +2,8 @@
 -- HOW TO RUN (nothing is kept): paste the migration SQL first and THIS file right after it into ONE statement batch
 -- (one execute_sql call). The batch ends with an exception, so the migration and the test data are rolled back together.
 -- After the migration is applied for real, run this file alone (the same way, ending in the exception).
--- Every line of the result must say good.
+-- Every line of the result must say good. (Conversation pairs are inserted with the smaller id first, as the table requires, so only the
+-- verification rule can refuse them.)
 do $test$
 declare
   a uuid := '00000000-0000-0000-0000-0000000000e1'; -- member, gets approved
@@ -20,6 +21,43 @@ begin
   from unnest(array[a, b, c, d]) as x;
   update public.profiles set gender = 'M', fitness_level = 'Beginner', favorite_activities = array['Running'] where id in (a, b, c, d);
   insert into public.app_admins (user_id) values (c);
+
+  -- 0 the switch is OFF after the migration: everything behaves as before (no check needed to see members, chat or post)
+  select enabled into ok from public.app_flags where key = 'identity_required';
+  res := res || '0a the switch starts OFF (expect off): ' || case when ok = false then 'good' else 'BAD' end || E'\n';
+  perform set_config('request.jwt.claims', json_build_object('sub', d, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  select count(*) into n from public.profiles where id in (a, b);
+  res := res || '0b switch off: d (never checked) still sees a and b like before (expect 2): ' || n || ' ' || case when n = 2 then 'good' else 'BAD' end || E'\n';
+  ok := true;
+  begin
+    insert into public.conversations (user_a, user_b) values (b, d);
+  exception when others then ok := false; sp := sqlerrm;
+  end;
+  res := res || '0c switch off: d can still start a chat (expect allowed): ' || case when ok then 'good' else 'BAD ' || coalesce(sp, '') end || E'\n';
+  ok := true;
+  begin
+    insert into public.posts (activity, body) values ('כוח', 'x');
+  exception when others then ok := false; sp := sqlerrm;
+  end;
+  res := res || '0d switch off: d can still post (expect allowed): ' || case when ok then 'good' else 'BAD ' || coalesce(sp, '') end || E'\n';
+  ok := false;
+  begin
+    perform 1 from public.app_flags;
+  exception when others then ok := true;
+  end;
+  res := res || '0e a member cannot read the switch table (expect refused): ' || case when ok then 'good' else 'BAD' end || E'\n';
+  ok := false;
+  begin
+    update public.app_flags set enabled = true;
+  exception when others then ok := true;
+  end;
+  res := res || '0f a member cannot turn the switch on (expect refused): ' || case when ok then 'good' else 'BAD' end || E'\n';
+  reset role;
+  -- the owner side (SQL) turns the switch on; everything below runs with the switch ON
+  update public.app_flags set enabled = true where key = 'identity_required';
+  select enabled into ok from public.app_flags where key = 'identity_required';
+  res := res || '0g the owner turns the switch on with SQL (expect on): ' || case when ok then 'good' else 'BAD' end || E'\n';
 
   -- 1 a minor cannot send a check
   perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
@@ -122,16 +160,16 @@ begin
   -- 14 d cannot start a chat, a can
   ok := false;
   begin
-    insert into public.conversations (user_a, user_b) values (d, a);
-  exception when others then ok := true;
+    insert into public.conversations (user_a, user_b) values (a, d);
+  exception when others then ok := true; sp := sqlerrm;
   end;
-  res := res || '14 d cannot start a chat (expect refused): ' || case when ok then 'good' else 'BAD' end || E'\n';
+  res := res || '14 d cannot start a chat (expect refused by the rule, not by the pair order): ' || case when ok and sp like '%row-level security%' then 'good' else 'BAD ' || coalesce(sp, 'no error') end || E'\n';
   ok := false;
   begin
     insert into public.posts (activity, body) values ('כוח', 'x');
-  exception when others then ok := true;
+  exception when others then ok := true; sp := sqlerrm;
   end;
-  res := res || '15 d cannot post (expect refused): ' || case when ok then 'good' else 'BAD' end || E'\n';
+  res := res || '15 d cannot post (expect refused by the rule): ' || case when ok and sp like '%row-level security%' then 'good' else 'BAD ' || coalesce(sp, 'no error') end || E'\n';
   reset role;
   perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
   set local role authenticated;

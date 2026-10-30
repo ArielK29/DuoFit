@@ -1,7 +1,10 @@
 -- NOT APPLIED YET. Written 2026-10-29 on branch feat/safety-18plus.
--- Apply ONLY after Apple has approved build 7 and the owner says so: from the moment this runs, every member who is not
--- verified is locked out of partners, chat, groups and the community (build 7 has no verification screen).
--- Before applying, approve the reviewer account and the team test accounts (see the "after apply" notes at the bottom).
+-- SAFE TO APPLY BEFORE THE NEW BUILD: the server rules are behind a switch (public.app_flags, key identity_required) that is OFF
+-- after this migration, so everything behaves exactly as before (build 7 and Apple's reviewer are not affected). The owner turns the
+-- switch ON when build 1.0.1 is out:  update public.app_flags set enabled = true where key = 'identity_required';
+-- The owner says when to apply. While the switch is OFF the new tables, the badge column and the private bucket exist, but no
+-- rule changes for members. When the switch is turned ON every member who is not verified is locked out of partners, chat,
+-- groups and the community, so approve the reviewer account and the team test accounts first (see the notes at the bottom).
 -- Test: supabase/tests/rls_identity_test.sql (rolled back; every line must say good).
 --
 -- What this adds (the owner's rule: nobody uses the app before an adult, real-person check):
@@ -185,6 +188,41 @@ $$;
 revoke execute on function private.i_am_verified() from public, anon;
 grant execute on function private.i_am_verified() to authenticated;
 
+-- The switch. Off by default; only SQL run by the owner/Claude can change it (members have no access to the table).
+create table public.app_flags (
+  key text primary key,
+  enabled boolean not null default false
+);
+alter table public.app_flags enable row level security;
+revoke all on table public.app_flags from anon, authenticated;
+create policy app_flags_deny_all on public.app_flags for all to authenticated using (false) with check (false);
+insert into public.app_flags (key, enabled) values ('identity_required', false);
+
+create function private.identity_required()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce((select f.enabled from public.app_flags f where f.key = 'identity_required'), false);
+$$;
+revoke execute on function private.identity_required() from public, anon;
+grant execute on function private.identity_required() to authenticated;
+
+-- Allowed to start contact: the switch is off, or the member is verified.
+create function private.gate_ok()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select (not private.identity_required()) or private.i_am_verified();
+$$;
+revoke execute on function private.gate_ok() from public, anon;
+grant execute on function private.gate_ok() to authenticated;
+
 -- ---------------------------------------------------------------------------------------------------------------------
 -- 4. Private bucket for the videos
 -- ---------------------------------------------------------------------------------------------------------------------
@@ -208,51 +246,50 @@ create policy identity_videos_delete_admin on storage.objects for delete to auth
 -- ---------------------------------------------------------------------------------------------------------------------
 -- 5. Server-side gate: no verified badge, no contact
 -- ---------------------------------------------------------------------------------------------------------------------
--- Other members' profiles: only verified ones, and only for a verified viewer.
+-- Other members' profiles: once the switch is on, only verified ones, and only for a verified viewer.
 drop policy profiles_select_discoverable on public.profiles;
 create policy profiles_select_discoverable on public.profiles
   for select to authenticated
   using (
     id <> (select auth.uid())
-    and verified
-    and (select private.i_am_verified())
+    and (not (select private.identity_required()) or (verified and (select private.i_am_verified())))
     and gender is not null
     and fitness_level is not null
     and cardinality(favorite_activities) > 0
     and not private.blocked_by(id)
   );
 
--- Anything that starts contact with other members needs a verified member.
+-- Anything that starts contact with other members needs a verified member (once the switch is on).
 alter policy conversations_insert_member on public.conversations
   with check (
-    (select private.i_am_verified())
+    (select private.gate_ok())
     and (((select auth.uid()) = user_a) or ((select auth.uid()) = user_b))
     and not private.blocked_between(case when user_a = (select auth.uid()) then user_b else user_a end)
   );
 alter policy messages_insert_member on public.messages
   with check (
-    (select private.i_am_verified())
+    (select private.gate_ok())
     and sender_id = (select auth.uid())
     and private.conversation_other(conversation_id) is not null
     and not private.blocked_between(private.conversation_other(conversation_id))
   );
 alter policy group_members_insert_self on public.group_members
-  with check ((select private.i_am_verified()) and user_id = (select auth.uid()));
+  with check ((select private.gate_ok()) and user_id = (select auth.uid()));
 alter policy group_messages_insert_members on public.group_messages
-  with check ((select private.i_am_verified()) and sender_id = (select auth.uid()) and private.is_group_member(group_id));
+  with check ((select private.gate_ok()) and sender_id = (select auth.uid()) and private.is_group_member(group_id));
 alter policy groups_insert_own on public.groups
-  with check ((select private.i_am_verified()) and created_by = (select auth.uid()));
+  with check ((select private.gate_ok()) and created_by = (select auth.uid()));
 alter policy posts_insert_own on public.posts
-  with check ((select private.i_am_verified()) and user_id = (select auth.uid()));
+  with check ((select private.gate_ok()) and user_id = (select auth.uid()));
 alter policy comments_insert_own on public.comments
   with check (
-    (select private.i_am_verified())
+    (select private.gate_ok())
     and user_id = (select auth.uid())
     and exists (select 1 from public.posts p where p.id = comments.post_id)
   );
 alter policy post_likes_insert_own on public.post_likes
   with check (
-    (select private.i_am_verified())
+    (select private.gate_ok())
     and user_id = (select auth.uid())
     and exists (select 1 from public.posts p where p.id = post_likes.post_id)
   );
@@ -287,7 +324,10 @@ create trigger profiles_avatar_change_rechecks after update of avatar_url on pub
   execute function private.profiles_avatar_change_rechecks();
 
 -- ---------------------------------------------------------------------------------------------------------------------
--- After apply (run by hand, once):
+-- After apply (run by hand, once). The switch stays OFF until build 1.0.1 is released:
+--   * when build 1.0.1 is out and the accounts below are approved, turn it ON:
+--       update public.app_flags set enabled = true where key = 'identity_required';
+--     (and OFF again if something goes wrong:  ... set enabled = false ...)
 --   * make the owner an admin:        insert into public.app_admins (user_id) values ('<owner user id>');
 --   * approve the reviewer + team test accounts so they keep working:
 --       insert into public.identity_checks (user_id, birth_date, gesture, challenge_code, status) values ('<id>', '1990-01-01', 'thumb_up', '123', 'approved');

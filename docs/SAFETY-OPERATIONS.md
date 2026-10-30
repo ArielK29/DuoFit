@@ -29,15 +29,17 @@ Reject with one of the ready reasons (the member sees it). Aim to answer within 
 ## 4. What this does NOT guarantee
 No check makes meetings risk free. A real adult with bad intent can pass it. The video and number make fake or ready-made clips much harder, they do not detect AI automatically (no reliable tool exists; paid vendors are an option later, after the lawyer). The terms say this honestly.
 
-## 5. Switch-on runbook (after Apple approves build 7; each step needs the owner's yes where marked)
-1. Approve the **reviewer account** and the team test accounts first (SQL in the header of the migration), so nobody is locked out while build 7 is still the live version.
-2. Apply `supabase/migrations/20261029_identity_verification_18plus.sql` with the Supabase MCP. Immediately run `supabase/tests/rls_identity_test.sql` (26 lines, all good) and the security advisors (0 findings). Deploy the updated `delete-account` function (it now also removes the identity video).
+## 5. Switch-on runbook (each step needs the owner's yes where marked)
+The server part is built so it can go in **before** the new build: the rules sit behind a switch (`public.app_flags`, key `identity_required`) that is OFF after the migration, so build 7 and Apple's reviewer see no change.
+1. **(owner's yes)** Apply `supabase/migrations/20261029_identity_verification_18plus.sql` with the Supabase MCP. Immediately run `supabase/tests/rls_identity_test.sql` (33 lines, all good) and the security advisors (0 findings). Deploy the updated `delete-account` function (it now also removes the identity video).
+2. Approve the **reviewer account** and the team test accounts (SQL in the migration notes), so nobody is locked out when the switch goes on.
 3. Add the owner as an admin: `insert into public.app_admins (user_id) values ('<owner id>');` and approve the owner's own account the same way.
 4. Snyk: the owner runs `snyk auth`; then Claude runs the code scan and fixes findings of severity high or above.
 5. Merge PR (owner says "תמזג", CI green).
 6. **EAS build 1.0.1 (needs the owner's yes)**, install from TestFlight, then walk through QA flows 23 and 24 on a real iPhone: camera permission, 5-second video, upload size, review, approval opening the app, rejection, photo change, account deletion.
-7. App Store Connect (owner clicks): age rating 18+, privacy label (add Audio Data and the birth date under Other Data; check Sensitive Info with the lawyer), review notes explaining the identity gate and giving the pre-approved reviewer account, then submit 1.0.1.
-8. After 1.0.1 is approved and the lawyer has seen it: regenerate and push the public legal pages (`npm run legal:build`, then copy to the legal repo), and only then press Release.
+7. **Turn the switch ON** when 1.0.1 is live for members: `update public.app_flags set enabled = true where key = 'identity_required';` (OFF again with `false` if something goes wrong). From then on the server refuses contact from anyone not verified.
+8. App Store Connect (owner clicks): age rating 18+, privacy label (add Audio Data and the birth date under Other Data; check Sensitive Info with the lawyer), review notes explaining the identity gate and giving the pre-approved reviewer account, then submit 1.0.1.
+9. After 1.0.1 is approved and the lawyer has seen it: regenerate and push the public legal pages (`npm run legal:build`, then copy to the legal repo), and only then press Release.
 
 ## 6. Open decisions
 - Keep the video for a limited time instead of deleting at once (lawyer, question 10).
