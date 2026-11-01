@@ -45,6 +45,16 @@
   .safety ul { margin: 0; padding-inline-start: 1.25rem; color: var(--muted); }
   .safety li { margin: .4rem 0; }
   .cta { text-align: center; }
+  .form { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; max-width: 30rem; margin: 0 auto; }
+  .form input { flex: 1 1 14rem; min-height: 3rem; padding: .6rem 1rem; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text); font-size: 1rem; direction: ltr; text-align: right; }
+  .form input:focus-visible { outline: 3px solid var(--lime); outline-offset: 2px; }
+  .form button { border: 0; cursor: pointer; font-family: inherit; }
+  .form button:disabled { opacity: .6; cursor: default; }
+  .form-msg { min-height: 1.5rem; margin: .75rem 0 0; font-size: .95rem; }
+  .form-msg.ok { color: var(--lime); } .form-msg.err { color: #FF6B8A; }
+  .sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .fine { font-size: .85rem; color: var(--muted); margin-top: .5rem; }
   footer { padding: 2rem 0 3rem; text-align: center; color: var(--muted); font-size: .9rem; border-top: 1px solid var(--line); }
   footer a { margin: 0 .6rem; }
   @media (prefers-reduced-motion: reduce) { .btn { transition: none; } html { scroll-behavior: auto; } }
@@ -103,8 +113,14 @@
 <section id="join" class="cta">
   <div class="wrap">
     <h2>היו הראשונים</h2>
-    <p class="lead">שלחו לנו מייל ונעדכן אתכם ברגע שהאפליקציה זמינה.</p>
-    <a class="btn" href="mailto:arielkorman7+fitfriend@gmail.com?subject=%D7%A8%D7%A9%D7%99%D7%9E%D7%AA%20%D7%94%D7%9E%D7%AA%D7%A0%D7%94%20FitFriend&body=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%A6%D7%98%D7%A8%D7%A3%20%D7%9C%D7%A8%D7%A9%D7%99%D7%9E%D7%AA%20%D7%94%D7%94%D7%9E%D7%AA%D7%A0%D7%94.%20%D7%90%D7%96%D7%95%D7%A8%20%D7%9E%D7%92%D7%95%D7%A8%D7%99%D7%9D%3A">שלחו מייל להצטרפות</a>
+    <p class="lead">השאירו אימייל ונעדכן אתכם ברגע שהאפליקציה זמינה.</p>
+    <form id="waitlist-form" class="form" novalidate>
+      <label for="waitlist-email" class="sr">אימייל</label>
+      <input id="waitlist-email" type="email" inputmode="email" autocomplete="email" placeholder="האימייל שלכם" required maxlength="254">
+      <button id="waitlist-button" class="btn" type="submit">הצטרפו לרשימה</button>
+    </form>
+    <p id="waitlist-msg" class="form-msg" role="status" aria-live="polite"></p>
+    <p class="fine">נשתמש באימייל רק כדי לעדכן אתכם על ההשקה. <a href="/privacy">מדיניות פרטיות</a></p>
   </div>
 </section>
 </main>
@@ -115,5 +131,6 @@
     <p><a href="/privacy">מדיניות פרטיות</a><a href="/support">תמיכה</a></p>
   </div>
 </footer>
+<script src="/waitlist.js" defer></script>
 </body>
 </html>
