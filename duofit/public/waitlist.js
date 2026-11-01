@@ -19,11 +19,11 @@
     e.preventDefault();
     var email = input.value.trim().toLowerCase();
     if (!EMAIL.test(email) || email.length > 254) {
-      show('כתבו כתובת אימייל תקינה', false);
+      show('Please enter a valid email address', false);
       return;
     }
     button.disabled = true;
-    show('שולח...', true);
+    show('Sending...', true);
     fetch(URL, {
       method: 'POST',
       headers: { apikey: KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
@@ -33,13 +33,13 @@
         // 409 = this address is already on the list: the visitor gets the same happy message.
         if (res.ok || res.status === 409) {
           form.reset();
-          show('נרשמתם! נעדכן אתכם ברגע שהאפליקציה זמינה.', true);
+          show("You're in! We'll let you know as soon as the app is live.", true);
         } else {
-          show('משהו השתבש. נסו שוב בעוד רגע.', false);
+          show('Something went wrong. Please try again in a moment.', false);
         }
       })
       .catch(function () {
-        show('אין חיבור לאינטרנט. נסו שוב.', false);
+        show('No connection. Please try again.', false);
       })
       .then(function () {
         button.disabled = false;
