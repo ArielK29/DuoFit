@@ -1,4 +1,5 @@
--- NOT APPLIED YET. Written 2026-10-29 on branch feat/safety-18plus.
+-- APPLIED to the duofit project on 2026-11-01 (after the owner approved; the switch is OFF). Written 2026-10-29 on branch feat/safety-18plus.
+-- After applying: advisors show only the old leaked-password warning; the owner account was made admin; the Edge Function delete-account v3 was deployed.
 -- SAFE TO APPLY BEFORE THE NEW BUILD: the server rules are behind a switch (public.app_flags, key identity_required) that is OFF
 -- after this migration, so everything behaves exactly as before (build 7 and Apple's reviewer are not affected). The owner turns the
 -- switch ON when build 1.0.1 is out:  update public.app_flags set enabled = true where key = 'identity_required';

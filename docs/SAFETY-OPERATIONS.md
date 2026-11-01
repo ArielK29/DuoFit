@@ -2,7 +2,7 @@
 
 Written 2026-10-29 for the owner. The code is on branch `feat/safety-18plus`. **Nothing here is live yet** (see "Switch-on runbook").
 
-## 1. What the member goes through (build 1.0.1)
+## 1. What the member goes through (build 1.0.1; the server part is already live with the switch OFF)
 1. Signs up and fills the profile.
 2. **Identity gate** (nothing else opens until it is approved):
    - birth date (under 18 is refused, also by the server);
@@ -31,7 +31,7 @@ No check makes meetings risk free. A real adult with bad intent can pass it. The
 
 ## 5. Switch-on runbook (each step needs the owner's yes where marked)
 The server part is built so it can go in **before** the new build: the rules sit behind a switch (`public.app_flags`, key `identity_required`) that is OFF after the migration, so build 7 and Apple's reviewer see no change.
-1. **(owner's yes)** Apply `supabase/migrations/20261029_identity_verification_18plus.sql` with the Supabase MCP. Immediately run `supabase/tests/rls_identity_test.sql` (33 lines, all good) and the security advisors (0 findings). Deploy the updated `delete-account` function (it now also removes the identity video).
+1. **DONE 2026-11-01 (owner said yes):** applied `supabase/migrations/20261029_identity_verification_18plus.sql` with the Supabase MCP; switch OFF; advisors clean; owner account `arielkorman7@gmail.com` is admin; `delete-account` v3 deployed. (Still to run after any later change:) Immediately run `supabase/tests/rls_identity_test.sql` (33 lines, all good) and the security advisors (0 findings). Deploy the updated `delete-account` function (it now also removes the identity video).
 2. Approve the **reviewer account** and the team test accounts (SQL in the migration notes), so nobody is locked out when the switch goes on.
 3. Add the owner as an admin: `insert into public.app_admins (user_id) values ('<owner id>');` and approve the owner's own account the same way.
 4. Snyk: the owner runs `snyk auth`; then Claude runs the code scan and fixes findings of severity high or above.
