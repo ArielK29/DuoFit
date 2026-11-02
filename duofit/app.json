@@ -59,7 +59,7 @@
           "locationWhenInUsePermission": "FitFriend משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך.",
           "locationAlwaysAndWhenInUsePermission": false,
           "locationAlwaysPermission": false,
-          "motionUsagePermission": "FitFriend לא אוספת נתוני תנועה מהמכשיר ולא מבקשת גישה אליהם. ההסבר הזה נדרש על ידי רכיב המיקום של המערכת."
+          "motionUsagePermission": "FitFriend קוראת את מספר הצעדים שלך מחיישן התנועה של הטלפון כדי להציג אותם מיד, בזמן שאתה הולך. המידע נקרא ומוצג רק בטלפון שלך ולא נשלח לשרת."
         }
       ],
       [
@@ -71,6 +71,12 @@
         }
       ],
       "expo-notifications",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "FitFriend קוראת את מספר הצעדים שלך מחיישן התנועה של הטלפון כדי להציג אותם מיד, בזמן שאתה הולך. המידע נקרא ומוצג רק בטלפון שלך ולא נשלח לשרת."
+        }
+      ],
       "expo-font",
       "expo-router",
       [

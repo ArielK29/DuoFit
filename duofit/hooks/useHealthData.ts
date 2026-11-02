@@ -10,7 +10,7 @@ import type { HealthSnapshot } from '@lib/healthKit';
 export type HealthMode = 'live' | 'connect' | 'example';
 
 // While a screen with the numbers is open they are re-read this often (the phone saves steps in batches).
-const REFRESH_EVERY_MS = 20000;
+const REFRESH_EVERY_MS = 4000;
 
 export function useHealthData(): {
   mode: HealthMode;

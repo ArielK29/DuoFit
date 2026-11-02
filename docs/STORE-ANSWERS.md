@@ -32,6 +32,7 @@ Expected result: **13+** (Social Media appears at 13+, Health or Wellness at 9+)
 | User Content: Other User Content (messages, posts, comments, bio) | Yes | Yes | App functionality |
 | Health & Fitness: Health (weight log) and Fitness (workouts, goals, plank record) | Yes | Yes | App functionality |
 | Location | **No** | n/a | Read on the device only; not sent to the server |
+| Motion & Fitness (step count from the phone's motion sensor) | **No** | n/a | Read on the device only, to show today's steps without the delay of Apple Health; never sent. Permission text in `app.json` (`expo-sensors`) |
 | Apple Health (HealthKit: steps, active energy, running workouts) | **No** | n/a | Read-only, read on the device only and shown on the phone; never sent to the server, never written back (the app only requests read access; `NSHealthUpdateUsageDescription` is still present because Apple rejects the upload without it, ITMS-90683, and it says in Hebrew that the app does not write), no background delivery. Not collected, so it adds no row to the label. App Review needs the HealthKit capability on the App ID and the purpose string in `app.json` |
 | Usage Data: Product Interaction (three events: sign-up started, login succeeded, profile completed) | Yes | **No** (no account id is attached) | Analytics |
 | Diagnostics (JavaScript error reports) | Yes | No | App functionality and stability |

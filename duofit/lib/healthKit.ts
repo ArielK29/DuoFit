@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
-import { buildWeekSteps, metersToKm, type HealthRun } from '@lib/healthData';
+import { buildWeekSteps, mergeTodaySteps, metersToKm, type HealthRun } from '@lib/healthData';
+import { readSensorSteps } from '@lib/pedometer';
 
 // Thin wrapper over Apple Health (HealthKit). iOS only, and only in a real build: Expo Go, the
 // simulator without Health data, Android and the web all end up in "not available" and the app
@@ -80,7 +81,7 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
   const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
   const historyStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - RUN_HISTORY_DAYS);
 
-  const [stepDays, energyToday, workouts] = await Promise.all([
+  const [stepDays, energyToday, workouts, sensorSteps] = await Promise.all([
     healthKit.queryStatisticsCollectionForQuantity(STEPS, ['cumulativeSum'], weekStart, { day: 1 }, {
       filter: { date: { startDate: weekStart, endDate: now } },
       unit: 'count',
@@ -97,12 +98,15 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
       limit: 100,
       ascending: false,
     }),
+    readSensorSteps(now),
   ]);
 
   const daily = stepDays
     .filter((day) => day.startDate)
     .map((day) => ({ date: day.startDate as Date, steps: day.sumQuantity?.quantity ?? 0 }));
   const weekSteps = buildWeekSteps(daily, now);
+  // Apple Health trails the phone by minutes; the motion sensor is live (see lib/pedometer.ts).
+  weekSteps[now.getDay()] = mergeTodaySteps(weekSteps[now.getDay()] ?? 0, sensorSteps);
 
   const runs: HealthRun[] = workouts.map((workout, index) => {
     const run: HealthRun = {

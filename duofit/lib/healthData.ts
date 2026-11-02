@@ -85,3 +85,10 @@ export function runDurationText(totalSeconds: number): string {
   const ss = String(seconds).padStart(2, '0');
   return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${ss}` : `${minutes}:${ss}`;
 }
+
+// Today's steps come from two places: Apple Health (saved by the phone in batches, so it can lag by minutes) and the
+// phone's motion sensor (live). Both count the same steps, so the higher one is the more up-to-date, never the sum.
+export function mergeTodaySteps(healthSteps: number, sensorSteps: number | null): number {
+  const sensor = sensorSteps === null ? 0 : cleanNumber(sensorSteps);
+  return Math.round(Math.max(cleanNumber(healthSteps), sensor));
+}

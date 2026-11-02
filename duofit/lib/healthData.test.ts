@@ -4,6 +4,7 @@ process.env.TZ = 'Asia/Jerusalem';
 
 import {
   buildWeekSteps,
+  mergeTodaySteps,
   metersToKm,
   monthRunKm,
   paceText,
@@ -91,4 +92,13 @@ test("runDurationText: m:ss under an hour, h:mm:ss from an hour", () => {
   assert.equal(runDurationText(59), "0:59");
   assert.equal(runDurationText(3725), "1:02:05");
   assert.equal(runDurationText(-5), "0:00");
+});
+
+test("mergeTodaySteps: the higher of Apple Health and the phone motion sensor wins, a missing sensor changes nothing", () => {
+  assert.equal(mergeTodaySteps(103, 137), 137);
+  assert.equal(mergeTodaySteps(500, 480), 500);
+  assert.equal(mergeTodaySteps(120, null), 120);
+  assert.equal(mergeTodaySteps(0, 12.6), 13);
+  assert.equal(mergeTodaySteps(50, Number.NaN), 50);
+  assert.equal(mergeTodaySteps(50, -3), 50);
 });
