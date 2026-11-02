@@ -3,11 +3,9 @@ import { AppState } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useHealthStore } from '@hooks/useHealthStore';
 import type { HealthSnapshot } from '@lib/healthKit';
+import { healthMode, isSameDay, type HealthMode } from '@lib/healthMode';
 
-// 'live'    = real Apple Health numbers.
-// 'connect' = this phone has Apple Health but the member did not connect it yet (screens show the connect card).
-// 'example' = no Apple Health here (Android, web, Expo Go) or the first read is still running: labelled example numbers.
-export type HealthMode = 'live' | 'connect' | 'example';
+export type { HealthMode };
 
 // While a screen with the numbers is open they are re-read this often (the phone saves steps in batches).
 const REFRESH_EVERY_MS = 4000;
@@ -19,7 +17,8 @@ export function useHealthData(): {
   failed: boolean;
   connect: () => Promise<void>;
 } {
-  const { connected, available, snapshot, loading, failed } = useHealthStore();
+  const { hydrated, connected, available, snapshot, loading, failed } = useHealthStore();
+  const fresh = snapshot !== null && isSameDay(snapshot.readAt, new Date()) ? snapshot : null;
 
   // Re-read when the screen comes into view, when the app returns from the background, and every few seconds
   // while the screen stays open, so steps taken just now show up without leaving the screen.
@@ -40,7 +39,6 @@ export function useHealthData(): {
     }, [])
   );
 
-  const mode: HealthMode =
-    connected && snapshot ? 'live' : available && !connected ? 'connect' : connected && failed ? 'connect' : 'example';
-  return { mode, snapshot, loading, failed, connect: useHealthStore.getState().connect };
+  const mode = healthMode({ hydrated, connected, available, failed, hasFreshSnapshot: fresh !== null });
+  return { mode, snapshot: fresh, loading, failed, connect: useHealthStore.getState().connect };
 }

@@ -12,7 +12,7 @@ const MIN_CHART_MAX = 13000;
 
 // "צעדים": this week from Apple Health when it is connected (`snapshot`); otherwise labelled example
 // data (days before today use fixed example counts, today uses the same number as Home, later days are empty).
-export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snapshot = null }) => {
+export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: boolean }> = ({ snapshot = null, loading = false }) => {
   const now = new Date();
   const todayIndex = now.getDay();
   const { stepsGoal } = MOCK_HEALTH;
@@ -39,6 +39,14 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snap
     value,
     color: value >= stepsGoal ? theme.colors.cyan : `${theme.colors.textTertiary}66`,
   }));
+
+  if (loading) {
+    return (
+      <CardShell title="צעדים">
+        <Text style={styles.remaining}>טוען את הנתונים שלך...</Text>
+      </CardShell>
+    );
+  }
 
   return (
     <CardShell

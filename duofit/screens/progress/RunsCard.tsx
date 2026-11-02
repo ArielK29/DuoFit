@@ -24,13 +24,15 @@ interface RunRow {
 
 // "ריצות": running workouts from Apple Health when it is connected (`snapshot`); otherwise labelled example
 // runs. The pill shows the same monthly distance as Home.
-export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snapshot = null }) => {
+export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: boolean }> = ({ snapshot = null, loading = false }) => {
   const router = useRouter();
   const recorded = useRunStore((state) => state.runs);
   const now = new Date();
   const monthName = now.toLocaleDateString('he-IL', { month: 'long' });
   // Runs recorded in the app (GPS or typed in) always count; the example runs show only when there is nothing real at all.
-  const isExample = snapshot === null && recorded.length === 0;
+  // While the real numbers are on their way show nothing made up (recorded runs are already on the phone and show at once).
+  const waiting = loading && snapshot === null && recorded.length === 0;
+  const isExample = snapshot === null && recorded.length === 0 && !waiting;
   const monthKm = isExample ? MOCK_HEALTH.runKm : bestMonthKm(snapshot ? snapshot.monthKm : null, recorded, now);
 
   const rows: RunRow[] = !isExample
@@ -48,6 +50,17 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snaps
         duration: run.duration,
         pace: run.pace,
       }));
+
+  if (waiting) {
+    return (
+      <CardShell title="ריצות">
+        <View style={styles.startRun}>
+          <Button label="התחל ריצה" variant="primary" onPress={() => router.push('/run')} />
+        </View>
+        <Text style={styles.empty}>טוען את הנתונים שלך...</Text>
+      </CardShell>
+    );
+  }
 
   return (
     <CardShell

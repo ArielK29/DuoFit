@@ -167,6 +167,8 @@ export default function Dashboard() {
 
   // Real Apple Health numbers when connected, otherwise the labelled example numbers.
   const live = health.mode === 'live' ? health.snapshot : null;
+  // While the real numbers are on their way show a dash, never the example numbers.
+  const waiting = health.mode === 'loading';
   const steps = live ? live.todaySteps : MOCK_HEALTH.steps;
   const lastWeight = weightLog.length > 0 ? weightLog[weightLog.length - 1].kg : null;
   // Without a watch the phone reports almost no active energy, so the number is estimated from the steps and the logged weight.
@@ -203,31 +205,31 @@ export default function Dashboard() {
       ),
       stats: [
         {
-          value: steps.toLocaleString('he-IL'),
+          value: waiting ? '–' : steps.toLocaleString('he-IL'),
           goal: '10K',
           label: 'צעדים היום',
-          progress: Math.min(1, steps / HEALTH_GOALS.steps),
+          progress: waiting ? 0 : Math.min(1, steps / HEALTH_GOALS.steps),
           color: theme.colors.magenta,
           icon: Footprints,
-          isExample: !live,
+          isExample: !live && !waiting,
         },
         {
-          value: calories.toLocaleString('he-IL'),
+          value: waiting ? '–' : calories.toLocaleString('he-IL'),
           goal: live ? String(caloriesGoal) : '2.6K',
           label: caloriesAreEstimated ? 'קלוריות (הערכה)' : 'קלוריות שרפת',
-          progress: Math.min(1, calories / caloriesGoal),
+          progress: waiting ? 0 : Math.min(1, calories / caloriesGoal),
           color: theme.colors.warning,
           icon: Zap,
-          isExample: !live,
+          isExample: !live && !waiting,
         },
         {
-          value: String(runKm),
+          value: waiting && recordedRuns.length === 0 ? '–' : String(runKm),
           goal: String(HEALTH_GOALS.runKm),
           label: hasRealKm ? 'ק"מ בחודש' : 'ק"מ ריצה בחודש',
-          progress: Math.min(1, runKm / HEALTH_GOALS.runKm),
+          progress: waiting && recordedRuns.length === 0 ? 0 : Math.min(1, runKm / HEALTH_GOALS.runKm),
           color: theme.colors.cyan,
           icon: Route,
-          isExample: !hasRealKm,
+          isExample: !hasRealKm && !waiting,
         },
       ],
     },

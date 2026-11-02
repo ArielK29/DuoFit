@@ -66,7 +66,7 @@ export function ProgressScreen() {
           <HeaderActions />
         </View>
 
-        {health.mode !== 'live' && (
+        {health.mode === 'example' && (
           <View style={styles.previewPill}>
             <Text style={styles.previewPillText}>תצוגה מקדימה — צעדים וריצות לדוגמה</Text>
           </View>
@@ -89,8 +89,8 @@ export function ProgressScreen() {
         {health.mode === 'connect' && (
           <HealthConnectCard loading={health.loading} failed={health.failed} onConnect={health.connect} />
         )}
-        <StepsCard snapshot={health.mode === 'live' ? health.snapshot : null} />
-        <RunsCard snapshot={health.mode === 'live' ? health.snapshot : null} />
+        <StepsCard snapshot={health.mode === 'live' ? health.snapshot : null} loading={health.mode === 'loading'} />
+        <RunsCard snapshot={health.mode === 'live' ? health.snapshot : null} loading={health.mode === 'loading'} />
       </ScrollView>
 
       {/* Logging a weight is the main action here, so it sits in the thumb zone. */}
