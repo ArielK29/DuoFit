@@ -8,7 +8,7 @@ Apple's tiers now are 4+, 9+, 13+, 16+, 18+. Categories asked, with the proposed
 | Category | Answer | Why |
 |---|---|---|
 | Parental Controls | No | None built |
-| Age Assurance | No | The terms say 18+, but no age check is built (a declared-age confirmation at sign-up is an option) |
+| Age Assurance | **Yes, from build 1.0.1** | Birth date at sign-up (under 18 is blocked, also on the server) plus a short live video check before the app opens. Build 7 (in review) has no age check: answer "No" for it |
 | Unrestricted Web Access | No | No web view or browser inside the app; links open the phone's own apps (dialer, share sheet) |
 | **User-Generated Content** | **Yes** | Posts with photos, comments, group chats; report, block, filter and removal exist |
 | **Social Media** | **Yes (conservative)** | Profiles, a community feed, groups. Apple's definition decides; "Yes" avoids a later correction |
@@ -19,7 +19,7 @@ Apple's tiers now are 4+, 9+, 13+, 16+, 18+. Categories asked, with the proposed
 | **Health or Wellness Topics** | **Yes** | Workouts, weight log, goals |
 | Sexuality or Nudity, Violence, Chance-Based Activities | None | |
 
-Expected result: **13+** (Social Media appears at 13+, Health or Wellness at 9+). Verify the final tier in App Store Connect. A higher tier than the terms' 18+ is not needed; the 18+ line stays in the terms.
+Expected result: **13+** (Social Media appears at 13+, Health or Wellness at 9+). Verify the final tier in App Store Connect. **From build 1.0.1 raise the rating to 18+** (the app now checks that members are adults and it connects strangers for in-person meetings). Apple lets the developer choose a higher rating than the questionnaire gives; look for the age-rating override in App Store Connect.
 
 ## 2. App Privacy ("nutrition label"), per data type
 "Collected" means sent off the phone. Nothing below is used for tracking and nothing is sold.
@@ -32,6 +32,7 @@ Expected result: **13+** (Social Media appears at 13+, Health or Wellness at 9+)
 | User Content: Other User Content (messages, posts, comments, bio) | Yes | Yes | App functionality |
 | Health & Fitness: Health (weight log) and Fitness (workouts, goals, plank record) | Yes | Yes | App functionality |
 | Location | **No** | n/a | Read on the device only; not sent to the server |
+| Apple Health (HealthKit: steps, active energy, running workouts) | **No** | n/a | Read-only, read on the device only and shown on the phone; never sent to the server, never written back (`NSHealthUpdateUsageDescription` is off), no background delivery. Not collected, so it adds no row to the label. App Review needs the HealthKit capability on the App ID and the purpose string in `app.json` |
 | Usage Data: Product Interaction (three events: sign-up started, login succeeded, profile completed) | Yes | **No** (no account id is attached) | Analytics |
 | Diagnostics (JavaScript error reports) | Yes | No | App functionality and stability |
 | Identifiers: Device ID | **Verify** | No | The analytics library keeps a random id per installation. Declare it as "Device ID, not linked, analytics" unless PostHog confirms it is not one. This is the conservative answer |

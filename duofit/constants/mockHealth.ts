@@ -1,13 +1,20 @@
-// Example numbers only — steps/calories/running need Health Connect
-// (Android) / HealthKit (iOS), which aren't available in Expo Go. Replace
-// with real sensor data once the app moves to a development build.
+// Example numbers, shown only where Apple Health is not available (Android, web, Expo Go) or before
+// the member connects it. Android would need a Health Connect reader, which is not built yet.
+
+// Daily and monthly targets shown next to the real Apple Health numbers too.
+export const HEALTH_GOALS = {
+  steps: 10000,
+  calories: 2600,
+  runKm: 25,
+};
+
 export const MOCK_HEALTH = {
   steps: 8432,
-  stepsGoal: 10000,
+  stepsGoal: HEALTH_GOALS.steps,
   calories: 2140,
-  caloriesGoal: 2600,
+  caloriesGoal: HEALTH_GOALS.calories,
   runKm: 17.2,
-  runKmGoal: 25,
+  runKmGoal: HEALTH_GOALS.runKm,
 };
 
 // Example step counts for the days of the week before today (Sunday first).

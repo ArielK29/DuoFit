@@ -12,9 +12,9 @@ function plugin(name: string): Record<string, unknown> {
   return Array.isArray(entry) ? (entry[1] ?? {}) : {};
 }
 
-test('identity: version 1.0.0, the agreed bundle id on both platforms, the app link scheme, iPhone only', () => {
+test('identity: version 1.0.1, the agreed bundle id on both platforms, the app link scheme, iPhone only', () => {
   assert.equal(config.name, 'FitFriend');
-  assert.equal(config.version, '1.0.0');
+  assert.equal(config.version, '1.0.1');
   assert.equal(config.ios.bundleIdentifier, 'com.arielk29.fitfriend');
   assert.equal(config.android.package, 'com.arielk29.fitfriend');
   assert.equal(config.scheme, 'duofit');
@@ -24,8 +24,10 @@ test('identity: version 1.0.0, the agreed bundle id on both platforms, the app l
 
 test('permission texts: Hebrew, say what the app does, and only for what the app really uses', () => {
   const photos = plugin('expo-image-picker').photosPermission as string;
+  const camera = plugin('expo-image-picker').cameraPermission as string;
+  const microphone = plugin('expo-image-picker').microphonePermission as string;
   const location = plugin('expo-location').locationWhenInUsePermission as string;
-  for (const text of [photos, location]) {
+  for (const text of [photos, location, camera, microphone]) {
     assert.match(text, HEBREW);
     assert.doesNotMatch(text, /\$\(PRODUCT_NAME\)/, 'no template placeholder');
     assert.ok(text.endsWith('.'), text);
@@ -33,14 +35,24 @@ test('permission texts: Hebrew, say what the app does, and only for what the app
   assert.match(photos, /תמונת פרופיל/);
   assert.match(photos, /פוסט/, 'pictures are also used for community posts');
   assert.match(location, /שותפים/);
-  // Only the photo library is used (never the camera or the microphone) and location only while the app is open.
-  const picker = plugin('expo-image-picker');
-  assert.equal(picker.cameraPermission, false);
-  assert.equal(picker.microphonePermission, false);
+  assert.match(camera, /סרטון/, 'the camera is only used for the short identity video');
+  assert.match(microphone, /סרטון/, 'the microphone is only used for the short identity video');
+  // The camera and microphone are used only for the short identity video; location only while the app is open.
   const loc = plugin('expo-location');
   assert.equal(loc.locationAlwaysAndWhenInUsePermission, false);
   assert.equal(loc.locationAlwaysPermission, false);
   assert.equal(loc.isIosBackgroundLocationEnabled, undefined);
+});
+
+test('Apple Health: read-only, no background delivery, a Hebrew text that says the data stays on the phone', () => {
+  const health = plugin('@kingstinct/react-native-healthkit');
+  const text = health.NSHealthShareUsageDescription as string;
+  assert.match(text, HEBREW);
+  assert.match(text, /Apple Health/);
+  assert.match(text, /לא נשלח לשרת/);
+  assert.ok(text.endsWith('.'), text);
+  assert.equal(health.NSHealthUpdateUsageDescription, false, 'the app never writes to Apple Health');
+  assert.equal(health.background, false);
 });
 
 test('Hebrew only: the app declares he as its only language and forces right-to-left from the first launch', () => {

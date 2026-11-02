@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Button } from '@components/Button';
 import { HeaderActions } from '@components/HeaderActions';
+import { HealthConnectCard } from '@components/HealthConnectCard';
 import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
+import { useHealthData } from '@hooks/useHealthData';
 import { useProgressStore, EXAMPLE_GOAL_WEIGHT } from '@hooks/useProgressStore';
 import { RunsCard } from '@screens/progress/RunsCard';
 import { GoalSheet, WeightSheet } from '@screens/progress/ProgressSheets';
@@ -24,6 +26,7 @@ export function ProgressScreen() {
   const { isSmall } = useLayout();
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
   const { weeklyGoal, goalWeight, weightLog } = useProgressStore();
+  const health = useHealthData();
   const { setWeeklyGoal, logWeight } = useProgressStore.getState();
 
   const [weightSheetVisible, setWeightSheetVisible] = useState(false);
@@ -55,9 +58,11 @@ export function ProgressScreen() {
           <HeaderActions />
         </View>
 
-        <View style={styles.previewPill}>
-          <Text style={styles.previewPillText}>תצוגה מקדימה — צעדים וריצות לדוגמה</Text>
-        </View>
+        {health.mode !== 'live' && (
+          <View style={styles.previewPill}>
+            <Text style={styles.previewPillText}>תצוגה מקדימה — צעדים וריצות לדוגמה</Text>
+          </View>
+        )}
 
         <View style={[styles.summaryRow, isSmall && styles.summaryColumn]}>
           <WeightCard
@@ -73,8 +78,11 @@ export function ProgressScreen() {
 
         <WorkoutsCard completedIso={completedIso} goal={weeklyGoal} onEditGoal={() => setGoalSheetVisible(true)} />
         <WeightTrendCard points={weightPoints} goalKg={goalKg} isExample={isExampleWeight} />
-        <StepsCard />
-        <RunsCard />
+        {health.mode === 'connect' && (
+          <HealthConnectCard loading={health.loading} failed={health.failed} onConnect={health.connect} />
+        )}
+        <StepsCard snapshot={health.mode === 'live' ? health.snapshot : null} />
+        <RunsCard snapshot={health.mode === 'live' ? health.snapshot : null} />
       </ScrollView>
 
       {/* Logging a weight is the main action here, so it sits in the thumb zone. */}

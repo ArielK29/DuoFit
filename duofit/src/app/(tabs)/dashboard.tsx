@@ -11,6 +11,7 @@ import { SuggestedPartnerCard } from '@components/SuggestedPartnerCard';
 import { NearbyPartnersRow } from '@components/NearbyPartnersRow';
 import { Button } from '@components/Button';
 import { NotificationBell } from '@components/NotificationBell';
+import { HealthConnectCard } from '@components/HealthConnectCard';
 import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { useAccountSheet } from '@hooks/useAccountSheet';
 import { useAuth } from '@hooks/useAuth';
@@ -18,7 +19,9 @@ import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatching';
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { useProgressStore } from '@hooks/useProgressStore';
-import { MOCK_HEALTH } from '@constants/mockHealth';
+import { useHealthData } from '@hooks/useHealthData';
+import { HEALTH_GOALS, MOCK_HEALTH } from '@constants/mockHealth';
+import { monthRunKm } from '@lib/healthData';
 import { getActivityStyle } from '@lib/activityStyles';
 import { computePlankRank, getPlankSeconds } from '@lib/plank';
 import { computePartnerStreaks, computeStreak } from '@lib/streaks';
@@ -87,6 +90,7 @@ export default function Dashboard() {
   const plankSeconds = getPlankSeconds(plankBestSeconds);
   const plankRank = plankSeconds === null ? null : computePlankRank(plankSeconds);
   const weeklyGoal = useProgressStore((state) => state.weeklyGoal);
+  const health = useHealthData();
 
   const now = new Date();
   const weekStart = startOfWeek(now);
@@ -155,6 +159,12 @@ export default function Dashboard() {
       params: { partnerId: partner.id, partnerName: partner.name, activity: partner.activities[0] ?? 'אימון משותף' },
     });
 
+  // Real Apple Health numbers when connected, otherwise the labelled example numbers.
+  const live = health.mode === 'live' ? health.snapshot : null;
+  const steps = live ? live.todaySteps : MOCK_HEALTH.steps;
+  const calories = live ? live.todayKcal : MOCK_HEALTH.calories;
+  const runKm = live ? monthRunKm(live.runs, now) : MOCK_HEALTH.runKm;
+
   const statPages: StatPage[] = [
     {
       key: 'workouts',
@@ -171,31 +181,31 @@ export default function Dashboard() {
       ),
       stats: [
         {
-          value: MOCK_HEALTH.steps.toLocaleString('he-IL'),
+          value: steps.toLocaleString('he-IL'),
           goal: '10K',
           label: 'צעדים היום',
-          progress: MOCK_HEALTH.steps / MOCK_HEALTH.stepsGoal,
+          progress: Math.min(1, steps / HEALTH_GOALS.steps),
           color: theme.colors.magenta,
           icon: Footprints,
-          isExample: true,
+          isExample: !live,
         },
         {
-          value: MOCK_HEALTH.calories.toLocaleString('he-IL'),
+          value: calories.toLocaleString('he-IL'),
           goal: '2.6K',
           label: 'קלוריות שרפת',
-          progress: MOCK_HEALTH.calories / MOCK_HEALTH.caloriesGoal,
+          progress: Math.min(1, calories / HEALTH_GOALS.calories),
           color: theme.colors.warning,
           icon: Zap,
-          isExample: true,
+          isExample: !live,
         },
         {
-          value: String(MOCK_HEALTH.runKm),
-          goal: String(MOCK_HEALTH.runKmGoal),
+          value: String(runKm),
+          goal: String(HEALTH_GOALS.runKm),
           label: 'ק"מ ריצה בחודש',
-          progress: MOCK_HEALTH.runKm / MOCK_HEALTH.runKmGoal,
+          progress: Math.min(1, runKm / HEALTH_GOALS.runKm),
           color: theme.colors.cyan,
           icon: Route,
-          isExample: true,
+          isExample: !live,
         },
       ],
     },
@@ -274,6 +284,10 @@ export default function Dashboard() {
         <View style={styles.statsWrapper}>
           <StatCarousel pages={statPages} />
         </View>
+
+        {health.mode === 'connect' && (
+          <HealthConnectCard loading={health.loading} failed={health.failed} onConnect={health.connect} />
+        )}
 
         {upcomingWorkout && (
           <UpcomingWorkoutCard

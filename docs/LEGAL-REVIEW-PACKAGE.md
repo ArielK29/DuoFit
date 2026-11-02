@@ -25,7 +25,7 @@ Everything the lawyer needs in one place. **Nothing here is legal advice.** The 
 - **Moderation:** report, block, a word filter (app side; server side prepared), content removed after reports; contact address pending.
 - **Account deletion** inside the app removes the data and the pictures.
 - Providers: Supabase (database, sign-in, storage), Vercel (web version), PostHog (usage events and error reports, EU host), map providers.
-- **Adults only (18+)** in the terms; no age check is built.
+- **Adults only (18+)** in the terms. Build 1.0.1 (written, not released) adds the check: birth date at sign-up, a profile photo with the face, and a 5-second live video with a head turn, a random gesture and a random 3-digit number said aloud. The owner reviews the video in the app, approves or rejects, and the video file is deleted right after the decision (the server keeps the decision and the date). Until approved, a member cannot see members, chat, post or join groups (enforced by database rules). Changing the profile photo requires a new check. See `docs/SAFETY-OPERATIONS.md`.
 
 ## 4. Questions for the lawyer
 1. Are the terms and the privacy policy enough for the Israeli **Privacy Protection Law** (including the amendment that took effect in 2025 **(verify)**) and for Apple's and Google's requirements? What must be added (for example the third-party protection sentence, how to withdraw consent, retention periods)?
@@ -37,6 +37,9 @@ Everything the lawyer needs in one place. **Nothing here is legal advice.** The 
 7. A **private individual** as the seller in the store: obligations, and when to move to a company (also for the later paid Gmail agent).
 8. Consumer and advertising rules that apply if the app later sells subscriptions (the plan today: no payments in the apps).
 9. Does the terms' jurisdiction clause (Israeli law, Israeli courts) work for an app that Apple distributes under its own agreement?
+10. **The identity video:** is a short face video (with sound) reviewed by a person and deleted after the decision acceptable under the Privacy Protection Law, or does it count as biometric data with extra duties (registration, consent wording, retention)? Should the video be kept for some days for safety investigations, or deleted at once (the app deletes at once today; one constant in `lib/remoteIdentity.ts`)?
+11. **Minors:** what is the owner's exposure if a minor lies about the birth date, and what duties follow (take the account down, report)? Is the declared birth date plus the video review enough, or is stronger age assurance expected for an app that connects strangers in person?
+12. **Reports and safety incidents:** duty to keep records, to cooperate with the police, and a time limit for acting on a report about a member who may harm others (see the procedure in `docs/SAFETY-OPERATIONS.md`).
 
 ## 5. After the review
 Claude updates `duofit/lib/termsText.ts` with the changes, runs `npm run legal:build` (the public pages), and adds the support address. The word list and the content filter (issue #125) can be discussed in the same meeting.

@@ -21,12 +21,14 @@ Setup: two test members (A and B) with a profile each, and one reviewer account;
 | 13 | Check in | Open the workout window, check in, try outside the window | Check-in works only inside the window, clear message otherwise | | |
 | 14 | Community | Post with and without a photo, like, comment, delete own post, join and leave a group, group chat, weekly challenge, plank timer | Every button responds; feed updates; limits explained | | |
 | 15 | Notifications | Bell, list, mark read, open the target | Counts match; links open the right screen | | |
-| 16 | Progress | Log a weight, edit goal, workouts card, steps and runs cards, charts, sticky button vs scrolling | Saved values appear in charts; nothing hidden under the sticky button | | |
+| 16 | Progress | Log a weight, edit goal, workouts card, steps and runs cards, "חבר את Apple Health" (iPhone build only: allow, refuse, allow later in Settings), charts, sticky button vs scrolling | Saved values appear in charts; after allowing Apple Health the steps, calories and runs are the real ones and the "לדוגמה" tags disappear; nothing hidden under the sticky button | | |
 | 17 | SOS | Open SOS, choose 100 or 101, confirm | Asks first, opens the dialer with the number, can be cancelled | | |
 | 18 | Account deletion | "My account", delete, confirm twice | Account and data removed; cannot sign in again; the other member keeps the shared workout without your details | | |
 | 19 | Permissions | Deny everything; revoke later in Settings; re-open | App stays usable; every denied feature explains how to enable it | | |
 | 20 | Connectivity | Airplane mode in each tab; slow network; return online | A slim banner "אין חיבור לאינטרנט..." appears within about 40 s (two failed checks) and goes away within about 5 s of coming back; plain Hebrew message, no endless spinner, recovers by itself | | |
 | 21 | Layout | Smallest and largest phone, large text size, landscape lock, keyboard over inputs | No overlap, no cut text, inputs stay visible | | |
 | 22 | Cold start | Force close, open 5 times, open from a notification | Starts in under a few seconds, returns to the right place | | |
+| 23 | Identity check (adults only) | New member: birth date under 18 is refused; add a profile photo; record the short live video (head turn and the asked gesture); send; wait; get approved or rejected with a reason; try again | Nothing else opens before approval; under 18 cannot send; a rejected member sees the reason and can retry; approved opens the app by itself | | |
+| 24 | Admin review | Admin opens "My account" then "בדיקות אימות (מנהל)"; sees the profile photo and opens the video; approves one; rejects one with a reason | Only an admin sees the button and the list; the decision moves the member on or back; the video file is gone afterwards | | |
 
 Interaction inventory (from the code, 2026-10-16): 153 handlers (`onPress`, `onChangeText`, `onValueChange`, `onSubmitEditing`) in 42 files. During B8, every handler must map to a step in a flow above; any handler without a flow gets a new row.
