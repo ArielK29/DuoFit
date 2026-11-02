@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useRouter } from 'expo-router';
 import { BackButton } from '@components/BackButton';
 import { Button } from '@components/Button';
-import { Input } from '@components/Input';
 import { useRunStore } from '@hooks/useRunStore';
 import { paceText, runDurationText } from '@lib/healthData';
 import { addRunPoint, emptyRunProgress, type RunProgress } from '@lib/runTracker';
+import { DISTANCE_CHIPS_KM, TIME_CHIPS_MIN, stepKm, stepMinutes, suggestMinutes } from '@lib/runPresets';
 import { visualRightText } from '@lib/rtl';
 import { newId } from '@lib/uuid';
 import { theme } from '@styles/theme';
@@ -19,20 +19,44 @@ type Phase = 'idle' | 'running' | 'saved';
 const MIN_SAVED_KM = 0.05;
 const KEEP_AWAKE_TAG = 'run';
 
+// A tappable pill (a quick distance or time).
+const Chip: React.FC<{ label: string; selected: boolean; onPress: () => void }> = ({ label, selected, onPress }) => (
+  <Pressable
+    onPress={onPress}
+    accessibilityRole="button"
+    accessibilityState={{ selected }}
+    style={[styles.chip, selected && styles.chipSelected]}
+  >
+    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
+  </Pressable>
+);
+
 // "התחל ריצה": measures the distance with GPS while the screen stays on (the phone must not lock, or iOS stops the
 // GPS), and a manual entry for a run done without the phone. Saved runs stay on this phone and count in Progress and Home.
 export const RunScreen: React.FC = () => {
   const router = useRouter();
   const addRun = useRunStore((state) => state.addRun);
+  const previousRuns = useRunStore((state) => state.runs);
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [message, setMessage] = useState<string | null>(null);
   const [progress, setProgress] = useState<RunProgress>(emptyRunProgress());
   const [elapsed, setElapsed] = useState(0);
   const [summary, setSummary] = useState<{ km: number; durationSec: number } | null>(null);
-  const [manualKm, setManualKm] = useState('');
-  const [manualMinutes, setManualMinutes] = useState('');
+  // Quick entry: tap a distance, the time is suggested from the member's pace (and can be changed with a tap).
+  const [manualKm, setManualKm] = useState<number | null>(null);
+  const [manualMinutes, setManualMinutes] = useState<number | null>(null);
+  const [minutesChosen, setMinutesChosen] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
+
+  const chooseKm = (km: number) => {
+    setManualKm(km);
+    if (!minutesChosen) setManualMinutes(suggestMinutes(km, previousRuns));
+  };
+  const chooseMinutes = (minutes: number) => {
+    setMinutesChosen(true);
+    setManualMinutes(minutes);
+  };
 
   const startedAt = useRef<number>(0);
   const progressRef = useRef<RunProgress>(emptyRunProgress());
@@ -100,14 +124,14 @@ export const RunScreen: React.FC = () => {
 
   const saveManual = () => {
     setManualError(null);
-    const km = Number(manualKm.replace(',', '.'));
-    const minutes = Number(manualMinutes.replace(',', '.'));
+    const km = manualKm ?? 0;
+    const minutes = manualMinutes ?? 0;
     if (!(km >= MIN_SAVED_KM && km <= 100)) {
-      setManualError('הזן מרחק בקילומטרים, למשל 5 או 3.5');
+      setManualError('בחר את המרחק שרצת');
       return;
     }
     if (!(minutes >= 1 && minutes <= 1000)) {
-      setManualError('הזן את משך הריצה בדקות, למשל 30');
+      setManualError('בחר את משך הריצה');
       return;
     }
     const durationSec = Math.round(minutes * 60);
@@ -175,11 +199,39 @@ export const RunScreen: React.FC = () => {
           <Button label="התחל ריצה" variant="primary" size="lg" onPress={start} />
         </View>
 
-        <Text style={styles.sectionTitle}>רצת בלי הטלפון? הזן ידנית</Text>
-        <Input label="מרחק (ק״מ)" value={manualKm} onChangeText={setManualKm} keyboardType="decimal-pad" placeholder="5" />
-        <Input label="משך (דקות)" value={manualMinutes} onChangeText={setManualMinutes} keyboardType="number-pad" placeholder="30" />
+        <Text style={styles.sectionTitle}>סיימת ריצה? שמור בכמה לחיצות</Text>
+
+        <Text style={styles.fieldLabel}>{manualKm === null ? 'כמה רצת?' : `רצת ${manualKm} ק"מ`}</Text>
+        <View style={styles.chipsWrap}>
+          {DISTANCE_CHIPS_KM.map((km) => (
+            <Chip key={km} label={`${km} ק"מ`} selected={manualKm === km} onPress={() => chooseKm(km)} />
+          ))}
+        </View>
+        <View style={styles.stepRow}>
+          {[-10, -5, -1, -0.5, 0.5, 1, 5, 10].map((delta) => (
+            <Chip key={delta} label={delta > 0 ? `+${delta}` : `${delta}`} selected={false} onPress={() => chooseKm(stepKm(manualKm, delta))} />
+          ))}
+        </View>
+
+        <Text style={styles.fieldLabel}>{manualMinutes === null ? 'כמה זמן?' : `במשך ${manualMinutes} דקות`}</Text>
+        <View style={styles.chipsWrap}>
+          {TIME_CHIPS_MIN.map((minutes) => (
+            <Chip key={minutes} label={`${minutes} דק'`} selected={manualMinutes === minutes} onPress={() => chooseMinutes(minutes)} />
+          ))}
+        </View>
+        <View style={styles.stepRow}>
+          {[-5, -1, 1, 5].map((delta) => (
+            <Chip key={delta} label={delta > 0 ? `+${delta}` : `${delta}`} selected={false} onPress={() => chooseMinutes(stepMinutes(manualMinutes, delta))} />
+          ))}
+        </View>
+
         {manualError && <Text style={styles.error}>{manualError}</Text>}
-        <Button label="שמור ריצה" variant="secondary" size="lg" onPress={saveManual} />
+        <Button
+          label={manualKm !== null && manualMinutes !== null ? `שמור ריצה · ${manualKm} ק"מ · ${manualMinutes} דק'` : 'שמור ריצה'}
+          variant="primary"
+          size="lg"
+          onPress={saveManual}
+        />
       </ScrollView>
     </View>
   );
@@ -229,6 +281,50 @@ const styles = StyleSheet.create({
   },
   block: {
     marginBottom: theme.spacing.md,
+  },
+  fieldLabel: {
+    fontSize: 16,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.text,
+    ...visualRightText,
+    width: '100%',
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  chipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  chip: {
+    minHeight: 48,
+    minWidth: 56,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.surfaceHover,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipSelected: {
+    backgroundColor: theme.colors.cyan,
+    borderColor: theme.colors.cyan,
+  },
+  chipText: {
+    fontSize: 15,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.text,
+  },
+  chipTextSelected: {
+    color: theme.colors.black,
   },
   label: {
     fontSize: 16,
