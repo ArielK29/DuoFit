@@ -6,6 +6,7 @@ import { HealthConnectCard } from '@components/HealthConnectCard';
 import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { useHealthData } from '@hooks/useHealthData';
+import { useToday } from '@hooks/useToday';
 import { useProgressStore, EXAMPLE_GOAL_WEIGHT } from '@hooks/useProgressStore';
 import { RunsCard } from '@screens/progress/RunsCard';
 import { GoalSheet, WeightSheet } from '@screens/progress/ProgressSheets';
@@ -27,6 +28,7 @@ export function ProgressScreen() {
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
   const { weeklyGoal, goalWeight, weightLog } = useProgressStore();
   const health = useHealthData();
+  useToday(); // the week and the charts roll over at 00:00
   const { setWeeklyGoal, logWeight } = useProgressStore.getState();
 
   const [weightSheetVisible, setWeightSheetVisible] = useState(false);

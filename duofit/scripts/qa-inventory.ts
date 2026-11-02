@@ -128,6 +128,7 @@ function scan(file: string): { handlers: number; byHandler: Record<string, numbe
 const FLOW_MAP: Record<string, string> = {
   'components/AccountSheet.tsx': '3, 11, 18',
   'components/BackButton.tsx': '7, 8, 12',
+  'components/BarChart.tsx': '16',
   'components/BottomSheet.tsx': 'all',
   'components/Button.tsx': 'all',
   'components/Card.tsx': 'all',

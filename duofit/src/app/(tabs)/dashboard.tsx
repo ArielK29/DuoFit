@@ -23,6 +23,7 @@ import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatchi
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { useProgressStore } from '@hooks/useProgressStore';
 import { useHealthData } from '@hooks/useHealthData';
+import { useToday } from '@hooks/useToday';
 import { HEALTH_GOALS, MOCK_HEALTH } from '@constants/mockHealth';
 import { bestMonthKm, displayKcal, estimateKcal, runExtraKcal, todayRunKm } from '@lib/healthData';
 import { useRunStore } from '@hooks/useRunStore';
@@ -93,6 +94,7 @@ export default function Dashboard() {
   const recordedRuns = useRunStore((state) => state.runs);
   const screenTimeHours = useWellbeingStore((state) => state.screenTimeHours);
   const health = useHealthData();
+  useToday(); // the week strip and today's numbers roll over at 00:00
 
   const now = new Date();
   const weekStart = startOfWeek(now);
