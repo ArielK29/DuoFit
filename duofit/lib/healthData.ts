@@ -92,3 +92,19 @@ export function mergeTodaySteps(healthSteps: number, sensorSteps: number | null)
   const sensor = sensorSteps === null ? 0 : cleanNumber(sensorSteps);
   return Math.round(Math.max(cleanNumber(healthSteps), sensor));
 }
+
+// Calories burned by walking, estimated from the steps and the member's weight, for phones without a watch (the
+// iPhone alone reports almost no active energy). About 0.5 kcal per kg per km, and about 1300 steps to a km.
+const STEPS_PER_KM = 1300;
+const KCAL_PER_KG_PER_KM = 0.5;
+const DEFAULT_WEIGHT_KG = 70;
+
+export function estimateKcal(steps: number, weightKg: number | null): number {
+  const weight = weightKg !== null && Number.isFinite(weightKg) && weightKg > 0 ? weightKg : DEFAULT_WEIGHT_KG;
+  return Math.round((cleanNumber(steps) / STEPS_PER_KM) * KCAL_PER_KG_PER_KM * weight);
+}
+
+// A measured value (Apple Watch, a recorded workout) is better than the estimate; the estimate fills the gap when the phone is alone.
+export function displayKcal(measuredKcal: number, steps: number, weightKg: number | null): number {
+  return Math.max(Math.round(cleanNumber(measuredKcal)), estimateKcal(steps, weightKg));
+}

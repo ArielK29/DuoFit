@@ -4,7 +4,7 @@ import { Activity } from 'lucide-react-native';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
 import { HEALTH_GOALS, MOCK_HEALTH, MOCK_RUNS } from '@constants/mockHealth';
 import type { HealthSnapshot } from '@lib/healthKit';
-import { monthRunKm, paceText, recentRuns, runDurationText } from '@lib/healthData';
+import { paceText, recentRuns, runDurationText } from '@lib/healthData';
 import { theme } from '@styles/theme';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
@@ -25,7 +25,7 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snaps
   const now = new Date();
   const monthName = now.toLocaleDateString('he-IL', { month: 'long' });
   const isExample = snapshot === null;
-  const monthKm = snapshot ? monthRunKm(snapshot.runs, now) : MOCK_HEALTH.runKm;
+  const monthKm = snapshot ? snapshot.monthKm : MOCK_HEALTH.runKm;
 
   const rows: RunRow[] = snapshot
     ? recentRuns(snapshot.runs, RUNS_SHOWN).map((run) => ({

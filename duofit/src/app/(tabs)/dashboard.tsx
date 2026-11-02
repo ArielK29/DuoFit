@@ -21,7 +21,7 @@ import { useCommunityStore } from '@hooks/useCommunityStore';
 import { useProgressStore } from '@hooks/useProgressStore';
 import { useHealthData } from '@hooks/useHealthData';
 import { HEALTH_GOALS, MOCK_HEALTH } from '@constants/mockHealth';
-import { monthRunKm } from '@lib/healthData';
+import { displayKcal, estimateKcal } from '@lib/healthData';
 import { getActivityStyle } from '@lib/activityStyles';
 import { computePlankRank, getPlankSeconds } from '@lib/plank';
 import { computePartnerStreaks, computeStreak } from '@lib/streaks';
@@ -90,6 +90,7 @@ export default function Dashboard() {
   const plankSeconds = getPlankSeconds(plankBestSeconds);
   const plankRank = plankSeconds === null ? null : computePlankRank(plankSeconds);
   const weeklyGoal = useProgressStore((state) => state.weeklyGoal);
+  const weightLog = useProgressStore((state) => state.weightLog);
   const health = useHealthData();
 
   const now = new Date();
@@ -162,8 +163,12 @@ export default function Dashboard() {
   // Real Apple Health numbers when connected, otherwise the labelled example numbers.
   const live = health.mode === 'live' ? health.snapshot : null;
   const steps = live ? live.todaySteps : MOCK_HEALTH.steps;
-  const calories = live ? live.todayKcal : MOCK_HEALTH.calories;
-  const runKm = live ? monthRunKm(live.runs, now) : MOCK_HEALTH.runKm;
+  const lastWeight = weightLog.length > 0 ? weightLog[weightLog.length - 1].kg : null;
+  // Without a watch the phone reports almost no active energy, so the number is estimated from the steps and the logged weight.
+  const calories = live ? displayKcal(live.todayKcal, live.todaySteps, lastWeight) : MOCK_HEALTH.calories;
+  const caloriesAreEstimated = !!live && estimateKcal(live.todaySteps, lastWeight) > live.todayKcal;
+  const caloriesGoal = live ? HEALTH_GOALS.activeCalories : HEALTH_GOALS.calories;
+  const runKm = live ? live.monthKm : MOCK_HEALTH.runKm;
 
   const statPages: StatPage[] = [
     {
@@ -191,9 +196,9 @@ export default function Dashboard() {
         },
         {
           value: calories.toLocaleString('he-IL'),
-          goal: '2.6K',
-          label: 'קלוריות שרפת',
-          progress: Math.min(1, calories / HEALTH_GOALS.calories),
+          goal: live ? String(caloriesGoal) : '2.6K',
+          label: caloriesAreEstimated ? 'קלוריות (הערכה)' : 'קלוריות שרפת',
+          progress: Math.min(1, calories / caloriesGoal),
           color: theme.colors.warning,
           icon: Zap,
           isExample: !live,
@@ -201,7 +206,7 @@ export default function Dashboard() {
         {
           value: String(runKm),
           goal: String(HEALTH_GOALS.runKm),
-          label: 'ק"מ ריצה בחודש',
+          label: live ? 'ק"מ בחודש' : 'ק"מ ריצה בחודש',
           progress: Math.min(1, runKm / HEALTH_GOALS.runKm),
           color: theme.colors.cyan,
           icon: Route,

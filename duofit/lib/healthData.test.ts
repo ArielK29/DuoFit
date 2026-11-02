@@ -4,6 +4,8 @@ process.env.TZ = 'Asia/Jerusalem';
 
 import {
   buildWeekSteps,
+  displayKcal,
+  estimateKcal,
   mergeTodaySteps,
   metersToKm,
   monthRunKm,
@@ -101,4 +103,19 @@ test("mergeTodaySteps: the higher of Apple Health and the phone motion sensor wi
   assert.equal(mergeTodaySteps(0, 12.6), 13);
   assert.equal(mergeTodaySteps(50, Number.NaN), 50);
   assert.equal(mergeTodaySteps(50, -3), 50);
+});
+
+test("estimateKcal: about 0.5 kcal per kg per km of walking, 1300 steps to a km, default 70 kg", () => {
+  assert.equal(estimateKcal(1300, 70), 35);
+  assert.equal(estimateKcal(10000, 70), 269);
+  assert.equal(estimateKcal(10000, 90), 346);
+  assert.equal(estimateKcal(0, 70), 0);
+  assert.equal(estimateKcal(1300, null), 35);
+  assert.equal(estimateKcal(1300, Number.NaN), 35);
+});
+
+test("displayKcal: the measured value (watch, workout) wins when it is higher than the estimate", () => {
+  assert.equal(displayKcal(400, 1300, 70), 400);
+  assert.equal(displayKcal(1, 10000, 70), 269);
+  assert.equal(displayKcal(0, 0, 70), 0);
 });

@@ -4,7 +4,8 @@
 // Daily and monthly targets shown next to the real Apple Health numbers too.
 export const HEALTH_GOALS = {
   steps: 10000,
-  calories: 2600,
+  calories: 2600, // example only (a whole day of burning)
+  activeCalories: 500, // the goal for real numbers: calories burned by moving
   runKm: 25,
 };
 
