@@ -19,7 +19,7 @@ import { ProgressSync } from '@components/ProgressSync';
 import { WorkoutSync } from '@components/WorkoutSync';
 import { NotificationSync } from '@components/NotificationSync';
 import { GroupSync } from '@components/GroupSync';
-import { useAuth, isProfileComplete } from '@hooks/useAuth';
+import { useAuth, isProfileComplete, isVerified } from '@hooks/useAuth';
 import { startSessionSync } from '@lib/session';
 import { AnalyticsProvider } from '@lib/analytics';
 import { startLinkCapture } from '@lib/incomingLink';
@@ -63,7 +63,7 @@ function LoadingScreen() {
 // Every screen gets the top inset as padding, so headers never sit under the
 // status bar. Non-tab screens also keep clear of the home indicator; the tab bar
 // handles its own bottom inset (see (tabs)/_layout.tsx).
-function AppStack({ isAuthenticated, profileComplete }: { isAuthenticated: boolean; profileComplete: boolean }) {
+function AppStack({ isAuthenticated, profileComplete, verified }: { isAuthenticated: boolean; profileComplete: boolean; verified: boolean }) {
   const insets = useSafeAreaInsets();
   const screenStyle = { backgroundColor: theme.colors.bg, paddingTop: insets.top, paddingBottom: insets.bottom };
 
@@ -85,7 +85,11 @@ function AppStack({ isAuthenticated, profileComplete }: { isAuthenticated: boole
       <Stack.Protected guard={isAuthenticated && !profileComplete}>
         <Stack.Screen name="profile-setup" />
       </Stack.Protected>
-      <Stack.Protected guard={isAuthenticated && profileComplete}>
+      {/* The adults-only gate: nobody reaches partners, chat or the community before the identity check is approved. */}
+      <Stack.Protected guard={isAuthenticated && profileComplete && !verified}>
+        <Stack.Screen name="verify-identity" />
+      </Stack.Protected>
+      <Stack.Protected guard={isAuthenticated && profileComplete && verified}>
         <Stack.Screen name="(tabs)" options={{ contentStyle: { ...screenStyle, paddingBottom: 0 } }} />
         <Stack.Screen name="partner-profile" />
         <Stack.Screen name="schedule-workout" />
@@ -93,6 +97,7 @@ function AppStack({ isAuthenticated, profileComplete }: { isAuthenticated: boole
         <Stack.Screen name="conversation" />
         <Stack.Screen name="invite-to-workout" />
         <Stack.Screen name="notifications" />
+        <Stack.Screen name="admin-review" />
       </Stack.Protected>
       {/* Open to everyone (linked from sign-up). Declared last on purpose: the first open screen
           becomes the fallback for a blocked address, and that must stay the login / home flow. */}
@@ -114,6 +119,9 @@ export default function RootLayout() {
   const hasHydrated = isReady;
   const isAuthenticated = !!user;
   const profileComplete = isProfileComplete(user);
+  const verified = isVerified(user);
+  // Everything that talks to other members (sync, notifications, chat) only runs for a signed-in, complete and verified member.
+  const appReady = isAuthenticated && profileComplete && verified;
 
   useEffect(() => {
     const stopAuth = initialize();
@@ -158,14 +166,14 @@ export default function RootLayout() {
         ) : (
           <PostHogErrorBoundary fallback={ErrorFallback}>
             <ConnectivityShell>
-            <AppStack isAuthenticated={isAuthenticated} profileComplete={profileComplete} />
-            {isAuthenticated && profileComplete && <AccountSheet />}
-            {isAuthenticated && profileComplete && <NotificationWatcher />}
-            {isAuthenticated && profileComplete && <ChatSync />}
-            {isAuthenticated && profileComplete && <ProgressSync />}
-            {isAuthenticated && profileComplete && <WorkoutSync />}
-            {isAuthenticated && profileComplete && <NotificationSync />}
-            {isAuthenticated && profileComplete && <GroupSync />}
+            <AppStack isAuthenticated={isAuthenticated} profileComplete={profileComplete} verified={verified} />
+            {appReady && <AccountSheet />}
+            {appReady && <NotificationWatcher />}
+            {appReady && <ChatSync />}
+            {appReady && <ProgressSync />}
+            {appReady && <WorkoutSync />}
+            {appReady && <NotificationSync />}
+            {appReady && <GroupSync />}
             </ConnectivityShell>
           </PostHogErrorBoundary>
         )}
