@@ -8,6 +8,7 @@ import { notifyFailure } from '@lib/notifyFailure';
 import { askChoice } from '@lib/askChoice';
 import { Card } from '@components/Card';
 import { Button } from '@components/Button';
+import { BackButton } from '@components/BackButton';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 
@@ -89,6 +90,7 @@ export function CheckInScreen() {
 
   return (
     <View style={styles.container}>
+      <BackButton />
       <Text style={styles.title}>{workout.checkedIn ? 'האימון אושר' : 'האימון שלך'}</Text>
 
       <Card style={styles.summaryCard}>
