@@ -66,7 +66,7 @@
         "@kingstinct/react-native-healthkit",
         {
           "NSHealthShareUsageDescription": "FitFriend קוראת מ-Apple Health את הצעדים, הקלוריות והריצות שלך כדי להציג אותם במסך הבית ובהתקדמות. המידע נקרא ומוצג רק בטלפון שלך, לא נשלח לשרת ולא נשמר שם, ו-FitFriend לא כותבת ל-Apple Health.",
-          "NSHealthUpdateUsageDescription": false,
+          "NSHealthUpdateUsageDescription": "FitFriend לא כותבת ולא משנה נתונים ב-Apple Health, והיא לא מבקשת ממך הרשאה לכתוב. ההסבר הזה נדרש על ידי רכיב החיבור ל-Apple Health ולא נעשה בו שימוש.",
           "background": false
         }
       ],
