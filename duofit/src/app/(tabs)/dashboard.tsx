@@ -12,6 +12,9 @@ import { NearbyPartnersRow } from '@components/NearbyPartnersRow';
 import { Button } from '@components/Button';
 import { NotificationBell } from '@components/NotificationBell';
 import { HealthConnectCard } from '@components/HealthConnectCard';
+import { ScreenTimeCard } from '@components/ScreenTimeCard';
+import { useWellbeingStore } from '@hooks/useWellbeingStore';
+import { screenTimeChange, weekKey, workoutHoursThisWeek } from '@lib/wellbeing';
 import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { useAccountSheet } from '@hooks/useAccountSheet';
 import { useAuth } from '@hooks/useAuth';
@@ -20,8 +23,10 @@ import { usePartnerMatching, PartnerWithDistance } from '@hooks/usePartnerMatchi
 import { useCommunityStore } from '@hooks/useCommunityStore';
 import { useProgressStore } from '@hooks/useProgressStore';
 import { useHealthData } from '@hooks/useHealthData';
+import { useToday } from '@hooks/useToday';
 import { HEALTH_GOALS, MOCK_HEALTH } from '@constants/mockHealth';
-import { monthRunKm } from '@lib/healthData';
+import { bestMonthKm, displayKcal, estimateKcal, runExtraKcal, todayRunKm } from '@lib/healthData';
+import { useRunStore } from '@hooks/useRunStore';
 import { getActivityStyle } from '@lib/activityStyles';
 import { computePlankRank, getPlankSeconds } from '@lib/plank';
 import { computePartnerStreaks, computeStreak } from '@lib/streaks';
@@ -37,13 +42,8 @@ const PLAN_WINDOW_DAYS = 7;
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
 
-// Example numbers only — screen time needs Android Digital Wellbeing / iOS
-// Screen Time access (not available in Expo Go), and the plank challenge
-// doesn't exist as a real feature yet.
-const MOCK_WELLBEING = {
-  realLifeHours: 4.2,
-  screenTimeDropHours: 6.5,
-};
+// Goal for the weekly training hours ring on the second Home page.
+const WEEKLY_TRAINING_HOURS_GOAL = 3;
 
 function getWeeklyEncouragement(completed: number, goal: number): string {
   const remaining = goal - completed;
@@ -90,7 +90,11 @@ export default function Dashboard() {
   const plankSeconds = getPlankSeconds(plankBestSeconds);
   const plankRank = plankSeconds === null ? null : computePlankRank(plankSeconds);
   const weeklyGoal = useProgressStore((state) => state.weeklyGoal);
+  const weightLog = useProgressStore((state) => state.weightLog);
+  const recordedRuns = useRunStore((state) => state.runs);
+  const screenTimeHours = useWellbeingStore((state) => state.screenTimeHours);
   const health = useHealthData();
+  useToday(); // the week strip and today's numbers roll over at 00:00
 
   const now = new Date();
   const weekStart = startOfWeek(now);
@@ -110,7 +114,9 @@ export default function Dashboard() {
     .slice(1)
     .filter((workout) => new Date(workout.scheduledAt).getTime() <= planEnd);
 
-  const workoutsThisWeek = completedWorkouts.filter(
+  // A run recorded in the app is a day of training too (streak, weekly goal, week strip).
+  const runDays = recordedRuns.map((run) => ({ scheduledAt: run.startedAt }));
+  const workoutsThisWeek = [...completedWorkouts, ...runDays].filter(
     (workout) => new Date(workout.scheduledAt).getTime() >= weekStart
   ).length;
   // Real "no-shows": workouts scheduled earlier this month whose time has
@@ -120,14 +126,14 @@ export default function Dashboard() {
     return time >= monthStart && time < now.getTime();
   }).length;
 
-  const streakDays = computeStreak(completedWorkouts);
+  const streakDays = computeStreak([...completedWorkouts, ...runDays]);
   const partnersCount = new Set(scheduledWorkouts.map((workout) => workout.partnerId)).size;
   const partnerStreaks = computePartnerStreaks(completedWorkouts);
   const upcomingPartnerStreak = upcomingWorkout
     ? partnerStreaks.find((entry) => entry.partnerId === upcomingWorkout.partnerId)?.streak
     : undefined;
 
-  const activeDates = new Set(completedWorkouts.map((workout) => startOfDay(new Date(workout.scheduledAt))));
+  const activeDates = new Set([...completedWorkouts, ...runDays].map((workout) => startOfDay(new Date(workout.scheduledAt))));
   const recentActivity = completedWorkouts.slice(0, RECENT_ACTIVITY_LIMIT);
 
   // Daily suggested partner: prefer people the user hasn't scheduled with
@@ -161,9 +167,27 @@ export default function Dashboard() {
 
   // Real Apple Health numbers when connected, otherwise the labelled example numbers.
   const live = health.mode === 'live' ? health.snapshot : null;
+  // While the real numbers are on their way show a dash, never the example numbers.
+  const waiting = health.mode === 'loading';
   const steps = live ? live.todaySteps : MOCK_HEALTH.steps;
-  const calories = live ? live.todayKcal : MOCK_HEALTH.calories;
-  const runKm = live ? monthRunKm(live.runs, now) : MOCK_HEALTH.runKm;
+  const lastWeight = weightLog.length > 0 ? weightLog[weightLog.length - 1].kg : null;
+  // Without a watch the phone reports almost no active energy, so the number is estimated from the steps and the logged weight.
+  const runKcal = runExtraKcal(todayRunKm(recordedRuns, now), lastWeight);
+  const calories = live ? displayKcal(live.todayKcal, live.todaySteps, lastWeight, runKcal) : MOCK_HEALTH.calories;
+  const caloriesAreEstimated = !!live && estimateKcal(live.todaySteps, lastWeight) + runKcal > live.todayKcal;
+  const caloriesGoal = live ? HEALTH_GOALS.activeCalories : HEALTH_GOALS.calories;
+  // Runs recorded in the app count even without Apple Health (Android, web, before connecting).
+  const hasRealKm = !!live || recordedRuns.length > 0;
+  const runKm = hasRealKm ? bestMonthKm(live ? live.monthKm : null, recordedRuns, now) : MOCK_HEALTH.runKm;
+
+  // Real Life Time: hours of real training this week (runs from Apple Health or recorded in the app, plus shared workouts).
+  const trainingHours = workoutHoursThisWeek(
+    [...(live ? live.runs : []), ...recordedRuns],
+    completedWorkouts.map((workout) => workout.scheduledAt),
+    now
+  );
+  const lastWeekKey = weekKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7));
+  const screenDrop = screenTimeChange(screenTimeHours[weekKey(now)], screenTimeHours[lastWeekKey]);
 
   const statPages: StatPage[] = [
     {
@@ -181,31 +205,31 @@ export default function Dashboard() {
       ),
       stats: [
         {
-          value: steps.toLocaleString('he-IL'),
+          value: waiting ? '–' : steps.toLocaleString('he-IL'),
           goal: '10K',
           label: 'צעדים היום',
-          progress: Math.min(1, steps / HEALTH_GOALS.steps),
+          progress: waiting ? 0 : Math.min(1, steps / HEALTH_GOALS.steps),
           color: theme.colors.magenta,
           icon: Footprints,
-          isExample: !live,
+          isExample: !live && !waiting,
         },
         {
-          value: calories.toLocaleString('he-IL'),
-          goal: '2.6K',
-          label: 'קלוריות שרפת',
-          progress: Math.min(1, calories / HEALTH_GOALS.calories),
+          value: waiting ? '–' : calories.toLocaleString('he-IL'),
+          goal: live ? String(caloriesGoal) : '2.6K',
+          label: caloriesAreEstimated ? 'קלוריות (הערכה)' : 'קלוריות שרפת',
+          progress: waiting ? 0 : Math.min(1, calories / caloriesGoal),
           color: theme.colors.warning,
           icon: Zap,
-          isExample: !live,
+          isExample: !live && !waiting,
         },
         {
-          value: String(runKm),
+          value: waiting && recordedRuns.length === 0 ? '–' : String(runKm),
           goal: String(HEALTH_GOALS.runKm),
-          label: 'ק"מ ריצה בחודש',
-          progress: Math.min(1, runKm / HEALTH_GOALS.runKm),
+          label: hasRealKm ? 'ק"מ בחודש' : 'ק"מ ריצה בחודש',
+          progress: waiting && recordedRuns.length === 0 ? 0 : Math.min(1, runKm / HEALTH_GOALS.runKm),
           color: theme.colors.cyan,
           icon: Route,
-          isExample: !live,
+          isExample: !hasRealKm && !waiting,
         },
       ],
     },
@@ -213,15 +237,20 @@ export default function Dashboard() {
       key: 'wellbeing',
       hero: (
         <HeroStatCard
-          value={String(MOCK_WELLBEING.realLifeHours)}
+          value={String(trainingHours)}
           suffix=" שע'"
           label="Real Life Time השבוע"
-          subtext={`↓ ${MOCK_WELLBEING.screenTimeDropHours} שעות מסך פחות משבוע שעבר`}
-          subtextColor={theme.colors.cyan}
-          progress={0.7}
+          subtext={
+            screenDrop === null
+              ? 'שעות אימון אמיתיות השבוע'
+              : screenDrop >= 0
+                ? `↓ ${screenDrop} שעות מסך פחות משבוע שעבר`
+                : `↑ ${Math.abs(screenDrop)} שעות מסך יותר משבוע שעבר`
+          }
+          subtextColor={screenDrop !== null && screenDrop < 0 ? theme.colors.magenta : theme.colors.cyan}
+          progress={Math.min(1, trainingHours / WEEKLY_TRAINING_HOURS_GOAL)}
           color={theme.colors.cyan}
           icon={PhoneOff}
-          isExample
         />
       ),
       stats: [
@@ -284,6 +313,8 @@ export default function Dashboard() {
         <View style={styles.statsWrapper}>
           <StatCarousel pages={statPages} />
         </View>
+
+        <ScreenTimeCard />
 
         {health.mode === 'connect' && (
           <HealthConnectCard loading={health.loading} failed={health.failed} onConnect={health.connect} />

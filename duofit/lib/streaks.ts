@@ -10,7 +10,8 @@ function localDayNumber(iso: string): number {
   return Math.round(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / DAY_MS);
 }
 
-export function computeStreak(workouts: ScheduledWorkout[]): number {
+// Any list with a date works: shared workouts and runs recorded in the app both count as a day of training.
+export function computeStreak(workouts: Pick<ScheduledWorkout, 'scheduledAt'>[]): number {
   if (workouts.length === 0) return 0;
 
   const days = Array.from(new Set(workouts.map((workout) => localDayNumber(workout.scheduledAt)))).sort((x, y) => y - x);

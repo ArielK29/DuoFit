@@ -1,0 +1,39 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { parseRunFromText } from './runOcr.ts';
+
+test('parseRunFromText: distance and h:mm:ss time from a typical running app screen', () => {
+  const lines = ['Outdoor Run', '5.02', 'KM', 'Time', '00:31:45', 'Avg Pace', '6:20 /km'];
+  assert.deepEqual(parseRunFromText(lines), { km: 5.02, minutes: 32 });
+});
+
+test('parseRunFromText: Hebrew units and a decimal comma', () => {
+  assert.deepEqual(parseRunFromText(['מרחק', '8,35 ק"מ', 'משך', '47:10']), { km: 8.35, minutes: 47 });
+  assert.equal(parseRunFromText(['10.0 ק״מ']).km, 10);
+  assert.equal(parseRunFromText(['3 קילומטר']).km, 3);
+});
+
+test('parseRunFromText: the number and its unit on separate lines are joined', () => {
+  assert.equal(parseRunFromText(['12.4', 'km']).km, 12.4);
+});
+
+test('parseRunFromText: miles become kilometres', () => {
+  assert.equal(parseRunFromText(['3.11 mi']).km, 5.01);
+});
+
+test('parseRunFromText: a pace is not a time, and the phone clock is not a time when a real duration is there', () => {
+  assert.deepEqual(parseRunFromText(['10:24', '5.0 km', '5:30 /km', '27:30']), { km: 5, minutes: 28 });
+  assert.equal(parseRunFromText(['5:12 min/km', '5.0 km']).minutes, undefined);
+});
+
+test('parseRunFromText: a time with words (1h 5m, 45 min)', () => {
+  assert.equal(parseRunFromText(['1h 5m']).minutes, 65);
+  assert.equal(parseRunFromText(['45 min']).minutes, 45);
+  assert.equal(parseRunFromText(['1:05:00']).minutes, 65);
+});
+
+test('parseRunFromText: nothing readable gives nothing; absurd numbers are ignored', () => {
+  assert.deepEqual(parseRunFromText([]), {});
+  assert.deepEqual(parseRunFromText(['hello world']), {});
+  assert.equal(parseRunFromText(['250 km']).km, undefined);
+});

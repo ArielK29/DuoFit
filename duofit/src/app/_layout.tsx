@@ -97,6 +97,7 @@ function AppStack({ isAuthenticated, profileComplete, verified }: { isAuthentica
         <Stack.Screen name="conversation" />
         <Stack.Screen name="invite-to-workout" />
         <Stack.Screen name="notifications" />
+        <Stack.Screen name="run" />
         <Stack.Screen name="admin-review" />
       </Stack.Protected>
       {/* Open to everyone (linked from sign-up). Declared last on purpose: the first open screen

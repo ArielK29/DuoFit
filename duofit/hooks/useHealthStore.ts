@@ -3,9 +3,12 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isHealthAvailable, readHealthSnapshot, requestHealthAccess, type HealthSnapshot } from '@lib/healthKit';
 
-// Apple Health data for the Home and Progress screens. The numbers live only in memory on the
-// phone (never saved to disk, never sent to the server); only the "member pressed connect" flag is kept.
+// Apple Health data for the Home and Progress screens. The numbers stay on this phone (never sent to the server).
+// The last numbers read are kept in the phone's storage so the screens show today's numbers the moment the app opens,
+// while a fresh read runs underneath; the screens only use them when they were read today.
 interface HealthState {
+  // The saved settings and last numbers have been loaded from storage (not saved itself).
+  hydrated: boolean;
   connected: boolean;
   // null until we asked the phone; false on Android, web, Expo Go.
   available: boolean | null;
@@ -20,6 +23,7 @@ interface HealthState {
 export const useHealthStore = create<HealthState>()(
   persist(
     (set, get) => ({
+      hydrated: false,
       connected: false,
       available: null,
       loading: false,
@@ -73,7 +77,10 @@ export const useHealthStore = create<HealthState>()(
     {
       name: 'duofit-health',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ connected: state.connected }),
+      partialize: (state) => ({ connected: state.connected, snapshot: state.snapshot }),
+      onRehydrateStorage: () => () => {
+        useHealthStore.setState({ hydrated: true });
+      },
     }
   )
 );

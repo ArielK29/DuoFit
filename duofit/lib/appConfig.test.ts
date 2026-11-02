@@ -59,6 +59,16 @@ test('Apple Health: read-only, no background delivery, a Hebrew text that says t
   assert.equal(health.background, false);
 });
 
+test('Motion sensor: one Hebrew text for both plugins that write it, says the steps stay on the phone', () => {
+  const sensors = plugin('expo-sensors').motionPermission as string;
+  const location = plugin('expo-location').motionUsagePermission as string;
+  assert.match(sensors, HEBREW);
+  assert.match(sensors, /צעדים/);
+  assert.match(sensors, /לא נשלח לשרת/);
+  assert.ok(sensors.endsWith('.'), sensors);
+  assert.equal(location, sensors, 'both plugins write NSMotionUsageDescription, so the text must be the same');
+});
+
 test('Hebrew only: the app declares he as its only language and forces right-to-left from the first launch', () => {
   const localization = plugin('expo-localization') as { supportedLocales: Record<string, string[]>; forcesRTL: boolean; supportsRTL: boolean };
   assert.deepEqual(localization.supportedLocales.ios, ['he']);

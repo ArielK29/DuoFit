@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutChangeEvent, View } from 'react-native';
+import { LayoutChangeEvent, Pressable, View } from 'react-native';
 import Svg, { Line, Rect, Text as SvgText } from 'react-native-svg';
 import { theme } from '@styles/theme';
 
@@ -27,6 +27,11 @@ interface BarChartProps {
   height?: number;
   labelEvery?: number;
   accessibilityLabel?: string;
+  // Tapping a bar selects it and shows its value above it.
+  selectedIndex?: number | null;
+  onSelect?: (index: number) => void;
+  formatValue?: (value: number) => string;
+  barAccessibilityLabel?: (index: number) => string;
 }
 
 // Custom bar chart drawn with SVG. Every coordinate is physical (SVG is not
@@ -42,6 +47,10 @@ export const BarChart: React.FC<BarChartProps> = ({
   height = 200,
   labelEvery = 1,
   accessibilityLabel,
+  selectedIndex = null,
+  onSelect,
+  formatValue,
+  barAccessibilityLabel,
 }) => {
   const [width, setWidth] = useState(0);
   const onLayout = (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width);
@@ -58,8 +67,8 @@ export const BarChart: React.FC<BarChartProps> = ({
     <View
       onLayout={onLayout}
       style={{ height }}
-      accessible={accessibilityLabel !== undefined}
-      accessibilityRole="image"
+      accessible={accessibilityLabel !== undefined && !onSelect}
+      accessibilityRole={onSelect ? undefined : 'image'}
       accessibilityLabel={accessibilityLabel}
     >
       {width > 0 && (
@@ -99,7 +108,13 @@ export const BarChart: React.FC<BarChartProps> = ({
                   height={plotBottom - top}
                   rx={barWidth / 2}
                   fill={bar.color}
+                  opacity={selectedIndex === null || selectedIndex === index ? 1 : 0.55}
                 />
+                {selectedIndex === index && formatValue && (
+                  <SvgText x={centerX} y={Math.max(11, top - 6)} fontSize={13} fontWeight="bold" fill={theme.colors.text} textAnchor="middle">
+                    {formatValue(bar.value)}
+                  </SvgText>
+                )}
                 {showLabel && (
                   <SvgText
                     x={centerX}
@@ -142,6 +157,15 @@ export const BarChart: React.FC<BarChartProps> = ({
           )}
         </Svg>
       )}
+      {width > 0 && onSelect && bars.map((_, index) => (
+        <Pressable
+          key={`hit-${index}`}
+          onPress={() => onSelect(index)}
+          accessibilityRole="button"
+          accessibilityLabel={barAccessibilityLabel ? barAccessibilityLabel(index) : undefined}
+          style={{ position: 'absolute', top: 0, height, width: step, left: plotRight - (index + 1) * step }}
+        />
+      ))}
     </View>
   );
 };

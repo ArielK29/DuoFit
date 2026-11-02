@@ -6,6 +6,8 @@ import { HealthConnectCard } from '@components/HealthConnectCard';
 import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { useWorkoutStore } from '@hooks/useWorkoutStore';
 import { useHealthData } from '@hooks/useHealthData';
+import { useToday } from '@hooks/useToday';
+import { useRunStore } from '@hooks/useRunStore';
 import { useProgressStore, EXAMPLE_GOAL_WEIGHT } from '@hooks/useProgressStore';
 import { RunsCard } from '@screens/progress/RunsCard';
 import { GoalSheet, WeightSheet } from '@screens/progress/ProgressSheets';
@@ -27,13 +29,19 @@ export function ProgressScreen() {
   const scheduledWorkouts = useWorkoutStore((state) => state.scheduledWorkouts);
   const { weeklyGoal, goalWeight, weightLog } = useProgressStore();
   const health = useHealthData();
+  useToday(); // the week and the charts roll over at 00:00
   const { setWeeklyGoal, logWeight } = useProgressStore.getState();
 
   const [weightSheetVisible, setWeightSheetVisible] = useState(false);
   const [goalSheetVisible, setGoalSheetVisible] = useState(false);
 
   const now = new Date();
-  const completedIso = scheduledWorkouts.filter((workout) => workout.checkedIn).map((workout) => workout.scheduledAt);
+  const recordedRuns = useRunStore((state) => state.runs);
+  // Shared workouts checked in, plus runs recorded in the app: each is a day of training.
+  const completedIso = [
+    ...scheduledWorkouts.filter((workout) => workout.checkedIn).map((workout) => workout.scheduledAt),
+    ...recordedRuns.map((run) => run.startedAt),
+  ];
 
   // Streak + this week's days (real)
   const streakWeeks = computeGoalStreakWeeks(completedIso, weeklyGoal, now);
@@ -58,7 +66,7 @@ export function ProgressScreen() {
           <HeaderActions />
         </View>
 
-        {health.mode !== 'live' && (
+        {health.mode === 'example' && (
           <View style={styles.previewPill}>
             <Text style={styles.previewPillText}>תצוגה מקדימה — צעדים וריצות לדוגמה</Text>
           </View>
@@ -81,8 +89,8 @@ export function ProgressScreen() {
         {health.mode === 'connect' && (
           <HealthConnectCard loading={health.loading} failed={health.failed} onConnect={health.connect} />
         )}
-        <StepsCard snapshot={health.mode === 'live' ? health.snapshot : null} />
-        <RunsCard snapshot={health.mode === 'live' ? health.snapshot : null} />
+        <StepsCard snapshot={health.mode === 'live' ? health.snapshot : null} loading={health.mode === 'loading'} />
+        <RunsCard snapshot={health.mode === 'live' ? health.snapshot : null} loading={health.mode === 'loading'} />
       </ScrollView>
 
       {/* Logging a weight is the main action here, so it sits in the thumb zone. */}

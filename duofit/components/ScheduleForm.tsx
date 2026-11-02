@@ -4,11 +4,14 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar, Clock, MapPin } from 'lucide-react-native';
 import { Card } from '@components/Card';
 import { Button } from '@components/Button';
+import { Input } from '@components/Input';
 import { PLACES } from '@constants/places';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 import { createSubmitGuard } from '@lib/loadState';
 import { scheduleHint } from '@lib/scheduleHint';
+import { checkText } from '@lib/contentFilter';
+import { customPlace, filterPlaces, MAX_PLACE_LENGTH } from '@lib/placeSearch';
 
 // The same venues as the Matches > Places map.
 const LOCATIONS = PLACES.map((place) => place.name);
@@ -45,6 +48,11 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
   // The server accepts workouts from now until 90 days ahead.
   const [pickerBounds] = useState(() => ({ min: new Date(), max: new Date(Date.now() + 89 * 24 * 3600 * 1000) }));
   const [location, setLocation] = useState<string | null>(null);
+  // Search the known venues, or type any other place.
+  const [query, setQuery] = useState('');
+  const visibleLocations = filterPlaces(LOCATIONS, query);
+  const own = customPlace(query, LOCATIONS);
+  const ownBlocked = own !== null && !checkText(own).ok;
   // A double tap on the confirm button must not send two invitations or schedule two workouts.
   const confirmOnce = useRef(createSubmitGuard()).current;
   const [activePicker, setActivePicker] = useState<'date' | 'time' | null>(null);
@@ -81,8 +89,28 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
 
       <Card style={styles.section}>
         <Text style={styles.sectionLabel}>איפה</Text>
+        <Input
+          value={query}
+          onChangeText={setQuery}
+          placeholder="חפש מקום או הקלד כל מקום אחר"
+          maxLength={MAX_PLACE_LENGTH}
+          accessibilityLabel="חיפוש מקום"
+        />
         <View style={styles.locationsWrap}>
-          {LOCATIONS.map((option) => (
+          {own && (
+            <Pressable
+              style={[styles.locationPill, location === own && styles.locationPillSelected]}
+              onPress={() => !ownBlocked && setLocation(own)}
+              accessibilityRole="button"
+              accessibilityLabel={`השתמש במקום ${own}`}
+            >
+              <MapPin color={location === own ? theme.colors.black : theme.colors.cyan} size={14} strokeWidth={2} />
+              <Text style={[styles.locationText, location === own && styles.locationTextSelected]}>{`מקום אחר: ${own}`}</Text>
+            </Pressable>
+          )}
+          {ownBlocked && <Text style={styles.hintWarn}>המקום כולל ביטוי שאינו מותר. שנה את הניסוח</Text>}
+          {visibleLocations.length === 0 && !own && <Text style={styles.hint}>אין מקום כזה ברשימה. הקלד את שם המקום ואפשר לבחור בו.</Text>}
+          {visibleLocations.map((option) => (
             <Pressable
               key={option}
               style={[styles.locationPill, location === option && styles.locationPillSelected]}

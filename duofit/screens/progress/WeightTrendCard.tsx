@@ -3,6 +3,7 @@ import { Text, View, StyleSheet } from 'react-native';
 import { Flag } from 'lucide-react-native';
 import { LineChart, AxisLabel } from '@components/LineChart';
 import { SegmentedToggle } from '@components/SegmentedToggle';
+import { useToday } from '@hooks/useToday';
 import { Banner, CardShell, pillStyles } from '@screens/progress/CardShell';
 import { WeightPoint, WeightRange, formatKg, goalProgress, monthLabel, rangeStart } from '@lib/progress';
 import { theme } from '@styles/theme';
@@ -44,6 +45,8 @@ function buildBanner(points: WeightPoint[], isExample: boolean): string {
 // chart shows an example journey (flagged "לדוגמה").
 export const WeightTrendCard: React.FC<WeightTrendCardProps> = ({ points, goalKg, isExample }) => {
   const [range, setRange] = useState<WeightRange>('6m');
+  // Re-draws at 00:00 so the range moves on to the new day even when the app stays open overnight.
+  useToday();
   const now = new Date().getTime();
   const start = rangeStart(range, new Date(now));
 

@@ -3,12 +3,18 @@ import assert from 'node:assert/strict';
 process.env.TZ = 'Asia/Jerusalem';
 
 import {
+  bestMonthKm,
   buildWeekSteps,
+  displayKcal,
+  runExtraKcal,
+  estimateKcal,
+  mergeTodaySteps,
   metersToKm,
   monthRunKm,
   paceText,
   runDurationText,
   recentRuns,
+  todayRunKm,
   weekAverage,
   type HealthRun,
 } from './healthData.ts';
@@ -91,4 +97,47 @@ test("runDurationText: m:ss under an hour, h:mm:ss from an hour", () => {
   assert.equal(runDurationText(59), "0:59");
   assert.equal(runDurationText(3725), "1:02:05");
   assert.equal(runDurationText(-5), "0:00");
+});
+
+test("mergeTodaySteps: the higher of Apple Health and the phone motion sensor wins, a missing sensor changes nothing", () => {
+  assert.equal(mergeTodaySteps(103, 137), 137);
+  assert.equal(mergeTodaySteps(500, 480), 500);
+  assert.equal(mergeTodaySteps(120, null), 120);
+  assert.equal(mergeTodaySteps(0, 12.6), 13);
+  assert.equal(mergeTodaySteps(50, Number.NaN), 50);
+  assert.equal(mergeTodaySteps(50, -3), 50);
+});
+
+test("estimateKcal: about 0.5 kcal per kg per km of walking, 1300 steps to a km, default 70 kg", () => {
+  assert.equal(estimateKcal(1300, 70), 35);
+  assert.equal(estimateKcal(10000, 70), 269);
+  assert.equal(estimateKcal(10000, 90), 346);
+  assert.equal(estimateKcal(0, 70), 0);
+  assert.equal(estimateKcal(1300, null), 35);
+  assert.equal(estimateKcal(1300, Number.NaN), 35);
+});
+
+test("displayKcal: the measured value (watch, workout) wins when it is higher than the estimate", () => {
+  assert.equal(displayKcal(400, 1300, 70), 400);
+  assert.equal(displayKcal(1, 10000, 70), 269);
+  assert.equal(displayKcal(0, 0, 70), 0);
+});
+
+test("bestMonthKm: the iPhone distance already contains runs recorded in the app, so take the larger, never the sum", () => {
+  const mine = [run("a", at(9, 3), 5.2, 1600), run("b", at(9, 20), 4, 1300)];
+  assert.equal(bestMonthKm(12, mine, wed), 12);
+  assert.equal(bestMonthKm(3, mine, wed), 9.2);
+  assert.equal(bestMonthKm(null, mine, wed), 9.2);
+  assert.equal(bestMonthKm(null, [], wed), 0);
+});
+
+test("runExtraKcal: running burns about twice what walking does, and the steps already count the walking half", () => {
+  assert.equal(runExtraKcal(5, 70), 175);
+  assert.equal(runExtraKcal(0, 70), 0);
+  assert.equal(runExtraKcal(5, null), 175);
+});
+
+test("todayRunKm: only recorded runs that started today", () => {
+  const runs = [run("a", new Date(2026, 9, 28, 7), 5, 1500), run("b", new Date(2026, 9, 27, 7), 8, 2400), run("c", new Date(2026, 9, 28, 18), 2.5, 800)];
+  assert.equal(todayRunKm(runs, wed), 7.5);
 });

@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
-import { buildWeekSteps, metersToKm, type HealthRun } from '@lib/healthData';
+import { buildWeekSteps, mergeTodaySteps, metersToKm, type HealthRun } from '@lib/healthData';
+import { readSensorSteps } from '@lib/pedometer';
 
 // Thin wrapper over Apple Health (HealthKit). iOS only, and only in a real build: Expo Go, the
 // simulator without Health data, Android and the web all end up in "not available" and the app
@@ -14,6 +15,7 @@ export interface HealthSnapshot {
   todaySteps: number;
   todayKcal: number;
   runs: HealthRun[]; // running workouts of the last 60 days, any order
+  monthKm: number; // walking + running distance this month (the iPhone measures it, no watch needed)
   readAt: string; // ISO
 }
 
@@ -21,6 +23,7 @@ type HealthKitModule = typeof import('@kingstinct/react-native-healthkit');
 
 const STEPS = 'HKQuantityTypeIdentifierStepCount';
 const ACTIVE_ENERGY = 'HKQuantityTypeIdentifierActiveEnergyBurned';
+const DISTANCE = 'HKQuantityTypeIdentifierDistanceWalkingRunning';
 const WORKOUTS = 'HKWorkoutTypeIdentifier';
 const RUN_HISTORY_DAYS = 60;
 
@@ -54,7 +57,7 @@ export async function requestHealthAccess(): Promise<boolean> {
   const healthKit = loadModule();
   if (!healthKit) return false;
   try {
-    return await healthKit.requestAuthorization({ toRead: [STEPS, ACTIVE_ENERGY, WORKOUTS] });
+    return await healthKit.requestAuthorization({ toRead: [STEPS, ACTIVE_ENERGY, DISTANCE, WORKOUTS] });
   } catch {
     return false;
   }
@@ -80,7 +83,9 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
   const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
   const historyStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - RUN_HISTORY_DAYS);
 
-  const [stepDays, energyToday, workouts] = await Promise.all([
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const [stepDays, energyToday, monthDistance, workouts, sensorSteps] = await Promise.all([
     healthKit.queryStatisticsCollectionForQuantity(STEPS, ['cumulativeSum'], weekStart, { day: 1 }, {
       filter: { date: { startDate: weekStart, endDate: now } },
       unit: 'count',
@@ -88,6 +93,10 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
     healthKit.queryStatisticsForQuantity(ACTIVE_ENERGY, ['cumulativeSum'], {
       filter: { date: { startDate: today, endDate: now } },
       unit: 'kcal',
+    }),
+    healthKit.queryStatisticsForQuantity(DISTANCE, ['cumulativeSum'], {
+      filter: { date: { startDate: monthStart, endDate: now } },
+      unit: 'm',
     }),
     healthKit.queryWorkoutSamples({
       filter: {
@@ -97,12 +106,15 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
       limit: 100,
       ascending: false,
     }),
+    readSensorSteps(now),
   ]);
 
   const daily = stepDays
     .filter((day) => day.startDate)
     .map((day) => ({ date: day.startDate as Date, steps: day.sumQuantity?.quantity ?? 0 }));
   const weekSteps = buildWeekSteps(daily, now);
+  // Apple Health trails the phone by minutes; the motion sensor is live (see lib/pedometer.ts).
+  weekSteps[now.getDay()] = mergeTodaySteps(weekSteps[now.getDay()] ?? 0, sensorSteps);
 
   const runs: HealthRun[] = workouts.map((workout, index) => {
     const run: HealthRun = {
@@ -123,6 +135,7 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
     todaySteps: weekSteps[now.getDay()] ?? 0,
     todayKcal: Math.round(energyToday.sumQuantity?.quantity ?? 0),
     runs,
+    monthKm: metersToKm(monthDistance.sumQuantity?.quantity ?? 0),
     readAt: now.toISOString(),
   };
 }

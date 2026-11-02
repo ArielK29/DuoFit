@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { BarChart, Bar } from '@components/BarChart';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
@@ -12,7 +12,7 @@ const MIN_CHART_MAX = 13000;
 
 // "צעדים": this week from Apple Health when it is connected (`snapshot`); otherwise labelled example
 // data (days before today use fixed example counts, today uses the same number as Home, later days are empty).
-export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snapshot = null }) => {
+export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: boolean }> = ({ snapshot = null, loading = false }) => {
   const now = new Date();
   const todayIndex = now.getDay();
   const { stepsGoal } = MOCK_HEALTH;
@@ -25,15 +25,28 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snap
         index < todayIndex ? MOCK_STEPS_BEFORE_TODAY[index] : index === todayIndex ? steps : 0
       );
   const average = weekAverage(values, now);
+  // The day whose steps are shown (today until the member taps another bar).
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const shownDay = selectedDay !== null && selectedDay <= todayIndex ? selectedDay : todayIndex;
+  const shownSteps = values[shownDay] ?? 0;
   // The chart grows when a very active day does not fit the usual scale (ticks stay in whole thousands).
   const chartMax = Math.max(MIN_CHART_MAX, Math.ceil(Math.max(...values) / 3000) * 3000);
-  const remaining = Math.max(0, stepsGoal - steps);
+  const remaining = Math.max(0, stepsGoal - shownSteps);
+  const isToday = shownDay === todayIndex;
 
   const bars: Bar[] = values.map((value, index) => ({
     label: WEEKDAY_LETTERS[index],
     value,
     color: value >= stepsGoal ? theme.colors.cyan : `${theme.colors.textTertiary}66`,
   }));
+
+  if (loading) {
+    return (
+      <CardShell title="צעדים">
+        <Text style={styles.remaining}>טוען את הנתונים שלך...</Text>
+      </CardShell>
+    );
+  }
 
   return (
     <CardShell
@@ -48,13 +61,17 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snap
       }
     >
       <View style={styles.summary}>
-        <Text style={styles.value}>{steps.toLocaleString('he-IL')}</Text>
+        <Text style={styles.value}>{shownSteps.toLocaleString('he-IL')}</Text>
         <Text style={styles.remaining}>
-          {remaining > 0 ? `היום · עוד ${remaining.toLocaleString('he-IL')} ליעד` : 'היום · עברת את היעד'}
+          {`${isToday ? 'היום' : `יום ${WEEKDAY_LETTERS[shownDay]}`} · ${remaining > 0 ? `עוד ${remaining.toLocaleString('he-IL')} ליעד` : 'עברת את היעד'}`}
         </Text>
       </View>
       <BarChart
         accessibilityLabel={`צעדים לפי יום, יעד ${stepsGoal.toLocaleString('he-IL')}. היום ${steps.toLocaleString('he-IL')}`}
+        selectedIndex={shownDay}
+        onSelect={(index) => index <= todayIndex && setSelectedDay(index)}
+        formatValue={(value) => value.toLocaleString('he-IL')}
+        barAccessibilityLabel={(index) => `יום ${WEEKDAY_LETTERS[index]}, ${(values[index] ?? 0).toLocaleString('he-IL')} צעדים`}
         bars={bars}
         max={chartMax}
         ticks={[0, chartMax / 3, (2 * chartMax) / 3, chartMax]}

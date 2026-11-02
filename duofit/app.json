@@ -48,7 +48,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "כדי לבחור תמונת פרופיל או תמונה לפוסט, FitFriend זקוקה לגישה לתמונות שלך.",
+          "photosPermission": "כדי לבחור תמונת פרופיל, תמונה לפוסט או צילום של ריצה, FitFriend זקוקה לגישה לתמונות שלך.",
           "cameraPermission": "FitFriend צריכה את המצלמה רק כדי להקליט סרטון קצר לאימות שאתה אדם אמיתי ובגיר. הסרטון מוצג לצוות הבדיקה בלבד ונמחק אחרי ההחלטה.",
           "microphonePermission": "הטלפון מקליט גם קול בסרטון האימות הקצר. FitFriend לא משתמשת במיקרופון בשום מקום אחר, והסרטון נמחק אחרי ההחלטה."
         }
@@ -56,10 +56,10 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "FitFriend משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך.",
+          "locationWhenInUsePermission": "FitFriend משתמשת במיקום שלך כדי להציג שותפים ומקומות אימון קרובים אליך, ולמדוד את המרחק כשאתה מתעד ריצה.",
           "locationAlwaysAndWhenInUsePermission": false,
           "locationAlwaysPermission": false,
-          "motionUsagePermission": "FitFriend לא אוספת נתוני תנועה מהמכשיר ולא מבקשת גישה אליהם. ההסבר הזה נדרש על ידי רכיב המיקום של המערכת."
+          "motionUsagePermission": "FitFriend קוראת את מספר הצעדים שלך מחיישן התנועה של הטלפון כדי להציג אותם מיד, בזמן שאתה הולך. המידע נקרא ומוצג רק בטלפון שלך ולא נשלח לשרת."
         }
       ],
       [
@@ -71,6 +71,12 @@
         }
       ],
       "expo-notifications",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "FitFriend קוראת את מספר הצעדים שלך מחיישן התנועה של הטלפון כדי להציג אותם מיד, בזמן שאתה הולך. המידע נקרא ומוצג רק בטלפון שלך ולא נשלח לשרת."
+        }
+      ],
       "expo-font",
       "expo-router",
       [

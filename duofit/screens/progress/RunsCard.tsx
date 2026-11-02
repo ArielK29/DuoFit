@@ -1,10 +1,13 @@
 import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { Activity } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { Button } from '@components/Button';
+import { useRunStore } from '@hooks/useRunStore';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
 import { HEALTH_GOALS, MOCK_HEALTH, MOCK_RUNS } from '@constants/mockHealth';
 import type { HealthSnapshot } from '@lib/healthKit';
-import { monthRunKm, paceText, recentRuns, runDurationText } from '@lib/healthData';
+import { bestMonthKm, paceText, recentRuns, runDurationText } from '@lib/healthData';
 import { theme } from '@styles/theme';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
@@ -21,14 +24,19 @@ interface RunRow {
 
 // "ריצות": running workouts from Apple Health when it is connected (`snapshot`); otherwise labelled example
 // runs. The pill shows the same monthly distance as Home.
-export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snapshot = null }) => {
+export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: boolean }> = ({ snapshot = null, loading = false }) => {
+  const router = useRouter();
+  const recorded = useRunStore((state) => state.runs);
   const now = new Date();
   const monthName = now.toLocaleDateString('he-IL', { month: 'long' });
-  const isExample = snapshot === null;
-  const monthKm = snapshot ? monthRunKm(snapshot.runs, now) : MOCK_HEALTH.runKm;
+  // Runs recorded in the app (GPS or typed in) always count; the example runs show only when there is nothing real at all.
+  // While the real numbers are on their way show nothing made up (recorded runs are already on the phone and show at once).
+  const waiting = loading && snapshot === null && recorded.length === 0;
+  const isExample = snapshot === null && recorded.length === 0 && !waiting;
+  const monthKm = isExample ? MOCK_HEALTH.runKm : bestMonthKm(snapshot ? snapshot.monthKm : null, recorded, now);
 
-  const rows: RunRow[] = snapshot
-    ? recentRuns(snapshot.runs, RUNS_SHOWN).map((run) => ({
+  const rows: RunRow[] = !isExample
+    ? recentRuns([...(snapshot ? snapshot.runs : []), ...recorded], RUNS_SHOWN).map((run) => ({
         key: run.id,
         date: new Date(run.startedAt),
         title: `${run.km} ק"מ`,
@@ -43,6 +51,17 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snaps
         pace: run.pace,
       }));
 
+  if (waiting) {
+    return (
+      <CardShell title="ריצות">
+        <View style={styles.startRun}>
+          <Button label="התחל ריצה" variant="primary" onPress={() => router.push('/run')} />
+        </View>
+        <Text style={styles.empty}>טוען את הנתונים שלך...</Text>
+      </CardShell>
+    );
+  }
+
   return (
     <CardShell
       title="ריצות"
@@ -56,6 +75,9 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snaps
         </View>
       }
     >
+      <View style={styles.startRun}>
+        <Button label="התחל ריצה" variant="primary" onPress={() => router.push('/run')} />
+      </View>
       {rows.length === 0 && (
         <Text style={styles.empty}>אין ריצות ב-60 הימים האחרונים ב-Apple Health. ריצה שתתועד באפל ווטש או באפליקציית ריצה תופיע כאן.</Text>
       )}
@@ -82,6 +104,9 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snaps
 };
 
 const styles = StyleSheet.create({
+  startRun: {
+    marginBottom: theme.spacing.sm,
+  },
   empty: {
     fontSize: 14,
     lineHeight: 21,
