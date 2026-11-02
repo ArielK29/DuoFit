@@ -105,12 +105,27 @@ export function estimateKcal(steps: number, weightKg: number | null): number {
 }
 
 // A measured value (Apple Watch, a recorded workout) is better than the estimate; the estimate fills the gap when the phone is alone.
-export function displayKcal(measuredKcal: number, steps: number, weightKg: number | null): number {
-  return Math.max(Math.round(cleanNumber(measuredKcal)), estimateKcal(steps, weightKg));
+export function displayKcal(measuredKcal: number, steps: number, weightKg: number | null, extraKcal = 0): number {
+  return Math.max(Math.round(cleanNumber(measuredKcal)), estimateKcal(steps, weightKg) + Math.round(cleanNumber(extraKcal)));
 }
 
 // Distance this month: Apple Health's walking + running distance (null when not connected) or the runs recorded in the app,
 // whichever is larger. Not the sum: the phone also counts the steps of a run recorded in the app.
 export function bestMonthKm(healthKm: number | null, recordedRuns: HealthRun[], now: Date): number {
   return Math.max(healthKm ?? 0, monthRunKm(recordedRuns, now));
+}
+
+// Running burns about twice what walking does. The step count already pays for the walking half (see estimateKcal), so a
+// recorded run adds the other half: about 0.5 kcal per kg per km on top.
+export function runExtraKcal(km: number, weightKg: number | null): number {
+  const weight = weightKg !== null && Number.isFinite(weightKg) && weightKg > 0 ? weightKg : DEFAULT_WEIGHT_KG;
+  return Math.round(cleanNumber(km) * KCAL_PER_KG_PER_KM * weight);
+}
+
+export function todayRunKm(recordedRuns: HealthRun[], now: Date): number {
+  const today = startOfDay(now);
+  const total = recordedRuns
+    .filter((run) => startOfDay(new Date(run.startedAt)) === today)
+    .reduce((sum, run) => sum + run.km, 0);
+  return Math.round(total * 100) / 100;
 }

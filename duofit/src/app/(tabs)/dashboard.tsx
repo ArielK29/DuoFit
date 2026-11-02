@@ -21,7 +21,7 @@ import { useCommunityStore } from '@hooks/useCommunityStore';
 import { useProgressStore } from '@hooks/useProgressStore';
 import { useHealthData } from '@hooks/useHealthData';
 import { HEALTH_GOALS, MOCK_HEALTH } from '@constants/mockHealth';
-import { bestMonthKm, displayKcal, estimateKcal } from '@lib/healthData';
+import { bestMonthKm, displayKcal, estimateKcal, runExtraKcal, todayRunKm } from '@lib/healthData';
 import { useRunStore } from '@hooks/useRunStore';
 import { getActivityStyle } from '@lib/activityStyles';
 import { computePlankRank, getPlankSeconds } from '@lib/plank';
@@ -167,8 +167,9 @@ export default function Dashboard() {
   const steps = live ? live.todaySteps : MOCK_HEALTH.steps;
   const lastWeight = weightLog.length > 0 ? weightLog[weightLog.length - 1].kg : null;
   // Without a watch the phone reports almost no active energy, so the number is estimated from the steps and the logged weight.
-  const calories = live ? displayKcal(live.todayKcal, live.todaySteps, lastWeight) : MOCK_HEALTH.calories;
-  const caloriesAreEstimated = !!live && estimateKcal(live.todaySteps, lastWeight) > live.todayKcal;
+  const runKcal = runExtraKcal(todayRunKm(recordedRuns, now), lastWeight);
+  const calories = live ? displayKcal(live.todayKcal, live.todaySteps, lastWeight, runKcal) : MOCK_HEALTH.calories;
+  const caloriesAreEstimated = !!live && estimateKcal(live.todaySteps, lastWeight) + runKcal > live.todayKcal;
   const caloriesGoal = live ? HEALTH_GOALS.activeCalories : HEALTH_GOALS.calories;
   // Runs recorded in the app count even without Apple Health (Android, web, before connecting).
   const hasRealKm = !!live || recordedRuns.length > 0;

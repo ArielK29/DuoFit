@@ -6,6 +6,7 @@ import {
   bestMonthKm,
   buildWeekSteps,
   displayKcal,
+  runExtraKcal,
   estimateKcal,
   mergeTodaySteps,
   metersToKm,
@@ -13,6 +14,7 @@ import {
   paceText,
   runDurationText,
   recentRuns,
+  todayRunKm,
   weekAverage,
   type HealthRun,
 } from './healthData.ts';
@@ -127,4 +129,15 @@ test("bestMonthKm: the iPhone distance already contains runs recorded in the app
   assert.equal(bestMonthKm(3, mine, wed), 9.2);
   assert.equal(bestMonthKm(null, mine, wed), 9.2);
   assert.equal(bestMonthKm(null, [], wed), 0);
+});
+
+test("runExtraKcal: running burns about twice what walking does, and the steps already count the walking half", () => {
+  assert.equal(runExtraKcal(5, 70), 175);
+  assert.equal(runExtraKcal(0, 70), 0);
+  assert.equal(runExtraKcal(5, null), 175);
+});
+
+test("todayRunKm: only recorded runs that started today", () => {
+  const runs = [run("a", new Date(2026, 9, 28, 7), 5, 1500), run("b", new Date(2026, 9, 27, 7), 8, 2400), run("c", new Date(2026, 9, 28, 18), 2.5, 800)];
+  assert.equal(todayRunKm(runs, wed), 7.5);
 });
