@@ -34,3 +34,23 @@ export async function readSensorSteps(now: Date = new Date()): Promise<number | 
     return null;
   }
 }
+
+// Steps as they happen: the count of today so far, then an update on every few steps while the screen is open. The
+// starting total is read first and the live count since then is added to it. Returns a function that stops the updates.
+export async function watchSensorSteps(onSteps: (todaySteps: number) => void): Promise<() => void> {
+  const pedometer = loadPedometer();
+  if (!pedometer) return () => {};
+  try {
+    if (!(await pedometer.isAvailableAsync())) return () => {};
+    const permission = await pedometer.requestPermissionsAsync();
+    if (!permission.granted) return () => {};
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const base = (await pedometer.getStepCountAsync(startOfDay, now)).steps;
+    onSteps(base);
+    const subscription = pedometer.watchStepCount((result) => onSteps(base + result.steps));
+    return () => subscription.remove();
+  } catch {
+    return () => {};
+  }
+}
