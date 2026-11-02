@@ -170,6 +170,8 @@ const FLOW_MAP: Record<string, string> = {
   'screens/notifications/NotificationsScreen.tsx': '15',
   'screens/verify/VerifyIdentityScreen.tsx': '23',
   'screens/progress/ProgressScreen.tsx': '16',
+  'screens/progress/RunsCard.tsx': '16',
+  'screens/run/RunScreen.tsx': '16',
   'screens/progress/ProgressSheets.tsx': '16',
   'screens/progress/SummaryCards.tsx': '16',
   'screens/progress/WorkoutsCard.tsx': '16',

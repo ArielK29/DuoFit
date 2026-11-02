@@ -21,7 +21,8 @@ import { useCommunityStore } from '@hooks/useCommunityStore';
 import { useProgressStore } from '@hooks/useProgressStore';
 import { useHealthData } from '@hooks/useHealthData';
 import { HEALTH_GOALS, MOCK_HEALTH } from '@constants/mockHealth';
-import { displayKcal, estimateKcal } from '@lib/healthData';
+import { bestMonthKm, displayKcal, estimateKcal } from '@lib/healthData';
+import { useRunStore } from '@hooks/useRunStore';
 import { getActivityStyle } from '@lib/activityStyles';
 import { computePlankRank, getPlankSeconds } from '@lib/plank';
 import { computePartnerStreaks, computeStreak } from '@lib/streaks';
@@ -91,6 +92,7 @@ export default function Dashboard() {
   const plankRank = plankSeconds === null ? null : computePlankRank(plankSeconds);
   const weeklyGoal = useProgressStore((state) => state.weeklyGoal);
   const weightLog = useProgressStore((state) => state.weightLog);
+  const recordedRuns = useRunStore((state) => state.runs);
   const health = useHealthData();
 
   const now = new Date();
@@ -168,7 +170,9 @@ export default function Dashboard() {
   const calories = live ? displayKcal(live.todayKcal, live.todaySteps, lastWeight) : MOCK_HEALTH.calories;
   const caloriesAreEstimated = !!live && estimateKcal(live.todaySteps, lastWeight) > live.todayKcal;
   const caloriesGoal = live ? HEALTH_GOALS.activeCalories : HEALTH_GOALS.calories;
-  const runKm = live ? live.monthKm : MOCK_HEALTH.runKm;
+  // Runs recorded in the app count even without Apple Health (Android, web, before connecting).
+  const hasRealKm = !!live || recordedRuns.length > 0;
+  const runKm = hasRealKm ? bestMonthKm(live ? live.monthKm : null, recordedRuns, now) : MOCK_HEALTH.runKm;
 
   const statPages: StatPage[] = [
     {
@@ -206,11 +210,11 @@ export default function Dashboard() {
         {
           value: String(runKm),
           goal: String(HEALTH_GOALS.runKm),
-          label: live ? 'ק"מ בחודש' : 'ק"מ ריצה בחודש',
+          label: hasRealKm ? 'ק"מ בחודש' : 'ק"מ ריצה בחודש',
           progress: Math.min(1, runKm / HEALTH_GOALS.runKm),
           color: theme.colors.cyan,
           icon: Route,
-          isExample: !live,
+          isExample: !hasRealKm,
         },
       ],
     },

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 process.env.TZ = 'Asia/Jerusalem';
 
 import {
+  bestMonthKm,
   buildWeekSteps,
   displayKcal,
   estimateKcal,
@@ -118,4 +119,12 @@ test("displayKcal: the measured value (watch, workout) wins when it is higher th
   assert.equal(displayKcal(400, 1300, 70), 400);
   assert.equal(displayKcal(1, 10000, 70), 269);
   assert.equal(displayKcal(0, 0, 70), 0);
+});
+
+test("bestMonthKm: the iPhone distance already contains runs recorded in the app, so take the larger, never the sum", () => {
+  const mine = [run("a", at(9, 3), 5.2, 1600), run("b", at(9, 20), 4, 1300)];
+  assert.equal(bestMonthKm(12, mine, wed), 12);
+  assert.equal(bestMonthKm(3, mine, wed), 9.2);
+  assert.equal(bestMonthKm(null, mine, wed), 9.2);
+  assert.equal(bestMonthKm(null, [], wed), 0);
 });

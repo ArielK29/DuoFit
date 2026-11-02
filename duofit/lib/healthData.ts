@@ -108,3 +108,9 @@ export function estimateKcal(steps: number, weightKg: number | null): number {
 export function displayKcal(measuredKcal: number, steps: number, weightKg: number | null): number {
   return Math.max(Math.round(cleanNumber(measuredKcal)), estimateKcal(steps, weightKg));
 }
+
+// Distance this month: Apple Health's walking + running distance (null when not connected) or the runs recorded in the app,
+// whichever is larger. Not the sum: the phone also counts the steps of a run recorded in the app.
+export function bestMonthKm(healthKm: number | null, recordedRuns: HealthRun[], now: Date): number {
+  return Math.max(healthKm ?? 0, monthRunKm(recordedRuns, now));
+}
