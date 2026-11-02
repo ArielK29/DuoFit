@@ -62,6 +62,14 @@
           "motionUsagePermission": "FitFriend לא אוספת נתוני תנועה מהמכשיר ולא מבקשת גישה אליהם. ההסבר הזה נדרש על ידי רכיב המיקום של המערכת."
         }
       ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "FitFriend קוראת מ-Apple Health את הצעדים, הקלוריות והריצות שלך כדי להציג אותם במסך הבית ובהתקדמות. המידע נקרא ומוצג רק בטלפון שלך, לא נשלח לשרת ולא נשמר שם, ו-FitFriend לא כותבת ל-Apple Health.",
+          "NSHealthUpdateUsageDescription": false,
+          "background": false
+        }
+      ],
       "expo-notifications",
       "expo-font",
       "expo-router",

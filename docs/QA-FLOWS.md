@@ -21,7 +21,7 @@ Setup: two test members (A and B) with a profile each, and one reviewer account;
 | 13 | Check in | Open the workout window, check in, try outside the window | Check-in works only inside the window, clear message otherwise | | |
 | 14 | Community | Post with and without a photo, like, comment, delete own post, join and leave a group, group chat, weekly challenge, plank timer | Every button responds; feed updates; limits explained | | |
 | 15 | Notifications | Bell, list, mark read, open the target | Counts match; links open the right screen | | |
-| 16 | Progress | Log a weight, edit goal, workouts card, steps and runs cards, charts, sticky button vs scrolling | Saved values appear in charts; nothing hidden under the sticky button | | |
+| 16 | Progress | Log a weight, edit goal, workouts card, steps and runs cards, "חבר את Apple Health" (iPhone build only: allow, refuse, allow later in Settings), charts, sticky button vs scrolling | Saved values appear in charts; after allowing Apple Health the steps, calories and runs are the real ones and the "לדוגמה" tags disappear; nothing hidden under the sticky button | | |
 | 17 | SOS | Open SOS, choose 100 or 101, confirm | Asks first, opens the dialer with the number, can be cancelled | | |
 | 18 | Account deletion | "My account", delete, confirm twice | Account and data removed; cannot sign in again; the other member keeps the shared workout without your details | | |
 | 19 | Permissions | Deny everything; revoke later in Settings; re-open | App stays usable; every denied feature explains how to enable it | | |

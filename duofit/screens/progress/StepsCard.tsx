@@ -3,23 +3,30 @@ import { Text, View, StyleSheet } from 'react-native';
 import { BarChart, Bar } from '@components/BarChart';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
 import { MOCK_HEALTH, MOCK_STEPS_BEFORE_TODAY } from '@constants/mockHealth';
+import type { HealthSnapshot } from '@lib/healthKit';
+import { weekAverage } from '@lib/healthData';
 import { theme } from '@styles/theme';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
-const CHART_MAX = 13000;
+const MIN_CHART_MAX = 13000;
 
-// "צעדים": example data until a development build can read Health Connect /
-// HealthKit. Days before today use fixed example counts, today uses the same
-// number as Home, and upcoming days are empty.
-export const StepsCard: React.FC = () => {
-  const todayIndex = new Date().getDay();
-  const { steps, stepsGoal } = MOCK_HEALTH;
+// "צעדים": this week from Apple Health when it is connected (`snapshot`); otherwise labelled example
+// data (days before today use fixed example counts, today uses the same number as Home, later days are empty).
+export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null }> = ({ snapshot = null }) => {
+  const now = new Date();
+  const todayIndex = now.getDay();
+  const { stepsGoal } = MOCK_HEALTH;
+  const isExample = snapshot === null;
+  const steps = snapshot ? snapshot.todaySteps : MOCK_HEALTH.steps;
 
-  const values = WEEKDAY_LETTERS.map((_, index) =>
-    index < todayIndex ? MOCK_STEPS_BEFORE_TODAY[index] : index === todayIndex ? steps : 0
-  );
-  const counted = values.slice(0, todayIndex + 1);
-  const average = Math.round(counted.reduce((sum, value) => sum + value, 0) / counted.length);
+  const values = snapshot
+    ? snapshot.weekSteps
+    : WEEKDAY_LETTERS.map((_, index) =>
+        index < todayIndex ? MOCK_STEPS_BEFORE_TODAY[index] : index === todayIndex ? steps : 0
+      );
+  const average = weekAverage(values, now);
+  // The chart grows when a very active day does not fit the usual scale (ticks stay in whole thousands).
+  const chartMax = Math.max(MIN_CHART_MAX, Math.ceil(Math.max(...values) / 3000) * 3000);
   const remaining = Math.max(0, stepsGoal - steps);
 
   const bars: Bar[] = values.map((value, index) => ({
@@ -31,7 +38,7 @@ export const StepsCard: React.FC = () => {
   return (
     <CardShell
       title="צעדים"
-      isExample
+      isExample={isExample}
       chip={
         <View style={pillStyles.pill}>
           <Text style={pillStyles.pillMuted}>
@@ -49,8 +56,8 @@ export const StepsCard: React.FC = () => {
       <BarChart
         accessibilityLabel={`צעדים לפי יום, יעד ${stepsGoal.toLocaleString('he-IL')}. היום ${steps.toLocaleString('he-IL')}`}
         bars={bars}
-        max={CHART_MAX}
-        ticks={[0, CHART_MAX / 3, (2 * CHART_MAX) / 3, CHART_MAX]}
+        max={chartMax}
+        ticks={[0, chartMax / 3, (2 * chartMax) / 3, chartMax]}
         formatTick={(value) => `${Math.round(value / 1000)}K`}
         goal={stepsGoal}
         goalLabel="יעד 10K"

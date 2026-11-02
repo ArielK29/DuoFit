@@ -43,6 +43,17 @@ test('permission texts: Hebrew, say what the app does, and only for what the app
   assert.equal(loc.isIosBackgroundLocationEnabled, undefined);
 });
 
+test('Apple Health: read-only, no background delivery, a Hebrew text that says the data stays on the phone', () => {
+  const health = plugin('@kingstinct/react-native-healthkit');
+  const text = health.NSHealthShareUsageDescription as string;
+  assert.match(text, HEBREW);
+  assert.match(text, /Apple Health/);
+  assert.match(text, /לא נשלח לשרת/);
+  assert.ok(text.endsWith('.'), text);
+  assert.equal(health.NSHealthUpdateUsageDescription, false, 'the app never writes to Apple Health');
+  assert.equal(health.background, false);
+});
+
 test('Hebrew only: the app declares he as its only language and forces right-to-left from the first launch', () => {
   const localization = plugin('expo-localization') as { supportedLocales: Record<string, string[]>; forcesRTL: boolean; supportsRTL: boolean };
   assert.deepEqual(localization.supportedLocales.ios, ['he']);

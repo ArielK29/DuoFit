@@ -135,6 +135,7 @@ const FLOW_MAP: Record<string, string> = {
   'components/ErrorFallback.tsx': '22',
   'components/FilterSheet.tsx': '7',
   'components/HeaderActions.tsx': '15, 17',
+  'components/HealthConnectCard.tsx': '16',
   'components/Input.tsx': 'all',
   'components/NearbyPartnersRow.tsx': '7, 8',
   'components/NotificationBell.tsx': '15',
