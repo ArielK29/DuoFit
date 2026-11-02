@@ -114,7 +114,9 @@ export default function Dashboard() {
     .slice(1)
     .filter((workout) => new Date(workout.scheduledAt).getTime() <= planEnd);
 
-  const workoutsThisWeek = completedWorkouts.filter(
+  // A run recorded in the app is a day of training too (streak, weekly goal, week strip).
+  const runDays = recordedRuns.map((run) => ({ scheduledAt: run.startedAt }));
+  const workoutsThisWeek = [...completedWorkouts, ...runDays].filter(
     (workout) => new Date(workout.scheduledAt).getTime() >= weekStart
   ).length;
   // Real "no-shows": workouts scheduled earlier this month whose time has
@@ -124,14 +126,14 @@ export default function Dashboard() {
     return time >= monthStart && time < now.getTime();
   }).length;
 
-  const streakDays = computeStreak(completedWorkouts);
+  const streakDays = computeStreak([...completedWorkouts, ...runDays]);
   const partnersCount = new Set(scheduledWorkouts.map((workout) => workout.partnerId)).size;
   const partnerStreaks = computePartnerStreaks(completedWorkouts);
   const upcomingPartnerStreak = upcomingWorkout
     ? partnerStreaks.find((entry) => entry.partnerId === upcomingWorkout.partnerId)?.streak
     : undefined;
 
-  const activeDates = new Set(completedWorkouts.map((workout) => startOfDay(new Date(workout.scheduledAt))));
+  const activeDates = new Set([...completedWorkouts, ...runDays].map((workout) => startOfDay(new Date(workout.scheduledAt))));
   const recentActivity = completedWorkouts.slice(0, RECENT_ACTIVITY_LIMIT);
 
   // Daily suggested partner: prefer people the user hasn't scheduled with

@@ -59,3 +59,13 @@ test('computePartnerStreaks: one entry per partner, only streaks above 1, longes
   ]);
   assert.deepEqual(computePartnerStreaks([]), []);
 });
+
+test('computeStreak: a run recorded in the app counts as a day of training next to a shared workout', () => {
+  const run = (d: number) => ({ scheduledAt: day(d, 7) });
+  assert.equal(computeStreak([workout('a', 10), run(11), run(12)]), 3);
+  assert.equal(computeStreak([run(10), run(12)]), 1);
+});
+
+test('computeStreak: the streak does not drop after days without training (it stays at the last run of days)', () => {
+  assert.equal(computeStreak([workout('a', 10), workout('b', 11)]), 2);
+});
