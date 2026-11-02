@@ -1,0 +1,64 @@
+// Reads a run's distance and time from the text found in a photo or screenshot of a running app or a watch.
+// The result only pre-fills the quick entry: the member always sees the numbers and taps "save" himself, because OCR can be wrong.
+export interface ParsedRun {
+  km?: number;
+  minutes?: number;
+}
+
+const MAX_KM = 100;
+const MILE_KM = 1.609344;
+const MAX_MINUTES = 1000;
+
+// A number (decimal point or comma) followed by a unit. The lines are joined first, so "12.4" and "km" on two lines still match.
+const DISTANCE = /(\d{1,3}(?:[.,]\d{1,3})?)\s*(km|kms|kilometers?|kilometres?|ק"מ|ק״מ|קמ|ק'מ|קילומטר(?:ים)?|mi|miles?)(?![a-zא-ת])/gi;
+// h:mm:ss, or m:ss, not followed by a "per km" mark (that is a pace, not a duration).
+const CLOCK = /(?<![\d:])(\d{1,2}):(\d{2})(?::(\d{2}))?(?![\d:])(?!\s*(?:\/|per\s|min\s*\/|לק"מ|לק״מ|\/ק))/gi;
+// "1h 5m" or "45 min": not part of a clock (5:12) and not a pace ("min/km").
+const WORDS = /(?<![\d:])(?:(\d{1,2})\s*h(?:ours?|rs?)?\b)?\s*(\d{1,3})\s*(?:m|min|mins|minutes?|דק'|דק|דקות)\b(?!\s*\/)/gi;
+
+function toNumber(text: string): number {
+  return Number(text.replace(',', '.'));
+}
+
+function findDistance(joined: string): number | undefined {
+  for (const match of joined.matchAll(DISTANCE)) {
+    let km = toNumber(match[1]);
+    if (/^(mi|miles?)$/i.test(match[2])) km *= MILE_KM;
+    km = Math.round(km * 100) / 100;
+    if (km > 0 && km <= MAX_KM) return km;
+  }
+  return undefined;
+}
+
+function findMinutes(joined: string): number | undefined {
+  type Candidate = { seconds: number; hasHours: boolean };
+  const candidates: Candidate[] = [];
+  for (const match of joined.matchAll(CLOCK)) {
+    const hasHours = match[3] !== undefined;
+    const seconds = hasHours ? Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]) : Number(match[1]) * 60 + Number(match[2]);
+    if (Number(match[2]) < 60 && (!hasHours || Number(match[3]) < 60)) candidates.push({ seconds, hasHours });
+  }
+  // A time with hours is a duration for sure (the phone's clock has no seconds); otherwise the longest m:ss is the best guess.
+  const withHours = candidates.filter((candidate) => candidate.hasHours);
+  const pool = withHours.length > 0 ? withHours : candidates;
+  if (pool.length > 0) {
+    const best = pool.reduce((a, b) => (b.seconds > a.seconds ? b : a));
+    const minutes = Math.round(best.seconds / 60);
+    return minutes >= 1 && minutes <= MAX_MINUTES ? minutes : undefined;
+  }
+  for (const match of joined.matchAll(WORDS)) {
+    const minutes = (match[1] ? Number(match[1]) * 60 : 0) + Number(match[2]);
+    if (minutes >= 1 && minutes <= MAX_MINUTES) return minutes;
+  }
+  return undefined;
+}
+
+export function parseRunFromText(lines: string[]): ParsedRun {
+  const joined = lines.join(' ');
+  const result: ParsedRun = {};
+  const km = findDistance(joined);
+  const minutes = findMinutes(joined);
+  if (km !== undefined) result.km = km;
+  if (minutes !== undefined) result.minutes = minutes;
+  return result;
+}

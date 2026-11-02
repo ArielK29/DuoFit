@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
+import { extractTextFromImage, isSupported as textReadingSupported } from 'expo-text-extractor';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useRouter } from 'expo-router';
 import { BackButton } from '@components/BackButton';
@@ -8,6 +10,7 @@ import { Button } from '@components/Button';
 import { useRunStore } from '@hooks/useRunStore';
 import { paceText, runDurationText } from '@lib/healthData';
 import { addRunPoint, emptyRunProgress, type RunProgress } from '@lib/runTracker';
+import { parseRunFromText } from '@lib/runOcr';
 import { DISTANCE_CHIPS_KM, TIME_CHIPS_MIN, stepKm, stepMinutes, suggestMinutes } from '@lib/runPresets';
 import { visualRightText } from '@lib/rtl';
 import { newId } from '@lib/uuid';
@@ -48,6 +51,40 @@ export const RunScreen: React.FC = () => {
   const [manualMinutes, setManualMinutes] = useState<number | null>(null);
   const [minutesChosen, setMinutesChosen] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
+
+  const [reading, setReading] = useState(false);
+  const [photoNote, setPhotoNote] = useState<string | null>(null);
+
+  // Read the distance and time from a screenshot or photo of the run (a watch, another running app). Everything happens
+  // on the phone: the picture is never sent anywhere. The numbers only pre-fill the quick entry; the member checks and saves.
+  const readFromPhoto = async () => {
+    setPhotoNote(null);
+    setManualError(null);
+    try {
+      const picked = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
+      if (picked.canceled || !picked.assets[0]) return;
+      setReading(true);
+      const lines = await extractTextFromImage(picked.assets[0].uri);
+      const found = parseRunFromText(lines);
+      if (found.km === undefined && found.minutes === undefined) {
+        setPhotoNote('לא הצלחנו לקרוא מרחק או זמן מהתמונה. בחר ידנית בכפתורים.');
+        return;
+      }
+      if (found.km !== undefined) setManualKm(found.km);
+      if (found.minutes !== undefined) {
+        setMinutesChosen(true);
+        setManualMinutes(found.minutes);
+      } else if (found.km !== undefined && !minutesChosen) {
+        setManualMinutes(suggestMinutes(found.km, previousRuns));
+      }
+      const parts = [found.km !== undefined ? `${found.km} ק"מ` : null, found.minutes !== undefined ? `${found.minutes} דקות` : null].filter(Boolean);
+      setPhotoNote(`זיהינו: ${parts.join(' ו-')}. בדוק שזה נכון ושמור.`);
+    } catch {
+      setPhotoNote('לא הצלחנו לקרוא את התמונה. בחר ידנית בכפתורים.');
+    } finally {
+      setReading(false);
+    }
+  };
 
   const chooseKm = (km: number) => {
     setManualKm(km);
@@ -201,6 +238,14 @@ export const RunScreen: React.FC = () => {
 
         <Text style={styles.sectionTitle}>סיימת ריצה? שמור בכמה לחיצות</Text>
 
+        {textReadingSupported && (
+          <View style={styles.block}>
+            <Button label="קרא מצילום של הריצה" variant="secondary" size="lg" loading={reading} disabled={reading} onPress={readFromPhoto} />
+            <Text style={styles.photoHint}>בחר צילום מסך של השעון או של אפליקציית הריצה. הקריאה נעשית בטלפון בלבד והתמונה לא נשלחת לשום מקום.</Text>
+            {photoNote && <Text style={styles.photoNote}>{photoNote}</Text>}
+          </View>
+        )}
+
         <Text style={styles.fieldLabel}>{manualKm === null ? 'כמה רצת?' : `רצת ${manualKm} ק"מ`}</Text>
         <View style={styles.chipsWrap}>
           {DISTANCE_CHIPS_KM.map((km) => (
@@ -281,6 +326,24 @@ const styles = StyleSheet.create({
   },
   block: {
     marginBottom: theme.spacing.md,
+  },
+  photoHint: {
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: theme.typography.bodySmall.fontFamily,
+    color: theme.colors.textTertiary,
+    ...visualRightText,
+    width: '100%',
+    marginTop: theme.spacing.sm,
+  },
+  photoNote: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.cyan,
+    ...visualRightText,
+    width: '100%',
+    marginTop: theme.spacing.sm,
   },
   fieldLabel: {
     fontSize: 16,
