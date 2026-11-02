@@ -139,6 +139,7 @@ const FLOW_MAP: Record<string, string> = {
   'components/Input.tsx': 'all',
   'components/NearbyPartnersRow.tsx': '7, 8',
   'components/NotificationBell.tsx': '15',
+  'components/ScreenTimeCard.tsx': '7',
   'components/ScheduleForm.tsx': '8, 12',
   'components/SegmentedToggle.tsx': 'all',
   'components/SuggestedPartnerCard.tsx': '7, 8',
