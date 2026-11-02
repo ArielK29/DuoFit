@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { AppState } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useHealthStore } from '@hooks/useHealthStore';
 import type { HealthSnapshot } from '@lib/healthKit';
@@ -7,6 +8,9 @@ import type { HealthSnapshot } from '@lib/healthKit';
 // 'connect' = this phone has Apple Health but the member did not connect it yet (screens show the connect card).
 // 'example' = no Apple Health here (Android, web, Expo Go) or the first read is still running: labelled example numbers.
 export type HealthMode = 'live' | 'connect' | 'example';
+
+// While a screen with the numbers is open they are re-read this often (the phone saves steps in batches).
+const REFRESH_EVERY_MS = 20000;
 
 export function useHealthData(): {
   mode: HealthMode;
@@ -17,10 +21,22 @@ export function useHealthData(): {
 } {
   const { connected, available, snapshot, loading, failed } = useHealthStore();
 
-  // Re-read every time the screen comes into view so the numbers are fresh after a walk or a run.
+  // Re-read when the screen comes into view, when the app returns from the background, and every few seconds
+  // while the screen stays open, so steps taken just now show up without leaving the screen.
   useFocusEffect(
     useCallback(() => {
-      useHealthStore.getState().refresh();
+      const refresh = () => {
+        useHealthStore.getState().refresh();
+      };
+      refresh();
+      const timer = setInterval(refresh, REFRESH_EVERY_MS);
+      const subscription = AppState.addEventListener('change', (state) => {
+        if (state === 'active') refresh();
+      });
+      return () => {
+        clearInterval(timer);
+        subscription.remove();
+      };
     }, [])
   );
 
