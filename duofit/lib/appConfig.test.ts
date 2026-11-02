@@ -51,7 +51,11 @@ test('Apple Health: read-only, no background delivery, a Hebrew text that says t
   assert.match(text, /Apple Health/);
   assert.match(text, /לא נשלח לשרת/);
   assert.ok(text.endsWith('.'), text);
-  assert.equal(health.NSHealthUpdateUsageDescription, false, 'the app never writes to Apple Health');
+  // Apple requires this text because the health library contains write functions; the app itself only asks to read (see lib/healthKit.ts).
+  const update = health.NSHealthUpdateUsageDescription as string;
+  assert.match(update, HEBREW);
+  assert.match(update, /לא כותבת/);
+  assert.ok(update.endsWith('.'), update);
   assert.equal(health.background, false);
 });
 
