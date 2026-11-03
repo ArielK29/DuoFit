@@ -24,6 +24,8 @@ is NOT verified yet**: the searches said nothing about it either way, so it must
 
 Lesson from Gymly: **density decides everything** (81 km to the nearest member means the app feels dead); the gym is a natural community to start from (pick your gym at sign-up); a numeric "level" from the big lifts is a simple way to match people; a boost for visibility is a second thing they can sell besides the subscription.
 
+**Strava sign-up, step by step (owner screenshots, 2026-11-03), a model for our own flow:** four intro screens (route options, track your active life, progress toward goals) with "Join for free" and "Log in" on every one. Then: Google, Apple or e-mail; first and last name; phone number (optional, "Skip", a one-time code by WhatsApp); **birthday ("to keep younger users safe")**; gender (Man, Woman, Non-binary, Prefer not to say, "will not appear on your profile"); activities (over 30 sport types as big tiles); **level in four steps with one plain sentence each** (Beginner: new to fitness or getting back into it; Intermediate: easy to moderate; Advanced: pushes with difficult activities; Pro); then two **privacy screens** (start and end of activities hidden by default, 12+ controls; the data shared for the heatmap can be stopped in settings). One question per screen, a progress dot, an orange button that stays dim until the answer is given. Strava gives free sign-up and sells the subscription later.
+
 ## Adjacent (tracking and community, not matching)
 Strava (about $11.99 per month or $79.99 per year), Hevy Pro ($2.99 per month), Strong, Fitbod (about $16 per month).
 
