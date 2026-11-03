@@ -10,12 +10,17 @@ is NOT verified yet**: the searches said nothing about it either way, so it must
 | **Fit-Buddy / "FitBuddy+"** (Israeli prices, owner screenshots) | Group activities: create a game or workout with sport, format (5v5, 7v7, 11v11), casual or competitive, date and duration (60/90/120), place on a Google map with search, capacity (6/8/10), level range 1 to 5, cost to split, visibility, recurring, members can invite, notes | **₪7.90 per month or ₪59.90 per year ("save 35%")**. Subscribing unlocks: message anyone directly, weekly recurring activities, host more activities at once, all discovery filters. A separate **Coach Pro** subscription for coach sessions | Onboarding asks: location (required), background location (recommended), notifications (highly recommended), app tracking (optional). Built around activities, not 1:1 partners |
 | **LINMO** (owner screenshots) | "Find sports and wellness activities" | Not seen | Sign in with Google, Apple or e-mail; pick up to 5 favourite sports; name and gender; a broad sports list (about 30) |
 | **Gymly** (App Store) | Gym buddy finder | $9.99 per week, $29.99 per month, $199.99 per year. Premium: unlimited texting, see who viewed, see who is at your gym | Most expensive of those found |
+
+**Gymly, seen from the inside (owner screenshots, 2026-11-03):** a grid of member cards (username, age, distance, a "level" number), tabs All, Female, Male, Actives (green or red dot for online), filters for distance (up to 1000 km) and age (up to 70), a "Be the most visible!" rocket card (a visibility boost, shown with an eye counter; price not seen), a camera for Post and Story, and a feed grid of photos. Sign-up: username (15 characters), profile picture, **the gym you attend (picked from a list; the owner saw an Israeli gym in Modi'in)**, gender (male or female only), weight and height, and the best squat, deadlift and bench press, which give the level. The nearest members the owner saw were **81 km to over 3,800 km away**: the app is nearly empty in Israel. Many profile photos are shirtless mirror selfies (a dating-style feel); no identity check was visible. Paid plan from the App Store listing: weekly, monthly and yearly subscription (see the table).
+
 | FitFriends: Find Gym Partners, GymBuddy, DUFIT, Gymder, SpotYourMatch | Swipe/match for gym partners by sport, level, area and schedule | Mostly free with a premium layer (SpotYourMatch: Plus and Platinum) | Prices not found |
 | Smatch, Fit-Buddy listing, FitRec, Smatchy, Ssoul | Sport buddies near you, 80+ sports (Smatch) | Free or in-app purchases | |
 | Liveliness (TechCrunch, 2024) | Sports community app, Spanish | Not seen | Events and coaches |
 | Partners (Israeli, Gadgety) | Partners for 1,300 kinds of activities, hashtag search | Not found | Broad, not sport-focused |
 | Running: Jogging Buddy, Jaha, CorrerJuntos | Match runners by pace and distance | | |
 | Meetup, parkrun, local running clubs | Groups that guides often call more reliable than match apps | Dues | |
+
+Lesson from Gymly: **density decides everything** (81 km to the nearest member means the app feels dead); the gym is a natural community to start from (pick your gym at sign-up); a numeric "level" from the big lifts is a simple way to match people; a boost for visibility is a second thing they can sell besides the subscription.
 
 ## Adjacent (tracking and community, not matching)
 Strava (about $11.99 per month or $79.99 per year), Hevy Pro ($2.99 per month), Strong, Fitbod (about $16 per month).
