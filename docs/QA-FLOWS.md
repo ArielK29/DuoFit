@@ -6,7 +6,7 @@ Setup: two test members (A and B) with a profile each, and one reviewer account;
 
 | # | Flow | Steps | Expected | Android | iPhone |
 |---|---|---|---|---|---|
-| 1 | Sign up | Open app, sign up with e-mail and password, read terms, accept | Terms open from sign-up; a "check your mail" screen; resend works | | |
+| 1 | Sign up | First open: three intro screens, "בואו נתחיל" (and "יש לי כבר חשבון" on each); step 1 birth date (a date under 18 is refused before any e-mail is typed), step 2 e-mail and password, read terms, accept; later the identity check already has the birth date filled in | Terms open from sign-up; a "check your mail" screen; resend works | | |
 | 2 | Confirm e-mail | Open the link from the mail on the phone | The app (or a public page) opens, then sign in works | | |
 | 3 | Sign in, sign out | Sign in; open "My account"; sign out | Back to login; local data cleared; signing in again works | | |
 | 4 | Wrong input | Empty fields, bad e-mail, wrong password, weak password | One clear Hebrew message each, no crash | | |

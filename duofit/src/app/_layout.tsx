@@ -81,6 +81,7 @@ function AppStack({ isAuthenticated, profileComplete, verified }: { isAuthentica
         <Stack.Screen name="login" />
         <Stack.Screen name="sign-up" />
         <Stack.Screen name="forgot-password" />
+        <Stack.Screen name="welcome" />
       </Stack.Protected>
       <Stack.Protected guard={isAuthenticated && !profileComplete}>
         <Stack.Screen name="profile-setup" />

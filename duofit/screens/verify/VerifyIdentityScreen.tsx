@@ -12,6 +12,7 @@ import { submitIdentityCheck } from '@lib/remoteIdentity';
 import { trackEvent, logError } from '@lib/analytics';
 import { MIN_AGE, formatBirthDate, isAdult, parseBirthDate, pickChallengeCode, pickGesture } from '@lib/identity';
 import { useAuth, isVerified } from '@hooks/useAuth';
+import { useIntroStore } from '@hooks/useIntroStore';
 
 // The gate every member passes before using the app: an adult (18+) and a real person (a short live video with a random gesture).
 // A reviewer compares the short video with the profile photo; only the profile photo and a "verified" badge are ever shown to others.
@@ -22,9 +23,11 @@ export const VerifyIdentityScreen: React.FC = () => {
   const refreshVerification = useAuth((state) => state.refreshVerification);
   const signOut = useAuth((state) => state.signOut);
 
-  const [day, setDay] = useState('');
-  const [month, setMonth] = useState('');
-  const [year, setYear] = useState('');
+  // The birth date typed at sign-up is filled in here, so the member is not asked twice (it can still be changed).
+  const birthDraft = useIntroStore.getState().birthDraft;
+  const [day, setDay] = useState(birthDraft?.day ?? '');
+  const [month, setMonth] = useState(birthDraft?.month ?? '');
+  const [year, setYear] = useState(birthDraft?.year ?? '');
   const [gesture] = useState(() => pickGesture());
   const [code] = useState(() => pickChallengeCode());
   const [video, setVideo] = useState<Exclude<VideoResult, 'denied' | null> | undefined>(undefined);
@@ -126,6 +129,7 @@ export const VerifyIdentityScreen: React.FC = () => {
         extension: video.extension,
       });
       trackEvent('identity_submitted');
+      useIntroStore.getState().clearBirthDraft();
       discardLocalFile(video.uri);
       setVideo(undefined);
       await refreshVerification();

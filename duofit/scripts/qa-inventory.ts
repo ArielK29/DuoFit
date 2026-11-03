@@ -168,6 +168,7 @@ const FLOW_MAP: Record<string, string> = {
   'screens/login/ProfileSetupScreen.tsx': '6',
   'screens/login/ResetPasswordScreen.tsx': '5',
   'screens/login/SignUpScreen.tsx': '1, 4',
+  'screens/login/WelcomeScreen.tsx': '1',
   'screens/login/TermsScreen.tsx': '1',
   'screens/notifications/NotificationsScreen.tsx': '15',
   'screens/verify/VerifyIdentityScreen.tsx': '23',
