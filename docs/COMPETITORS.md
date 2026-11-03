@@ -20,6 +20,8 @@ is NOT verified yet**: the searches said nothing about it either way, so it must
 | Running: Jogging Buddy, Jaha, CorrerJuntos | Match runners by pace and distance | | |
 | Meetup, parkrun, local running clubs | Groups that guides often call more reliable than match apps | Dues | |
 
+**SpotYourMatch ("SYM"), seen from the inside (owner screenshots, 2026-11-03):** a swipe app (Tinder style: skip, like, undo), tabs Home, Explore (a community feed of posts such as "looking for a lifting buddy"), Interactions (Match, Viewed Me, Liked Me), Chats and Profile. A banner ad sits at the bottom of every screen. Many profiles have age 0, no photo or a famous person's name; members are thousands of miles away (2,350 and 3,178 miles). Plans (currency not shown, probably USD): **Plus** $3.99 per month or $49.99 per year (200 likes a day, Passport mode to change city, 1 boost a month, no ads); **Gold** $9.99 or $119 (everything in Plus, see who liked you, daily top picks, unlimited likes, 2 boosts, 5 super invites a day), marked "Most popular"; **Platinum** $14.99 or $179 (everything in Gold, priority likes, message before matching, nearby people on the map, higher ranking, 4 boosts). The "Save 20%" label on the yearly plans does not match the numbers (12 months of Gold is 119.88, the yearly price is 119; Plus yearly is even $2 more than 12 months).
+
 Lesson from Gymly: **density decides everything** (81 km to the nearest member means the app feels dead); the gym is a natural community to start from (pick your gym at sign-up); a numeric "level" from the big lifts is a simple way to match people; a boost for visibility is a second thing they can sell besides the subscription.
 
 ## Adjacent (tracking and community, not matching)
