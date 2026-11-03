@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@lib/supabase';
-import { authErrorMessage } from '@lib/authErrors';
+import { authErrorMessage, EMAIL_ALREADY_REGISTERED_MESSAGE, isExistingAccountResponse } from '@lib/authErrors';
 import { appLinkUrl } from '@lib/appLinks';
 import type { AuthLink } from '@lib/authLinks';
 import { readPickedImage } from '@lib/readLocalFile';
@@ -166,6 +166,11 @@ export const useAuth = create<AuthState>()((set, get) => ({
 
     if (error) {
       set({ error: authErrorMessage(error) });
+      return null;
+    }
+    // An e-mail that already has an account: no mail is sent, so say so instead of "check your mail".
+    if (isExistingAccountResponse(data.user)) {
+      set({ error: EMAIL_ALREADY_REGISTERED_MESSAGE });
       return null;
     }
     // With email confirmation on (recommended: it blocks fake accounts) there is no

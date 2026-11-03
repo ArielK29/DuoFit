@@ -43,3 +43,12 @@ export const MIN_PASSWORD_LENGTH = 8;
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
 }
+
+// Supabase hides whether an e-mail already has an account: a sign-up with a registered e-mail "succeeds", sends no mail, and returns a
+// user without identities. Without this check the app would say "we sent you a link" and nothing would ever arrive.
+export const EMAIL_ALREADY_REGISTERED_MESSAGE =
+  'האימייל הזה כבר רשום אצלנו, ולכן לא נשלח מייל חדש. התחבר, או לחץ "שכחתי סיסמה" אם שכחת אותה';
+
+export function isExistingAccountResponse(user: { identities?: unknown[] | null } | null | undefined): boolean {
+  return !!user && Array.isArray(user.identities) && user.identities.length === 0;
+}

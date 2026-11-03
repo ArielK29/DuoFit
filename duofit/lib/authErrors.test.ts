@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { authErrorMessage, EMAIL_NOT_CONFIRMED_MESSAGE } from './authErrors.ts';
+import { authErrorMessage, EMAIL_NOT_CONFIRMED_MESSAGE, EMAIL_ALREADY_REGISTERED_MESSAGE, isExistingAccountResponse } from './authErrors.ts';
 
 test('authErrorMessage: the same-password error from a reset is its own clear message, not "weak password"', () => {
   const sameByCode = authErrorMessage({ code: 'same_password', message: 'New password should be different from the old password.' });
@@ -27,4 +27,13 @@ test('authErrorMessage: the "not confirmed yet" message is the exported one, so 
   assert.equal(authErrorMessage({ code: 'email_not_confirmed', message: 'Email not confirmed' }), EMAIL_NOT_CONFIRMED_MESSAGE);
   assert.notEqual(authErrorMessage({ message: 'Invalid login credentials' }), EMAIL_NOT_CONFIRMED_MESSAGE);
   assert.match(EMAIL_NOT_CONFIRMED_MESSAGE, /אומת/);
+});
+
+test('isExistingAccountResponse: Supabase answers a sign-up with an e-mail that already has an account with a user that has no identities (and sends no mail)', () => {
+  assert.equal(isExistingAccountResponse({ identities: [] }), true);
+  assert.equal(isExistingAccountResponse({ identities: [{ id: 'x' }] }), false);
+  assert.equal(isExistingAccountResponse({}), false);
+  assert.equal(isExistingAccountResponse(null), false);
+  assert.match(EMAIL_ALREADY_REGISTERED_MESSAGE, /כבר רשום/);
+  assert.match(EMAIL_ALREADY_REGISTERED_MESSAGE, /שכחתי סיסמה/);
 });
