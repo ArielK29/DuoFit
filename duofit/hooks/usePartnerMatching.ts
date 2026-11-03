@@ -5,6 +5,7 @@ import { DEMO_DATA } from '@lib/demo';
 import { distanceKm } from '@lib/distance';
 import { listState } from '@lib/loadState';
 import { computeMatchPercent, filterPartners } from '@lib/matching';
+import { PROFILE_ACTIVITIES } from '@lib/onboarding';
 import { usePartnerStore } from '@hooks/usePartnerStore';
 
 export type Gender = 'M' | 'F';
@@ -175,6 +176,8 @@ export interface PartnerFilters {
   maxAge: number;
   radiusKm: number;
   activities: string[];
+  // Empty means every level.
+  levels: FitnessLevel[];
 }
 
 export const MIN_AGE = 21;
@@ -187,9 +190,10 @@ export const DEFAULT_FILTERS: PartnerFilters = {
   maxAge: MAX_AGE,
   radiusKm: MAX_RADIUS_KM,
   activities: [],
+  levels: [],
 };
 
-export const ACTIVITY_OPTIONS = ['כוח', 'קליסטניקס', 'ריצה', 'קרוספיט', 'יוגה', 'כדורסל'];
+export const ACTIVITY_OPTIONS = PROFILE_ACTIVITIES;
 
 // The distance formula lives in lib/distance.ts (unit tested); re-exported so existing imports keep working.
 export { distanceKm };

@@ -11,7 +11,7 @@ import { visualRightText } from '@lib/rtl';
 import { createSubmitGuard } from '@lib/loadState';
 import { scheduleHint } from '@lib/scheduleHint';
 import { checkText } from '@lib/contentFilter';
-import { customPlace, filterPlaces, MAX_PLACE_LENGTH } from '@lib/placeSearch';
+import { customPlace, filterPlaces, MAX_PLACE_LENGTH, privatePlaceProblem } from '@lib/placeSearch';
 
 // The same venues as the Matches > Places map.
 const LOCATIONS = PLACES.map((place) => place.name);
@@ -48,11 +48,15 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
   // The server accepts workouts from now until 90 days ahead.
   const [pickerBounds] = useState(() => ({ min: new Date(), max: new Date(Date.now() + 89 * 24 * 3600 * 1000) }));
   const [location, setLocation] = useState<string | null>(null);
+  const isOwnPlace = location !== null && !LOCATIONS.includes(location);
   // Search the known venues, or type any other place.
   const [query, setQuery] = useState('');
   const visibleLocations = filterPlaces(LOCATIONS, query);
   const own = customPlace(query, LOCATIONS);
-  const ownBlocked = own !== null && !checkText(own).ok;
+  // A place the member typed must be a public place: words that point to a home are refused, and the member confirms it.
+  const [publicConfirmed, setPublicConfirmed] = useState(false);
+  const ownPrivate = own !== null ? privatePlaceProblem(own) : null;
+  const ownBlocked = own !== null && (!checkText(own).ok || ownPrivate !== null);
   // A double tap on the confirm button must not send two invitations or schedule two workouts.
   const confirmOnce = useRef(createSubmitGuard()).current;
   const [activePicker, setActivePicker] = useState<'date' | 'time' | null>(null);
@@ -101,6 +105,7 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
             <Pressable
               style={[styles.locationPill, location === own && styles.locationPillSelected]}
               onPress={() => !ownBlocked && setLocation(own)}
+              disabled={ownBlocked}
               accessibilityRole="button"
               accessibilityLabel={`השתמש במקום ${own}`}
             >
@@ -108,7 +113,7 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
               <Text style={[styles.locationText, location === own && styles.locationTextSelected]}>{`מקום אחר: ${own}`}</Text>
             </Pressable>
           )}
-          {ownBlocked && <Text style={styles.hintWarn}>המקום כולל ביטוי שאינו מותר. שנה את הניסוח</Text>}
+          {ownBlocked && <Text style={styles.hintWarn}>{ownPrivate ?? 'המקום כולל ביטוי שאינו מותר. שנה את הניסוח'}</Text>}
           {visibleLocations.length === 0 && !own && <Text style={styles.hint}>אין מקום כזה ברשימה. הקלד את שם המקום ואפשר לבחור בו.</Text>}
           {visibleLocations.map((option) => (
             <Pressable
@@ -127,6 +132,18 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
         </View>
       </Card>
 
+      {isOwnPlace && (
+        <Pressable
+          style={styles.publicConfirm}
+          onPress={() => setPublicConfirmed(!publicConfirmed)}
+          accessibilityRole="checkbox"
+          aria-checked={publicConfirmed}
+        >
+          <View style={[styles.checkbox, publicConfirmed && styles.checkboxOn]} />
+          <Text style={styles.publicConfirmText}>אני מאשר: זה מקום ציבורי ופתוח לכולם (פארק, חוף, מגרש או חדר כושר), לא בית או מקום פרטי</Text>
+        </Pressable>
+      )}
+
       {activePicker && (
         <DateTimePicker
           value={scheduledAt}
@@ -143,7 +160,7 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({ confirmLabel, onConf
           label={confirmLabel}
           variant="primary"
           size="lg"
-          disabled={!location}
+          disabled={!location || (isOwnPlace && !publicConfirmed)}
           onPress={() => location && confirmOnce(() => onConfirm(scheduledAt, location))}
         />
       </View>
@@ -194,6 +211,32 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
+  },
+  publicConfirm: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+    minHeight: 48,
+    marginBottom: theme.spacing.md,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: theme.colors.textSecondary,
+  },
+  checkboxOn: {
+    backgroundColor: theme.colors.cyan,
+    borderColor: theme.colors.cyan,
+  },
+  publicConfirmText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: theme.colors.text,
+    fontFamily: theme.typography.bodySmall.fontFamily,
+    ...visualRightText,
   },
   locationsWrap: {
     flexDirection: 'row',

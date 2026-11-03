@@ -41,7 +41,8 @@ function isDefault(filters: PartnerFilters): boolean {
     filters.gender === DEFAULT_FILTERS.gender &&
     filters.maxAge === DEFAULT_FILTERS.maxAge &&
     filters.radiusKm === DEFAULT_FILTERS.radiusKm &&
-    filters.activities.length === 0
+    filters.activities.length === 0 &&
+    filters.levels.length === 0
   );
 }
 

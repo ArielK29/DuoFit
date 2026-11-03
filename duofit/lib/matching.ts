@@ -26,6 +26,7 @@ export function filterPartners<T extends Partner & { distanceKm: number | null }
       (partner.age === undefined || partner.age <= filters.maxAge) &&
       (partner.distanceKm === null || partner.distanceKm <= filters.radiusKm) &&
       (filters.activities.length === 0 ||
-        partner.activities.some((activity) => filters.activities.includes(activity)))
+        partner.activities.some((activity) => filters.activities.includes(activity))) &&
+      (filters.levels.length === 0 || filters.levels.includes(partner.fitnessLevel))
   );
 }
