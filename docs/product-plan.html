@@ -1,0 +1,98 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>תוכנית מוצר ומחיר</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#14171c;--sub:#6a7280;--line:#e3e6ea;--accent:#d6006f;--ok:#0a8f4a;--warn:#b7791f}
+@media (prefers-color-scheme:dark){:root{--bg:#0c0e12;--card:#161a20;--fg:#f1f3f6;--sub:#9aa3b0;--line:#262c35;--accent:#ff3d9a;--ok:#36d27a;--warn:#f2b84b}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 system-ui,Segoe UI,Arial,sans-serif;padding:20px 16px 48px}
+main{max-width:860px;margin:0 auto}
+h1{font-size:26px;margin:0 0 6px}h2{font-size:20px;margin:30px 0 10px;color:var(--accent)}
+.lead{color:var(--sub);margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.tier{border-radius:14px;border:1px solid var(--line);background:var(--card);padding:16px}
+.tier.plus{border:2px solid var(--accent)}
+.tier h3{margin:0 0 6px;font-size:20px}.price{font-size:26px;font-weight:800}.price small{font-size:13px;font-weight:500;color:var(--sub)}
+ul{margin:8px 0;padding-inline-start:20px}li{margin:3px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right}th{color:var(--sub);font-size:12px}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);color:var(--sub)}
+.ok{color:var(--ok);font-weight:700}.warn{color:var(--warn);font-weight:700}
+.step{display:flex;gap:12px;align-items:flex-start}.num{flex:0 0 32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+</style></head><body><main>
+<h1>FitFriend: תוכנית מוצר ומחיר</h1>
+<p class="lead">3 בנובמבר 2026. מבוסס על ההשוואה למתחרים (Fit-Buddy, Gymly, SpotYourMatch, Strava). כל המספרים כאן הערכות ולא הבטחות.</p>
+
+<h2>1. העיקרון</h2>
+<div class="card"><b>בטיחות היא חינם, תמיד.</b> אימות זהות, חסימה, דיווח, כפתור חירום וצ'אט בסיסי לא נעולים בתשלום. זה מה שמבדל אותנו, והוא הסיבה שאנשים יסמכו על האפליקציה. משלמים על <b>נוחות והרחבה</b>: יותר הזמנות, יותר מסננים, יותר סטטיסטיקות.</div>
+
+<h2>2. מה חינם ומה בתשלום</h2>
+<div class="grid">
+<div class="tier"><h3>FitFriend (חינם)</h3><div class="price">₪0</div>
+<ul><li>הרשמה ואימות זהות</li><li>חיפוש שותפים, מסננים בסיסיים (ספורט, מרחק, מגדר)</li><li><b>5 הזמנות חדשות לשותפים בשבוע</b></li><li>צ'אט עם מי שהסכים לאימון</li><li>הצטרפות לקבוצות ופעילויות</li><li>צעדים, ריצות, רצף, משקל</li><li>חסימה, דיווח, חירום</li></ul></div>
+<div class="tier plus"><h3>FitFriend Plus</h3><div class="price">₪9.90 <small>לחודש</small></div><div class="price" style="font-size:18px">₪79 <small>לשנה (חיסכון של כ-33%)</small></div>
+<ul><li>הזמנות והודעות ללא הגבלה</li><li>מסננים מתקדמים: רמה, שעות ויום, זמינות</li><li>לפתוח כמה פעילויות קבוצתיות במקביל</li><li>היסטוריית ריצות וצעדים מלאה וסטטיסטיקות</li><li>Boost אחד בחודש: הבלטה בחיפוש ל-24 שעות</li><li>דילוג על יום אחד בחודש בלי לשבור רצף</li></ul>
+<span class="tag">30 יום ניסיון חינם</span></div>
+</div>
+
+<h2>3. למה המחיר הזה</h2>
+<div class="wrap"><table><thead><tr><th>מתחרה</th><th>מחיר</th><th>למה זה רלוונטי</th></tr></thead><tbody>
+<tr><td>Fit-Buddy (ישראל)</td><td>₪7.90 לחודש · ₪59.90 לשנה</td><td>המתחרה הישיר בשוק שלנו. אנחנו מעט מעליו כי יש לנו אימות ומעקב</td></tr>
+<tr><td>Strava (ישראל)</td><td>₪17.49 לחודש (שנתי ₪209.90)</td><td>תקרה: מוצר ענק ומוכר. לא כדאי להתקרב אליה בהתחלה</td></tr>
+<tr><td>SpotYourMatch</td><td>$3.99 · $9.99 · $14.99</td><td>שלוש רמות. אצלנו רמה אחת פשוטה יותר</td></tr>
+<tr><td>Gymly</td><td>$29.99 לחודש</td><td>יקר מאוד, ובכל זאת כמעט בלי דירוגים. לא מודל לחיקוי</td></tr>
+</tbody></table></div>
+<p class="lead">מסלול אחד בלבד בהתחלה. שלוש רמות הן סיבוך שאין לו הצדקה בלי עשרות אלפי משתמשים.</p>
+
+<h2>4. הדרך, בשלבים</h2>
+<div class="card step"><div class="num">0</div><div><b>עכשיו: הכול חינם (טסטרים, ועד כ-100 חברים פעילים).</b> מודדים ולא גובים. מטרה: להבין מה משתמשים בו. <span class="ok">הבנוי היום מספיק</span>.</div></div>
+<div class="card step"><div class="num">1</div><div><b>אחרי שיש עשרות חברים פעילים באזור אחד.</b> מוסיפים את מכסת ההזמנות (5 בשבוע), פעילויות קבוצתיות ו-Boost. עדיין בלי תשלום, רק רואים אם המכסה מרגיזה או לא.</div></div>
+<div class="card step"><div class="num">2</div><div><b>כשהמדדים (סעיף 5) עוברים.</b> פותחים את FitFriend Plus: מסך מנוי, ניסיון 30 יום, רכישה באפליקציה. דורש עוסק ובדיקה משפטית (סעיף 7).</div></div>
+<div class="card step"><div class="num">3</div><div><b>אחרי כמה חודשים.</b> לבדוק מחיר שנתי, חבילת מתנה, ושיתוף עם חדרי כושר או קבוצות ריצה (כסף מארגונים).</div></div>
+
+<h2>5. מתי מתחילים לגבות: המדדים</h2>
+<div class="card"><ul>
+<li><b>לפחות 100 חברים פעילים</b> באזור אחד (נכנסו בשבוע האחרון).</li>
+<li><b>לפחות 30% מהחברים</b> שלחו הזמנה אחת ויותר.</li>
+<li><b>לפחות 15% מההזמנות</b> הסתיימו באימון משותף בפועל (צ'ק-אין).</li>
+<li><b>חזרה:</b> לפחות 40% חוזרים לאפליקציה אחרי שבוע.</li>
+<li>אם המדדים נמוכים, קודם מתקנים את המוצר ולא מוסיפים תשלום.</li>
+</ul></div>
+
+<h2>6. מה צריך לבנות</h2>
+<div class="card"><ul>
+<li><b>מסך מנוי</b> (הצגת Plus, מחיר, ניסיון 30 יום, "שחזר רכישה"). אפל מחייבת רכישה באפליקציה לתכנים דיגיטליים.</li>
+<li><b>ספריית רכישות</b> (למשל RevenueCat או react-native-iap) והגדרת המוצר ב-App Store Connect.</li>
+<li><b>שרת:</b> טבלת מנויים עם הרשאות (RLS), שמתעדכנת מהתראות של אפל. <b>ההגבלות נאכפות בשרת</b>, לא רק באפליקציה, כדי שאי אפשר לעקוף.</li>
+<li>מונה הזמנות שבועי, ומסך "הגעת למכסה" ידידותי (לא חוסם בטיחות).</li>
+<li>מסך עזרה: ביטול מנוי, החזרים, שחזור.</li>
+<li>עדכון תוויות פרטיות וחנות (רכישות, מזהה משתמש).</li>
+</ul></div>
+
+<h2>7. מה צריך לפני שגובים כסף</h2>
+<div class="card"><ul>
+<li><span class="warn">עוסק או חברה.</span> כרגע המוכר אצל אפל הוא אדם פרטי. צריך להחליט על מבנה עם רואה חשבון.</li>
+<li><span class="warn">חוזי אפל:</span> ב-App Store Connect: Agreements, Tax and Banking (חוזה אפליקציות בתשלום, פרטי בנק וטפסי מס).</li>
+<li><span class="warn">בדיקה משפטית</span> לתנאי המנוי, ביטול, החזרים וגילוי מחיר (החלק שנדחה ונקבע כתזכורת לפני תשלומים).</li>
+<li>מיסוי: מע"מ ומס הכנסה. אפל מנכה עמלה (15% בתוכנית עסקים קטנים). <span class="tag">רואה חשבון צריך לאשר</span></li>
+</ul></div>
+
+<h2>8. הערכת הכנסה (המחשה, לא תחזית)</h2>
+<p class="lead">הנחות: מחיר ₪9.90 לחודש, מתוכו מע"מ 18% ועמלת אפל 15%, כלומר נשאר כ-₪7.13 לחודש מכל משלם (וכ-₪57 מכל משלם שנתי של ₪79). ייתכן שהחישוב שונה, אז לאשר עם רואה חשבון.</p>
+<div class="wrap"><table><thead><tr><th>חברים פעילים</th><th>% משלמים</th><th>משלמים</th><th>מחזור חודשי</th><th>נשאר אחרי עמלה ומע"מ</th></tr></thead><tbody><tr><td>300</td><td>3%</td><td>9</td><td>₪89</td><td><b>₪64</b></td></tr><tr><td>1,000</td><td>3%</td><td>30</td><td>₪297</td><td><b>₪214</b></td></tr><tr><td>1,000</td><td>5%</td><td>50</td><td>₪495</td><td><b>₪357</b></td></tr><tr><td>5,000</td><td>3%</td><td>150</td><td>₪1,485</td><td><b>₪1,070</b></td></tr><tr><td>10,000</td><td>4%</td><td>400</td><td>₪3,960</td><td><b>₪2,853</b></td></tr></tbody></table></div>
+<p class="lead">3% עד 5% מהחברים הפעילים הם טווח שמקובל להניח לאפליקציות כאלה, אבל אין לנו נתון משלנו. הנקודה: ההכנסה קטנה עד שיש אלפי חברים פעילים, ולכן <b>הצפיפות היא המשימה הראשונה, לא המחיר</b>.</p>
+
+<h2>9. סיכונים</h2>
+<div class="card"><ul>
+<li><b>אפליקציה ריקה:</b> אף אחד לא ישלם על התאמה בלי אנשים בסביבה. הפתרון: להתחיל בקהילה אחת (חדר כושר, קבוצת ריצה, קמפוס).</li>
+<li><b>תחושת "מרמים":</b> לנעול הודעות מרגיז, לכן המכסה בחינם נדיבה וברורה.</li>
+<li><b>בטיחות:</b> מכירת ראות נוטה לתחום היכרויות. נשמור על ההבדל.</li>
+<li><b>שינוי שם האפליקציה</b> אחרי שמוכרים: קשה. להכריע על השם לפני.</li>
+</ul></div>
+
+<h2>10. החלטות שאתה צריך לקבל</h2>
+<div class="card"><ol>
+<li>האם מסלול אחד (Plus) מתאים לך, או שרוצה לבדוק גם מסלול שנתי בלבד?</li>
+<li>האם 5 הזמנות בשבוע בחינם זה המספר הנכון? (יותר נדיב עוזר לצמוח, פחות מגדיל הכנסה.)</li>
+<li>מי הקהילה הראשונה שנתחיל איתה? (חדר כושר, קבוצה, מקום.)</li>
+<li>מתי מדברים עם רואה חשבון על עוסק?</li>
+</ol></div>
+</main></body></html>
