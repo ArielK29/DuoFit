@@ -178,14 +178,15 @@ export const VerifyIdentityScreen: React.FC = () => {
 
         <Text style={styles.sectionLabel}>1. תאריך לידה</Text>
         <View style={styles.dateRow}>
-          <View style={styles.dateField}>
-            <Input placeholder="יום" value={day} onChangeText={setDay} keyboardType="number-pad" maxLength={2} disabled={busy} />
+          {/* Year on the right, then month, then day on the left (the owner's order). */}
+          <View style={styles.dateFieldWide}>
+            <Input placeholder="שנה" value={year} onChangeText={setYear} keyboardType="number-pad" maxLength={4} disabled={busy} />
           </View>
           <View style={styles.dateField}>
             <Input placeholder="חודש" value={month} onChangeText={setMonth} keyboardType="number-pad" maxLength={2} disabled={busy} />
           </View>
-          <View style={styles.dateFieldWide}>
-            <Input placeholder="שנה" value={year} onChangeText={setYear} keyboardType="number-pad" maxLength={4} disabled={busy} />
+          <View style={styles.dateField}>
+            <Input placeholder="יום" value={day} onChangeText={setDay} keyboardType="number-pad" maxLength={2} disabled={busy} />
           </View>
         </View>
         <Text style={styles.helper}>האפליקציה מיועדת לבני {MIN_AGE} ומעלה. תאריך הלידה לא מוצג לאף אחד.</Text>

@@ -101,14 +101,15 @@ export const SignUpScreen: React.FC = () => {
     return (
       <AuthLayout subtitle="שלב 1 מתוך 2: מתי נולדת?" description="האפליקציה מיועדת לבני 18 ומעלה, כדי לשמור על כולם. התאריך לא מוצג בפרופיל.">
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <View style={{ flex: 1 }}>
-            <Input placeholder="יום" value={day} onChangeText={setDay} keyboardType="number-pad" maxLength={2} />
+          {/* Year on the right, then month, then day on the left (the owner's order). */}
+          <View style={{ flex: 1.5 }}>
+            <Input placeholder="שנה" value={year} onChangeText={setYear} keyboardType="number-pad" maxLength={4} />
           </View>
           <View style={{ flex: 1 }}>
             <Input placeholder="חודש" value={month} onChangeText={setMonth} keyboardType="number-pad" maxLength={2} />
           </View>
           <View style={{ flex: 1 }}>
-            <Input placeholder="שנה" value={year} onChangeText={setYear} keyboardType="number-pad" maxLength={4} onSubmitEditing={handleBirth} />
+            <Input placeholder="יום" value={day} onChangeText={setDay} keyboardType="number-pad" maxLength={2} onSubmitEditing={handleBirth} />
           </View>
         </View>
 
