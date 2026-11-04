@@ -12,9 +12,7 @@ import { NearbyPartnersRow } from '@components/NearbyPartnersRow';
 import { Button } from '@components/Button';
 import { NotificationBell } from '@components/NotificationBell';
 import { HealthConnectCard } from '@components/HealthConnectCard';
-import { ScreenTimeCard } from '@components/ScreenTimeCard';
-import { useWellbeingStore } from '@hooks/useWellbeingStore';
-import { screenTimeChange, weekKey, workoutHoursThisWeek } from '@lib/wellbeing';
+import { workoutHoursThisWeek } from '@lib/wellbeing';
 import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { useAccountSheet } from '@hooks/useAccountSheet';
 import { useAuth } from '@hooks/useAuth';
@@ -92,7 +90,6 @@ export default function Dashboard() {
   const weeklyGoal = useProgressStore((state) => state.weeklyGoal);
   const weightLog = useProgressStore((state) => state.weightLog);
   const recordedRuns = useRunStore((state) => state.runs);
-  const screenTimeHours = useWellbeingStore((state) => state.screenTimeHours);
   const health = useHealthData();
   useToday(); // the week strip and today's numbers roll over at 00:00
 
@@ -180,14 +177,12 @@ export default function Dashboard() {
   const hasRealKm = !!live || recordedRuns.length > 0;
   const runKm = hasRealKm ? bestMonthKm(live ? live.monthKm : null, recordedRuns, now) : MOCK_HEALTH.runKm;
 
-  // Real Life Time: hours of real training this week (runs from Apple Health or recorded in the app, plus shared workouts).
+  // Training hours this week: hours of real training this week (runs from Apple Health or recorded in the app, plus shared workouts).
   const trainingHours = workoutHoursThisWeek(
     [...(live ? live.runs : []), ...recordedRuns],
     completedWorkouts.map((workout) => workout.scheduledAt),
     now
   );
-  const lastWeekKey = weekKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7));
-  const screenDrop = screenTimeChange(screenTimeHours[weekKey(now)], screenTimeHours[lastWeekKey]);
 
   const statPages: StatPage[] = [
     {
@@ -239,15 +234,9 @@ export default function Dashboard() {
         <HeroStatCard
           value={String(trainingHours)}
           suffix=" שע'"
-          label="Real Life Time השבוע"
-          subtext={
-            screenDrop === null
-              ? 'שעות אימון אמיתיות השבוע'
-              : screenDrop >= 0
-                ? `↓ ${screenDrop} שעות מסך פחות משבוע שעבר`
-                : `↑ ${Math.abs(screenDrop)} שעות מסך יותר משבוע שעבר`
-          }
-          subtextColor={screenDrop !== null && screenDrop < 0 ? theme.colors.magenta : theme.colors.cyan}
+          label="שעות אימון השבוע"
+          subtext={trainingHours >= WEEKLY_TRAINING_HOURS_GOAL ? 'עברת את היעד השבועי' : `יעד שבועי: ${WEEKLY_TRAINING_HOURS_GOAL} שעות`}
+          subtextColor={theme.colors.cyan}
           progress={Math.min(1, trainingHours / WEEKLY_TRAINING_HOURS_GOAL)}
           color={theme.colors.cyan}
           icon={PhoneOff}
@@ -313,8 +302,6 @@ export default function Dashboard() {
         <View style={styles.statsWrapper}>
           <StatCarousel pages={statPages} />
         </View>
-
-        <ScreenTimeCard />
 
         {health.mode === 'connect' && (
           <HealthConnectCard loading={health.loading} failed={health.failed} onConnect={health.connect} />
