@@ -1,11 +1,11 @@
-# FitFriend: teen mode (14 to 17), plan written 2026-11-03
+# FitFriend: teen mode (13 to 17), plan written 2026-11-03, minimum age changed from 14 to 13 on 2026-11-04
 
 **Status: PLAN ONLY. Nothing here is built or switched on.** The app stays 18+ for everyone until a lawyer has approved this plan
-(questions at the end) and the owner turns the switch on. Decision by the owner on 2026-11-03: the minimum age should be 14, built
+(questions at the end) and the owner turns the switch on. Decision by the owner on 2026-11-03: the minimum age should be 13 (said on 2026-11-04; 14 before that), built
 in the safest way ("whatever is most correct and safe").
 
 ## 1. Principles
-1. **Two separate worlds.** Teens (14 to 17) and adults (18+) never see each other: not in matches, not in groups, not in the feed, not in chat.
+1. **Two separate worlds.** Teens (13 to 17) and adults (18+) never see each other: not in matches, not in groups, not in the feed, not in chat.
    The wall is enforced by the **database** (policies), not only by the app.
 2. **Teens meet teens close to their age.** Matching only within **1 year** older or younger (the strictest of the options discussed).
 3. **Less open for teens.** No free-text places (only the venue list), no photos in chat, no posting to the public feed, no exact distance,
@@ -32,12 +32,15 @@ in the safest way ("whatever is most correct and safe").
 6. Owner turns the switch on, only after the lawyer's written okay.
 
 ## 4. Questions for the lawyer
-1. What does Israeli law require to let a 14 to 17 year old use a social/matching service (parent consent, form, age verification)?
+1. What does Israeli law require to let a 13 to 17 year old use a social/matching service (parent consent, form, age verification)?
 2. Is an e-mail approval link from the parent enough, or is a stronger proof of parenthood needed?
 3. Are there extra duties because the service puts members in contact (meeting in person)? Our limits: teens meet only teens within 1 year, public venues from a list, no private photos, reports and blocks.
 4. Data of minors: what may we keep, how long, and must a parent be able to see and delete it?
 5. If the app is later released outside Israel (EU, UK, US), what changes (age of digital consent 13 to 16, COPPA below 13)? Release stays Israel-only meanwhile.
 6. Wording of the terms and privacy notice for under-18s.
+
+## 4b. Why 13 and not lower
+13 is the line in the US children's privacy law (COPPA) and the lowest age Apple and Google accept for social features in most stores. Below 13 the app stays closed: the birth date check refuses it, and no data is kept. Teens 13 to 17 live only in the teen world (parent consent, 1-year age band, no adults), and only after the lawyer approves.
 
 ## 5. Until then
 - Public builds and TestFlight testers stay **adults only** (the 6 testers must be 18+).
