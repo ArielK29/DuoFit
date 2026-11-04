@@ -6,6 +6,8 @@ import { Input } from '@components/Input';
 import { useAuth } from '@hooks/useAuth';
 import { MIN_PASSWORD_LENGTH, isValidEmail } from '@lib/authErrors';
 import { trackEvent } from '@lib/analytics';
+import { useIntroStore } from '@hooks/useIntroStore';
+import { birthProblem } from '@lib/signupFlow';
 import { AuthLayout, authStyles } from '@screens/login/AuthLayout';
 
 export const SignUpScreen: React.FC = () => {
@@ -16,6 +18,12 @@ export const SignUpScreen: React.FC = () => {
   const storeError = useAuth((state) => state.error);
   const setError = useAuth((state) => state.setError);
 
+  const saveBirthDraft = useIntroStore((state) => state.saveBirthDraft);
+  // Step 1 asks only the birth date (a member under 18 learns it before typing an e-mail), step 2 the account.
+  const [step, setStep] = useState<'birth' | 'account'>('birth');
+  const [day, setDay] = useState('');
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,6 +34,18 @@ export const SignUpScreen: React.FC = () => {
   useEffect(() => {
     setError(null);
   }, [setError]);
+
+  const handleBirth = () => {
+    setLocalError(null);
+    const problem = birthProblem(day, month, year);
+    if (problem) {
+      setLocalError(problem);
+      return;
+    }
+    // Kept on this phone so the identity check can fill the date in; only an adult's date is ever saved.
+    saveBirthDraft({ day: day.trim(), month: month.trim(), year: year.trim() });
+    setStep('account');
+  };
 
   const handleSignUp = async () => {
     setLocalError(null);
@@ -77,8 +97,37 @@ export const SignUpScreen: React.FC = () => {
 
   const error = localError ?? storeError;
 
+  if (step === 'birth') {
+    return (
+      <AuthLayout subtitle="שלב 1 מתוך 2: מתי נולדת?" description="האפליקציה מיועדת לבני 18 ומעלה, כדי לשמור על כולם. התאריך לא מוצג בפרופיל.">
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {/* Year on the right, then month, then day on the left (the owner's order). */}
+          <View style={{ flex: 1.5 }}>
+            <Input placeholder="שנה" value={year} onChangeText={setYear} keyboardType="number-pad" maxLength={4} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Input placeholder="חודש" value={month} onChangeText={setMonth} keyboardType="number-pad" maxLength={2} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Input placeholder="יום" value={day} onChangeText={setDay} keyboardType="number-pad" maxLength={2} onSubmitEditing={handleBirth} />
+          </View>
+        </View>
+
+        {error && <Text style={authStyles.errorText}>{error}</Text>}
+
+        <View style={authStyles.buttons}>
+          <Button label="המשך" variant="primary" size="lg" onPress={handleBirth} />
+        </View>
+
+        <Pressable style={authStyles.linkRow} onPress={() => router.replace('/login')} accessibilityRole="link">
+          <Text style={authStyles.linkText}>כבר יש לך חשבון? התחבר</Text>
+        </Pressable>
+      </AuthLayout>
+    );
+  }
+
   return (
-    <AuthLayout subtitle="יוצרים חשבון" description="הרשמה עם אימייל. נשלח לך מייל לאימות החשבון">
+    <AuthLayout subtitle="שלב 2 מתוך 2: יוצרים חשבון" description="הרשמה עם אימייל. נשלח לך מייל לאימות החשבון">
       <Input
         label="שם"
         placeholder="איך יקראו לך באפליקציה"

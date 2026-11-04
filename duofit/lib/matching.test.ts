@@ -49,7 +49,7 @@ test('computeMatchPercent: the best case stays below 100 and the result never dr
   }
 });
 
-const filters = (over: Record<string, unknown> = {}) => ({ gender: 'all', maxAge: 40, radiusKm: 15, activities: [], ...over }) as any;
+const filters = (over: Record<string, unknown> = {}) => ({ gender: 'all', maxAge: 40, radiusKm: 15, activities: [], levels: [], ...over }) as any;
 const row = (id: string, over: Record<string, unknown> = {}) => ({ ...partner({ id }), distanceKm: null, ...over }) as any;
 const ids = (list: { id: string }[]) => list.map((p) => p.id);
 
@@ -88,4 +88,11 @@ test('filterPartners: activities match on any overlap, and all filters must hold
     row('y', { gender: 'M', age: 25, distanceKm: 2, activities: ['ריצה'] }),
   ];
   assert.deepEqual(ids(filterPartners(combined, filters({ gender: 'F', maxAge: 30, radiusKm: 3, activities: ['ריצה'] }))), ['x']);
+});
+
+test('filterPartners: level, none chosen keeps everyone, otherwise only the chosen levels', () => {
+  const list = [row('b', { fitnessLevel: 'Beginner' }), row('i', { fitnessLevel: 'Intermediate' }), row('a', { fitnessLevel: 'Advanced' })];
+  assert.deepEqual(ids(filterPartners(list, filters())), ['b', 'i', 'a']);
+  assert.deepEqual(ids(filterPartners(list, filters({ levels: ['Advanced'] }))), ['a']);
+  assert.deepEqual(ids(filterPartners(list, filters({ levels: ['Beginner', 'Intermediate'] }))), ['b', 'i']);
 });

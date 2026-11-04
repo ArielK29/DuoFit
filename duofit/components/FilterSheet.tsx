@@ -15,6 +15,7 @@ import {
   PartnerWithDistance,
   filterPartners,
 } from '@hooks/usePartnerMatching';
+import type { FitnessLevel } from '@hooks/useAuth';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 
@@ -30,6 +31,12 @@ const GENDER_OPTIONS: { value: PartnerFilters['gender']; label: string }[] = [
   { value: 'all', label: 'כולם' },
   { value: 'F', label: 'נשים בלבד' },
   { value: 'M', label: 'גברים בלבד' },
+];
+
+const LEVEL_OPTIONS: { value: FitnessLevel; label: string }[] = [
+  { value: 'Beginner', label: 'מתחיל' },
+  { value: 'Intermediate', label: 'בינוני' },
+  { value: 'Advanced', label: 'מתקדם' },
 ];
 
 // Bottom sheet per the FitMatch reference: gender, age range, travel radius,
@@ -53,6 +60,12 @@ const FilterSheetContent: React.FC<FilterSheetProps> = ({ filters, partners, onA
       activities: prev.activities.includes(activity)
         ? prev.activities.filter((item) => item !== activity)
         : [...prev.activities, activity],
+    }));
+
+  const toggleLevel = (level: FitnessLevel) =>
+    setDraft((prev) => ({
+      ...prev,
+      levels: prev.levels.includes(level) ? prev.levels.filter((item) => item !== level) : [...prev.levels, level],
     }));
 
   return (
@@ -102,6 +115,24 @@ const FilterSheetContent: React.FC<FilterSheetProps> = ({ filters, partners, onA
             maximumTrackTintColor={theme.colors.surfaceHover}
             thumbTintColor={theme.colors.text}
           />
+
+          <Text style={styles.sectionLabel}>רמה</Text>
+          <View style={styles.chips}>
+            {LEVEL_OPTIONS.map((level) => {
+              const active = draft.levels.includes(level.value);
+              return (
+                <Pressable
+                  key={level.value}
+                  style={[styles.chip, active && styles.chipActive]}
+                  onPress={() => toggleLevel(level.value)}
+                  accessibilityRole="button"
+                  aria-selected={active}
+                >
+                  <Text style={[styles.chipText, active && styles.chipTextActive]}>{level.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
 
           <Text style={styles.sectionLabel}>סגנון אימון</Text>
           <View style={styles.chips}>

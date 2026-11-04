@@ -17,3 +17,9 @@ test('homeRoute: a member whose identity is not approved goes to the identity sc
 test('homeRoute: an approved member goes to discover', () => {
   assert.equal(homeRoute({ signedIn: true, profileComplete: true, verified: true }), '/discover');
 });
+
+test('homeRoute: a signed-out member who has not seen the intro sees it first, then the login', () => {
+  assert.equal(homeRoute({ signedIn: false, profileComplete: false, verified: false, introSeen: false }), '/welcome');
+  assert.equal(homeRoute({ signedIn: false, profileComplete: false, verified: false, introSeen: true }), '/login');
+  assert.equal(homeRoute({ signedIn: true, profileComplete: true, verified: true, introSeen: false }), '/discover');
+});
