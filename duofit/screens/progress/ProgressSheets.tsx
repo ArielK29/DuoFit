@@ -34,8 +34,8 @@ const WeightForm: React.FC<Omit<WeightSheetProps, 'visible'>> = ({ currentKg, go
 
   return (
     <>
-      <ValueStepper label="המשקל שלך היום" value={kg} unit='ק"ג' min={MIN_KG} max={MAX_KG} step={0.1} decimals={1} onChange={setKg} />
-      <ValueStepper label="יעד משקל" value={goal} unit='ק"ג' min={MIN_KG} max={MAX_KG} step={0.5} decimals={1} onChange={setGoal} />
+      <ValueStepper label="המשקל שלך היום" value={kg} unit='ק"ג' min={MIN_KG} max={MAX_KG} step={0.1} decimals={1} quickSteps={[0.1, 0.5, 1, 5]} onChange={setKg} />
+      <ValueStepper label="יעד משקל" value={goal} unit='ק"ג' min={MIN_KG} max={MAX_KG} step={0.5} decimals={1} quickSteps={[0.5, 1, 5]} onChange={setGoal} />
       <SaveButton
         onPress={() => {
           onSave(kg, goal);
