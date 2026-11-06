@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Modal, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Modal, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
@@ -25,7 +25,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ visible, title, onClos
           <View style={[styles.sheet, { paddingBottom: theme.spacing.xl + bottomInset }]}>
             <View style={styles.handle} />
             <Text style={styles.title}>{title}</Text>
-            {children}
+            {/* Scrolls when the content is taller than the screen (small phones, large text), so nothing is cut off. */}
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" bounces={false}>
+              {children}
+            </ScrollView>
           </View>
         </View>
       )}
@@ -47,6 +50,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
   sheet: {
+    maxHeight: '92%',
     backgroundColor: theme.colors.surface,
     borderTopLeftRadius: theme.borderRadius.xl * 1.5,
     borderTopRightRadius: theme.borderRadius.xl * 1.5,
@@ -65,6 +69,7 @@ const styles = StyleSheet.create({
   title: {
     width: '100%',
     fontSize: 22,
+    lineHeight: 32,
     fontFamily: theme.typography.h2.fontFamily,
     color: theme.colors.text,
     ...visualRightText,

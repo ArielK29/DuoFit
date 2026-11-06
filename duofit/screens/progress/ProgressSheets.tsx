@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
   },
   saveText: {
     fontSize: 17,
+    lineHeight: 26,
     fontFamily: theme.typography.button.fontFamily,
     color: theme.colors.black,
   },

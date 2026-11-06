@@ -11,6 +11,7 @@ import { useRunStore } from '@hooks/useRunStore';
 import { paceText, runDurationText } from '@lib/healthData';
 import { addRunPoint, emptyRunProgress, type RunProgress } from '@lib/runTracker';
 import { parseRunFromText } from '@lib/runOcr';
+import { logError } from '@lib/analytics';
 import { DISTANCE_CHIPS_KM, TIME_CHIPS_MIN, stepKm, stepMinutes, suggestMinutes } from '@lib/runPresets';
 import { visualRightText } from '@lib/rtl';
 import { newId } from '@lib/uuid';
@@ -67,7 +68,9 @@ export const RunScreen: React.FC = () => {
       const lines = await extractTextFromImage(picked.assets[0].uri);
       const found = parseRunFromText(lines);
       if (found.km === undefined && found.minutes === undefined) {
-        setPhotoNote('לא הצלחנו לקרוא מרחק או זמן מהתמונה. בחר ידנית בכפתורים.');
+        // Show a little of what was read, so a wrong guess can be told apart from "nothing was read" (and sent to us).
+        const seen = lines.join(' ').replace(/\s+/g, ' ').trim().slice(0, 70);
+        setPhotoNote(seen ? `לא מצאנו מרחק או זמן בתמונה. הטקסט שנקרא: "${seen}". בחר ידנית בכפתורים.` : 'לא נקרא שום טקסט בתמונה. נסה צילום מסך ברור יותר, או בחר ידנית בכפתורים.');
         return;
       }
       if (found.km !== undefined) setManualKm(found.km);
@@ -79,8 +82,9 @@ export const RunScreen: React.FC = () => {
       }
       const parts = [found.km !== undefined ? `${found.km} ק"מ` : null, found.minutes !== undefined ? `${found.minutes} דקות` : null].filter(Boolean);
       setPhotoNote(`זיהינו: ${parts.join(' ו-')}. בדוק שזה נכון ושמור.`);
-    } catch {
-      setPhotoNote('לא הצלחנו לקרוא את התמונה. בחר ידנית בכפתורים.');
+    } catch (err) {
+      logError('run_photo_read_failed', { error: String((err as { message?: string })?.message ?? err) });
+      setPhotoNote(`לא הצלחנו לקרוא את התמונה (${String((err as { message?: string })?.message ?? 'שגיאה').slice(0, 60)}). בחר ידנית בכפתורים.`);
     } finally {
       setReading(false);
     }
