@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { AppState } from 'react-native';
 import { useFocusEffect } from 'expo-router';
+import { useDayKey } from '@hooks/useDayKey';
 import { useHealthStore } from '@hooks/useHealthStore';
 import { acquireLiveSteps, useLiveSteps } from '@hooks/useLiveSteps';
 import type { HealthSnapshot } from '@lib/healthKit';
@@ -21,7 +22,12 @@ export function useHealthData(): {
   connect: () => Promise<void>;
 } {
   const { hydrated, connected, available, snapshot, loading, failed } = useHealthStore();
+  // Draws again at midnight: yesterday's snapshot stops counting as "today" and a new read starts at once.
+  const dayKey = useDayKey();
   const fresh = snapshot !== null && isSameDay(snapshot.readAt, new Date()) ? snapshot : null;
+  useEffect(() => {
+    useHealthStore.getState().refresh();
+  }, [dayKey]);
 
   // Live steps while a connected member has a screen with the numbers open.
   const liveSteps = useLiveSteps((state) => state.steps);

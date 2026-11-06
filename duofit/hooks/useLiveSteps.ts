@@ -1,3 +1,4 @@
+import { AppState, type NativeEventSubscription } from 'react-native';
 import { create } from 'zustand';
 import { watchAccelerometer } from '@lib/motionSamples';
 import { readSensorSteps, watchSensorSteps } from '@lib/pedometer';
@@ -30,6 +31,7 @@ let users = 0;
 let day = '';
 let removeWatcher: (() => void) | null = null;
 let removeAccelerometer: (() => void) | null = null;
+let appStateSubscription: NativeEventSubscription | null = null;
 let poll: ReturnType<typeof setInterval> | null = null;
 let generation = 0;
 // Core Motion's count of today, only ever going up during a day.
@@ -74,16 +76,22 @@ function begin() {
     if (mine === generation && users > 0) removeWatcher = remove;
     else remove();
   });
+  // A new day: forget yesterday and start over from zero. Checked every tick and the moment the app comes back to the front
+  // (its timers sleep in the background, so midnight may have passed unnoticed).
+  const rolledOver = () => {
+    if (new Date().toDateString() === day) return false;
+    end();
+    useLiveSteps.getState().setSteps(null);
+    begin();
+    return true;
+  };
+  appStateSubscription = AppState.addEventListener('change', (state) => {
+    if (state === 'active' && mine === generation) rolledOver();
+  });
   poll = setInterval(async () => {
     if (mine !== generation) return;
     const now = new Date();
-    if (now.toDateString() !== day) {
-      // A new day: forget yesterday and start over.
-      end();
-      useLiveSteps.getState().setSteps(null);
-      begin();
-      return;
-    }
+    if (rolledOver()) return;
     if (pending > 0 && now.getTime() - lastPendingAt > PENDING_EXPIRES_MS) {
       pending = 0;
       publish();
@@ -101,6 +109,8 @@ function end() {
   removeWatcher = null;
   removeAccelerometer?.();
   removeAccelerometer = null;
+  appStateSubscription?.remove();
+  appStateSubscription = null;
 }
 
 // A screen that shows steps calls this and keeps the returned function to call when it goes away.

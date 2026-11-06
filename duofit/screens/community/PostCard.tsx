@@ -279,6 +279,7 @@ const styles = StyleSheet.create({
   },
   recordValue: {
     fontSize: 24,
+    lineHeight: 34,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },
@@ -353,6 +354,7 @@ const styles = StyleSheet.create({
   },
   statsValue: {
     fontSize: 26,
+    lineHeight: 36,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },

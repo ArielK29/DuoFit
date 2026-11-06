@@ -469,6 +469,7 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     fontSize: 26,
+    lineHeight: 36,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },

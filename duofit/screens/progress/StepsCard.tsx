@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 44,
+    lineHeight: 62,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },
