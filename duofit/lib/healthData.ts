@@ -51,6 +51,20 @@ export function weekTotal(values: number[], now: Date): number {
   return values.slice(0, now.getDay() + 1).reduce((sum, value) => sum + cleanNumber(value), 0);
 }
 
+// Saturday night, when Shabbat is over (a fixed 20:00, close to the end of Shabbat in Israel): the moment the week's step total
+// is shown. At midnight the new week starts, so the total is complete (almost all of Saturday is in it).
+export const WEEK_SUMMARY_FROM_HOUR = 20;
+export function isWeekSummaryTime(now: Date): boolean {
+  return now.getDay() === 6 && now.getHours() >= WEEK_SUMMARY_FROM_HOUR;
+}
+
+// Percent change from last week to this week, rounded; null when last week has no steps to compare with.
+export function percentChange(current: number, previous: number): number | null {
+  const before = cleanNumber(previous);
+  if (before <= 0) return null;
+  return Math.round(((cleanNumber(current) - before) / before) * 100);
+}
+
 export function metersToKm(meters: number): number {
   return Math.round((cleanNumber(meters) / 1000) * 10) / 10;
 }

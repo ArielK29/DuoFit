@@ -18,6 +18,8 @@ import {
   recentRuns,
   todayRunKm,
   weekAverage,
+  isWeekSummaryTime,
+  percentChange,
   weekTotal,
   type HealthRun,
 } from './healthData.ts';
@@ -169,4 +171,33 @@ test("weekTotal: all the steps of the days up to today, later days and broken nu
   assert.equal(weekTotal([6000, 8000, 4000, 6000, 9999, 0, 0], wed), 24000);
   assert.equal(weekTotal([6000, 8000, 4000, Number.NaN, 9999, 5000, 5000], wed), 18000);
   assert.equal(weekTotal([0, 0, 0, 0, 0, 0, 0], wed), 0);
+});
+
+test("percentChange: up, down, equal, and nothing to compare with", () => {
+  assert.equal(percentChange(54000, 50000), 8);
+  assert.equal(percentChange(45000, 50000), -10);
+  assert.equal(percentChange(50000, 50000), 0);
+  assert.equal(percentChange(1000, 0), null);
+  assert.equal(percentChange(Number.NaN, 50000), -100);
+});
+
+test("last week read with buildWeekSteps and a date a week back: the same weekdays line up", () => {
+  const lastWed = new Date(wed.getFullYear(), wed.getMonth(), wed.getDate() - 7);
+  const daily = [
+    { date: at(9, 18), steps: 5000 }, // Sunday of last week
+    { date: at(9, 19), steps: 7000 }, // Monday
+    { date: at(9, 21), steps: 9000 }, // Wednesday (the same weekday as today)
+    { date: at(9, 22), steps: 3000 }, // Thursday: after that weekday, not part of the comparison
+  ];
+  const lastWeek = buildWeekSteps(daily, lastWed);
+  assert.equal(weekTotal(lastWeek, lastWed), 21000);
+});
+
+test("isWeekSummaryTime: only on Saturday night from 20:00", () => {
+  assert.equal(isWeekSummaryTime(new Date(2026, 9, 31, 20, 0)), true); // Saturday 20:00
+  assert.equal(isWeekSummaryTime(new Date(2026, 9, 31, 23, 59)), true);
+  assert.equal(isWeekSummaryTime(new Date(2026, 9, 31, 19, 59)), false); // Shabbat is not over
+  assert.equal(isWeekSummaryTime(new Date(2026, 9, 31, 9, 0)), false);
+  assert.equal(isWeekSummaryTime(new Date(2026, 10, 1, 21, 0)), false); // Sunday
+  assert.equal(isWeekSummaryTime(new Date(2026, 9, 30, 21, 0)), false); // Friday night
 });

@@ -4,7 +4,7 @@ import { BarChart, Bar } from '@components/BarChart';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
 import { MOCK_HEALTH, MOCK_STEPS_BEFORE_TODAY } from '@constants/mockHealth';
 import type { HealthSnapshot } from '@lib/healthKit';
-import { weekAverage, weekTotal } from '@lib/healthData';
+import { isWeekSummaryTime, percentChange, weekAverage, weekTotal } from '@lib/healthData';
 import { theme } from '@styles/theme';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
@@ -26,6 +26,11 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: b
       );
   const average = weekAverage(values, now);
   const total = weekTotal(values, now);
+  // The week summary shows only on Saturday night; the comparison with last week only when Apple Health gave it (a snapshot from
+  // an older build or a failed read has no such number).
+  const showWeekSummary = isWeekSummaryTime(now);
+  const change = snapshot?.lastWeekSameDays !== undefined ? percentChange(total, snapshot.lastWeekSameDays) : null;
+  const changeText = change === null ? '' : change === 0 ? ' · כמו בשבוע שעבר' : change > 0 ? ` · עלייה של ${change}% מהשבוע שעבר` : ` · ירידה של ${Math.abs(change)}% מהשבוע שעבר`;
   // The day whose steps are shown (today until the member taps another bar).
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const shownDay = selectedDay !== null && selectedDay <= todayIndex ? selectedDay : todayIndex;
@@ -67,7 +72,9 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: b
           {`${isToday ? 'היום' : `יום ${WEEKDAY_LETTERS[shownDay]}`} · ${remaining > 0 ? `עוד ${remaining.toLocaleString('he-IL')} ליעד` : 'עברת את היעד'}`}
         </Text>
       </View>
-      <Text style={styles.weekTotal}>{`סה"כ השבוע: ${total.toLocaleString('he-IL')} צעדים`}</Text>
+      {showWeekSummary && (
+        <Text style={styles.weekTotal}>{`סה"כ השבוע: ${total.toLocaleString('he-IL')} צעדים${changeText}`}</Text>
+      )}
       <BarChart
         accessibilityLabel={`צעדים לפי יום, יעד ${stepsGoal.toLocaleString('he-IL')}. היום ${steps.toLocaleString('he-IL')}`}
         selectedIndex={shownDay}
