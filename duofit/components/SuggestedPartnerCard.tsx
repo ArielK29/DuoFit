@@ -50,7 +50,7 @@ export const SuggestedPartnerCard: React.FC<SuggestedPartnerCardProps> = ({
           )}
         </View>
       </View>
-      <Text style={styles.bio} numberOfLines={2}>
+      <Text style={styles.bio}>
         {partner.bio}
       </Text>
       <View style={styles.actions}>

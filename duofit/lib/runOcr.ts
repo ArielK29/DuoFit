@@ -63,8 +63,22 @@ function findLabeledDistance(joined: string): number | undefined {
   return km > 0 && km <= MAX_KM ? km : undefined;
 }
 
+// The reader often mixes up what a number is made of: the letter O for a zero, an I or l for a one, a space or a dot for the
+// colons of a clock ("00 42 15", "1.05.30"). Fixed before reading, only where it sits next to digits.
+const SPACED_CLOCK = /(?<![\d:.])(\d{2}) (\d{2}) (\d{2})(?![\d:.])/g;
+const DOTTED_CLOCK = /(?<![\d:.])(\d)\.(\d{2})\.(\d{2})(?![\d:.])/g;
+
+function repairDigits(text: string): string {
+  const asClock = (all: string, h: string, m: string, sec: string) => (Number(m) < 60 && Number(sec) < 60 ? `${h}:${m}:${sec}` : all);
+  return text
+    .replace(/(?<=[\d:.,])[Oo](?=[\d:.,\s]|$)|(?<=^|[\s:.,])[Oo](?=[\d:])/g, '0')
+    .replace(/(?<=\d)[lI](?=\d)/g, '1')
+    .replace(SPACED_CLOCK, asClock)
+    .replace(DOTTED_CLOCK, asClock);
+}
+
 export function parseRunFromText(lines: string[]): ParsedRun {
-  const joined = lines.join(' ');
+  const joined = repairDigits(lines.join(' '));
   const result: ParsedRun = {};
   const km = findDistance(joined) ?? findLabeledDistance(joined);
   const minutes = findMinutes(joined);

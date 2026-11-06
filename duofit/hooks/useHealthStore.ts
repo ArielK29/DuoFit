@@ -76,6 +76,13 @@ export const useHealthStore = create<HealthState>()(
     }),
     {
       name: 'duofit-health',
+      // Version 2 added workoutKcalToday and distanceFiveMinKm to the snapshot: a snapshot saved by an older build lacks them,
+      // so it is dropped (the next read fills it again) while the "connected" choice is kept.
+      version: 2,
+      migrate: (stored) => {
+        const old = (stored ?? {}) as { connected?: boolean };
+        return { connected: old.connected === true, snapshot: null };
+      },
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({ connected: state.connected, snapshot: state.snapshot }),
       onRehydrateStorage: () => () => {

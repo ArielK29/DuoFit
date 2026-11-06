@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
   },
   flameNumber: {
     fontSize: 26,
+    lineHeight: 36,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.black,
   },
@@ -147,6 +148,7 @@ const styles = StyleSheet.create({
   },
   weightValue: {
     fontSize: 30,
+    lineHeight: 42,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
     marginVertical: theme.spacing.sm,
@@ -172,6 +174,7 @@ const styles = StyleSheet.create({
   },
   goalValue: {
     fontSize: 26,
+    lineHeight: 36,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },

@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
   },
   timer: {
     fontSize: 72,
+    lineHeight: 101,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
     marginVertical: theme.spacing.xl,

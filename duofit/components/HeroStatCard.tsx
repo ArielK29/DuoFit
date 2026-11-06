@@ -68,6 +68,7 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 40,
+    lineHeight: 56,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },

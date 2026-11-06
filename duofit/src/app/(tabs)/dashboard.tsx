@@ -173,8 +173,9 @@ export default function Dashboard() {
   const kcal = live
     ? bestKcal({
         activeKcal: live.todayKcal,
-        workoutKcal: live.workoutKcalToday,
-        pieceKcal: kcalFromDistancePieces(live.distanceFiveMinKm, lastWeight),
+        // "?? " guards a snapshot saved by an older build that does not have these two fields yet.
+        workoutKcal: live.workoutKcalToday ?? 0,
+        pieceKcal: kcalFromDistancePieces(live.distanceFiveMinKm ?? [], lastWeight),
         stepsKcal: estimateKcal(live.todaySteps, lastWeight),
         runExtraKcal: runKcal,
       })
@@ -468,6 +469,7 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     fontSize: 26,
+    lineHeight: 36,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },

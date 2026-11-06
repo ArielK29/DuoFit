@@ -400,7 +400,9 @@ const styles = StyleSheet.create({
   },
   bigValue: {
     fontSize: 96,
-    lineHeight: 104,
+    // The tall display font is cut off at the top when the line is barely taller than the letters: give it room above and below.
+    lineHeight: 136,
+    paddingTop: 12,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.cyan,
   },
@@ -426,6 +428,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 36,
+    lineHeight: 52,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },

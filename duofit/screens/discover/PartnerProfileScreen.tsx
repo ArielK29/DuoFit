@@ -202,6 +202,7 @@ const styles = StyleSheet.create({
   },
   initial: {
     fontSize: 88,
+    lineHeight: 123,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },

@@ -209,12 +209,12 @@ function ChatRowItem({ row, now, onPress }: { row: ChatRow; now: Date; onPress: 
 
       <View style={styles.textBlock}>
         <View style={styles.nameRow}>
-          <Text style={styles.name} numberOfLines={1}>
+          <Text style={styles.name}>
             {row.name}
           </Text>
           {row.verified && <BadgeCheck color={theme.colors.cyan} size={18} strokeWidth={2} />}
         </View>
-        <Text style={[styles.preview, row.unread > 0 && styles.previewUnread]} numberOfLines={1}>
+        <Text style={[styles.preview, row.unread > 0 && styles.previewUnread]}>
           {row.preview}
         </Text>
       </View>

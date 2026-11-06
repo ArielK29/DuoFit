@@ -27,7 +27,7 @@ export const NearbyPartnersRow: React.FC<NearbyPartnersRowProps> = ({ partners, 
               <Text style={styles.meta}>{`${partner.distanceKm.toFixed(1)} ק"מ`}</Text>
             </View>
           )}
-          <Text style={styles.activity} numberOfLines={1}>
+          <Text style={styles.activity}>
             {partner.activities[0]}
           </Text>
           <Pressable

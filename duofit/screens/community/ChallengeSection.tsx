@@ -193,6 +193,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 28,
+    lineHeight: 39,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },
