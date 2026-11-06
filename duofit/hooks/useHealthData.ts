@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { AppState } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useHealthStore } from '@hooks/useHealthStore';
+import { acquireLiveSteps, useLiveSteps } from '@hooks/useLiveSteps';
 import type { HealthSnapshot } from '@lib/healthKit';
 import { healthMode, isSameDay, type HealthMode } from '@lib/healthMode';
 import { mergeTodaySteps } from '@lib/healthData';
-import { watchSensorSteps } from '@lib/pedometer';
-import { useToday } from '@hooks/useToday';
 
 export type { HealthMode };
 
-// While a screen with the numbers is open they are re-read this often (the phone saves steps in batches).
-const REFRESH_EVERY_MS = 4000;
+// Apple Health (calories, runs, distance) is re-read this often while a screen with the numbers is open. Steps do not wait for it:
+// they come from the motion sensor every second and a half (see hooks/useLiveSteps.ts).
+const REFRESH_EVERY_MS = 6000;
 
 export function useHealthData(): {
   mode: HealthMode;
@@ -23,25 +23,12 @@ export function useHealthData(): {
   const { hydrated, connected, available, snapshot, loading, failed } = useHealthStore();
   const fresh = snapshot !== null && isSameDay(snapshot.readAt, new Date()) ? snapshot : null;
 
-  // Steps counted live by the phone's motion sensor while a screen with the numbers is open (no waiting for Apple Health).
-  const [liveSteps, setLiveSteps] = useState<number | null>(null);
-  const dayKey = useToday().toDateString();
+  // Live steps while a connected member has a screen with the numbers open.
+  const liveSteps = useLiveSteps((state) => state.steps);
   useEffect(() => {
-    setLiveSteps(null); // a new day starts from zero
     if (!connected) return undefined;
-    let stop: () => void = () => {};
-    let cancelled = false;
-    watchSensorSteps((steps) => {
-      if (!cancelled) setLiveSteps(steps);
-    }).then((remove) => {
-      if (cancelled) remove();
-      else stop = remove;
-    });
-    return () => {
-      cancelled = true;
-      stop();
-    };
-  }, [connected, dayKey]);
+    return acquireLiveSteps();
+  }, [connected]);
 
   const shown = useMemo(() => {
     if (!fresh) return null;
@@ -54,7 +41,7 @@ export function useHealthData(): {
   }, [fresh, liveSteps]);
 
   // Re-read when the screen comes into view, when the app returns from the background, and every few seconds
-  // while the screen stays open, so steps taken just now show up without leaving the screen.
+  // while the screen stays open.
   useFocusEffect(
     useCallback(() => {
       const refresh = () => {

@@ -37,3 +37,10 @@ test('parseRunFromText: nothing readable gives nothing; absurd numbers are ignor
   assert.deepEqual(parseRunFromText(['hello world']), {});
   assert.equal(parseRunFromText(['250 km']).km, undefined);
 });
+
+test('parseRunFromText: a distance written under its label without a unit (the label says what it is)', () => {
+  assert.equal(parseRunFromText(['Distance', '5.20']).km, 5.2);
+  assert.equal(parseRunFromText(['מרחק', '8,4']).km, 8.4);
+  assert.equal(parseRunFromText(['Distance 3.5']).km, 3.5);
+  assert.equal(parseRunFromText(['Calories', '392']).km, undefined);
+});

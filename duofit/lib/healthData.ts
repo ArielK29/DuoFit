@@ -129,3 +129,32 @@ export function todayRunKm(recordedRuns: HealthRun[], now: Date): number {
     .reduce((sum, run) => sum + run.km, 0);
   return Math.round(total * 100) / 100;
 }
+
+// Calories worked out from the walking + running distance of today in 5-minute pieces (km each): a piece at 7.5 km/h or more is
+// a run (about 1.0 kcal per kg per km), slower is a walk (about 0.5). This sees a run even when it was not recorded as a workout.
+export function kcalFromDistancePieces(kmPerFiveMinutes: number[], weightKg: number | null): number {
+  const weight = weightKg !== null && Number.isFinite(weightKg) && weightKg > 0 ? weightKg : DEFAULT_WEIGHT_KG;
+  let total = 0;
+  for (const raw of kmPerFiveMinutes) {
+    const km = cleanNumber(raw);
+    if (km === 0) continue;
+    const speedKmh = km * 12;
+    total += km * weight * (speedKmh >= RUNNING_KMH ? 1.0 : 0.5);
+  }
+  return Math.round(total);
+}
+
+const RUNNING_KMH = 7.5;
+
+// Today's calories: what the phone measured (active energy, workouts) when that is the biggest, otherwise the best estimate.
+export function bestKcal(parts: {
+  activeKcal: number;
+  workoutKcal: number;
+  pieceKcal: number;
+  stepsKcal: number;
+  runExtraKcal: number;
+}): { kcal: number; estimated: boolean } {
+  const measured = Math.max(cleanNumber(parts.activeKcal), cleanNumber(parts.workoutKcal));
+  const estimate = Math.max(cleanNumber(parts.pieceKcal), cleanNumber(parts.stepsKcal) + cleanNumber(parts.runExtraKcal));
+  return estimate > measured ? { kcal: Math.round(estimate), estimated: true } : { kcal: Math.round(measured), estimated: false };
+}

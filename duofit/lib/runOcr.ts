@@ -30,6 +30,9 @@ function findDistance(joined: string): number | undefined {
   return undefined;
 }
 
+// A decimal number right after the word "distance" or "מרחק" (the unit is missing or on another line), for apps that show only the label.
+const LABELED_DISTANCE = /(?:distance|dist\.?|מרחק)\s*[:\-]?\s*(\d{1,3}(?:[.,]\d{1,3})?)/i;
+
 function findMinutes(joined: string): number | undefined {
   type Candidate = { seconds: number; hasHours: boolean };
   const candidates: Candidate[] = [];
@@ -53,10 +56,17 @@ function findMinutes(joined: string): number | undefined {
   return undefined;
 }
 
+function findLabeledDistance(joined: string): number | undefined {
+  const match = LABELED_DISTANCE.exec(joined);
+  if (!match) return undefined;
+  const km = Math.round(toNumber(match[1]) * 100) / 100;
+  return km > 0 && km <= MAX_KM ? km : undefined;
+}
+
 export function parseRunFromText(lines: string[]): ParsedRun {
   const joined = lines.join(' ');
   const result: ParsedRun = {};
-  const km = findDistance(joined);
+  const km = findDistance(joined) ?? findLabeledDistance(joined);
   const minutes = findMinutes(joined);
   if (km !== undefined) result.km = km;
   if (minutes !== undefined) result.minutes = minutes;

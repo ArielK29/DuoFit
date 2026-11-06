@@ -129,6 +129,7 @@ const styles = StyleSheet.create({
   label: {
     width: '100%',
     fontSize: 14,
+    lineHeight: 22,
     fontFamily: theme.typography.label.fontFamily,
     color: theme.colors.textSecondary,
     ...visualRightText,
@@ -170,11 +171,13 @@ const styles = StyleSheet.create({
   },
   quickChipText: {
     fontSize: 16,
+    lineHeight: 24,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.text,
   },
   value: {
     fontSize: 26,
+    lineHeight: 36,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
   },

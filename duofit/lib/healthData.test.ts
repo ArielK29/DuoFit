@@ -3,11 +3,13 @@ import assert from 'node:assert/strict';
 process.env.TZ = 'Asia/Jerusalem';
 
 import {
+  bestKcal,
   bestMonthKm,
   buildWeekSteps,
   displayKcal,
   runExtraKcal,
   estimateKcal,
+  kcalFromDistancePieces,
   mergeTodaySteps,
   metersToKm,
   monthRunKm,
@@ -140,4 +142,24 @@ test("runExtraKcal: running burns about twice what walking does, and the steps a
 test("todayRunKm: only recorded runs that started today", () => {
   const runs = [run("a", new Date(2026, 9, 28, 7), 5, 1500), run("b", new Date(2026, 9, 27, 7), 8, 2400), run("c", new Date(2026, 9, 28, 18), 2.5, 800)];
   assert.equal(todayRunKm(runs, wed), 7.5);
+});
+
+test("kcalFromDistancePieces: walking pieces cost 0.5 kcal per kg per km, running pieces (7.5 km/h or more) cost 1.0", () => {
+  // 5 minutes at 5 km/h is 0.4167 km; 5 minutes at 12 km/h is 1 km.
+  assert.equal(kcalFromDistancePieces([0.4167], 70), 15);
+  assert.equal(kcalFromDistancePieces([1], 70), 70);
+  assert.equal(kcalFromDistancePieces([1, 1, 1, 1, 1, 1], 70), 420);
+  assert.equal(kcalFromDistancePieces([0.4167, 1, 0, 0], 70), 85);
+  assert.equal(kcalFromDistancePieces([], 70), 0);
+  assert.equal(kcalFromDistancePieces([1], null), 70);
+  assert.equal(kcalFromDistancePieces([Number.NaN, -2], 70), 0);
+});
+
+test("bestKcal: the biggest of what the phone measured (active energy, workouts) and what is worked out from distance and steps", () => {
+  const base = { activeKcal: 0, workoutKcal: 0, pieceKcal: 0, stepsKcal: 0, runExtraKcal: 0 };
+  assert.deepEqual(bestKcal({ ...base, activeKcal: 400, pieceKcal: 100 }), { kcal: 400, estimated: false });
+  assert.deepEqual(bestKcal({ ...base, workoutKcal: 392, activeKcal: 50, pieceKcal: 300 }), { kcal: 392, estimated: false });
+  assert.deepEqual(bestKcal({ ...base, pieceKcal: 392, stepsKcal: 168 }), { kcal: 392, estimated: true });
+  assert.deepEqual(bestKcal({ ...base, stepsKcal: 168, runExtraKcal: 100 }), { kcal: 268, estimated: true });
+  assert.deepEqual(bestKcal(base), { kcal: 0, estimated: false });
 });
