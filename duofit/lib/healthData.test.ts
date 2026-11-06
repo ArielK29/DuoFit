@@ -18,6 +18,7 @@ import {
   recentRuns,
   todayRunKm,
   weekAverage,
+  weekTotal,
   type HealthRun,
 } from './healthData.ts';
 
@@ -162,4 +163,10 @@ test("bestKcal: the biggest of what the phone measured (active energy, workouts)
   assert.deepEqual(bestKcal({ ...base, pieceKcal: 392, stepsKcal: 168 }), { kcal: 392, estimated: true });
   assert.deepEqual(bestKcal({ ...base, stepsKcal: 168, runExtraKcal: 100 }), { kcal: 268, estimated: true });
   assert.deepEqual(bestKcal(base), { kcal: 0, estimated: false });
+});
+
+test("weekTotal: all the steps of the days up to today, later days and broken numbers do not count", () => {
+  assert.equal(weekTotal([6000, 8000, 4000, 6000, 9999, 0, 0], wed), 24000);
+  assert.equal(weekTotal([6000, 8000, 4000, Number.NaN, 9999, 5000, 5000], wed), 18000);
+  assert.equal(weekTotal([0, 0, 0, 0, 0, 0, 0], wed), 0);
 });

@@ -46,6 +46,11 @@ export function weekAverage(values: number[], now: Date): number {
   return Math.round(counted.reduce((sum, value) => sum + value, 0) / counted.length);
 }
 
+// All the steps of the days that already happened this week (today included), the week's total like a step counter app shows.
+export function weekTotal(values: number[], now: Date): number {
+  return values.slice(0, now.getDay() + 1).reduce((sum, value) => sum + cleanNumber(value), 0);
+}
+
 export function metersToKm(meters: number): number {
   return Math.round((cleanNumber(meters) / 1000) * 10) / 10;
 }

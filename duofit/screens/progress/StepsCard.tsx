@@ -4,7 +4,7 @@ import { BarChart, Bar } from '@components/BarChart';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
 import { MOCK_HEALTH, MOCK_STEPS_BEFORE_TODAY } from '@constants/mockHealth';
 import type { HealthSnapshot } from '@lib/healthKit';
-import { weekAverage } from '@lib/healthData';
+import { weekAverage, weekTotal } from '@lib/healthData';
 import { theme } from '@styles/theme';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
@@ -25,6 +25,7 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: b
         index < todayIndex ? MOCK_STEPS_BEFORE_TODAY[index] : index === todayIndex ? steps : 0
       );
   const average = weekAverage(values, now);
+  const total = weekTotal(values, now);
   // The day whose steps are shown (today until the member taps another bar).
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const shownDay = selectedDay !== null && selectedDay <= todayIndex ? selectedDay : todayIndex;
@@ -66,6 +67,7 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: b
           {`${isToday ? 'היום' : `יום ${WEEKDAY_LETTERS[shownDay]}`} · ${remaining > 0 ? `עוד ${remaining.toLocaleString('he-IL')} ליעד` : 'עברת את היעד'}`}
         </Text>
       </View>
+      <Text style={styles.weekTotal}>{`סה"כ השבוע: ${total.toLocaleString('he-IL')} צעדים`}</Text>
       <BarChart
         accessibilityLabel={`צעדים לפי יום, יעד ${stepsGoal.toLocaleString('he-IL')}. היום ${steps.toLocaleString('he-IL')}`}
         selectedIndex={shownDay}
@@ -97,6 +99,13 @@ const styles = StyleSheet.create({
     lineHeight: 62,
     fontFamily: theme.typography.display.fontFamily,
     color: theme.colors.text,
+  },
+  weekTotal: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontFamily: theme.typography.bodySmallBold.fontFamily,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.md,
   },
   remaining: {
     fontSize: 14,
