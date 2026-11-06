@@ -62,7 +62,9 @@ export const RunScreen: React.FC = () => {
     setPhotoNote(null);
     setManualError(null);
     try {
-      const picked = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
+      // allowsEditing hands the reader a fresh upright copy (a camera photo carries a hidden "rotated" mark that the reader
+      // ignores, which turns the text sideways), and lets the member crop to the numbers, which also reads better.
+      const picked = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1, allowsEditing: true });
       if (picked.canceled || !picked.assets[0]) return;
       setReading(true);
       const lines = await extractTextFromImage(picked.assets[0].uri);
