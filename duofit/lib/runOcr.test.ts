@@ -44,3 +44,16 @@ test('parseRunFromText: a distance written under its label without a unit (the l
   assert.equal(parseRunFromText(['Distance 3.5']).km, 3.5);
   assert.equal(parseRunFromText(['Calories', '392']).km, undefined);
 });
+
+test('parseRunFromText: a clock the reader split with spaces or dots ("00 42 15", "1.05.30") is still a duration', () => {
+  assert.deepEqual(parseRunFromText(['5.20 km', '00 42 15']), { km: 5.2, minutes: 42 });
+  assert.deepEqual(parseRunFromText(['10.0 km', '1.05.30']), { km: 10, minutes: 66 });
+});
+
+test('parseRunFromText: letters the reader mistook for digits inside a clock or a distance are fixed', () => {
+  assert.deepEqual(parseRunFromText(['5.2O km', '4O:15']), { km: 5.2, minutes: 40 });
+});
+
+test('parseRunFromText: garbage text gives nothing', () => {
+  assert.deepEqual(parseRunFromText(['HO 00 00 11 TOП', 'e e o bob e e e e v bAL D E VIULIU HSINIS Z9:60 26']), {});
+});
