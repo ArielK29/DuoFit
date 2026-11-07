@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { buildWeekSteps, mergeTodaySteps, metersToKm, type HealthRun } from '@lib/healthData';
+import { buildWeekSteps, mergeTodaySteps, metersToKm, weekTotal, type HealthRun } from '@lib/healthData';
 import { readSensorSteps } from '@lib/pedometer';
 
 // Thin wrapper over Apple Health (HealthKit). iOS only, and only in a real build: Expo Go, the
@@ -12,6 +12,9 @@ import { readSensorSteps } from '@lib/pedometer';
 
 export interface HealthSnapshot {
   weekSteps: number[]; // Sunday first
+  // Last week's steps on the same weekdays as this week so far (the whole week on Saturday night), for the percent change in
+  // the week summary. Missing in a snapshot saved by an older build, and when Apple Health could not be asked.
+  lastWeekSameDays?: number;
   todaySteps: number;
   todayKcal: number;
   // Energy of every workout that started today (Apple Watch, a running app that writes to Health), 0 when there is none.
@@ -90,7 +93,8 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
 
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const [stepDays, energyToday, monthDistance, workouts, sensorSteps, todayWorkouts, distancePieces] = await Promise.all([
+  const lastWeekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() - 7);
+  const [stepDays, energyToday, monthDistance, workouts, sensorSteps, todayWorkouts, distancePieces, lastWeekDays] = await Promise.all([
     healthKit.queryStatisticsCollectionForQuantity(STEPS, ['cumulativeSum'], weekStart, { day: 1 }, {
       filter: { date: { startDate: weekStart, endDate: now } },
       unit: 'count',
@@ -122,6 +126,13 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
         unit: 'm',
       })
       .catch(() => []),
+    // Last week's days. A failure here must not hide the rest of the numbers.
+    healthKit
+      .queryStatisticsCollectionForQuantity(STEPS, ['cumulativeSum'], lastWeekStart, { day: 1 }, {
+        filter: { date: { startDate: lastWeekStart, endDate: weekStart } },
+        unit: 'count',
+      })
+      .catch(() => null),
   ]);
 
   const daily = stepDays
@@ -130,6 +141,17 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
   const weekSteps = buildWeekSteps(daily, now);
   // Apple Health trails the phone by minutes; the motion sensor is live (see lib/pedometer.ts).
   weekSteps[now.getDay()] = mergeTodaySteps(weekSteps[now.getDay()] ?? 0, sensorSteps);
+
+  let lastWeekSameDays: number | undefined;
+  if (lastWeekDays) {
+    const lastWeekDaily = lastWeekDays
+      .filter((day) => day.startDate)
+      .map((day) => ({ date: day.startDate as Date, steps: day.sumQuantity?.quantity ?? 0 }));
+    // The same day of the week, one week back: its week runs from lastWeekStart up to that day.
+    const sameDayLastWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+    const lastWeekSteps = buildWeekSteps(lastWeekDaily, new Date(sameDayLastWeek.getFullYear(), sameDayLastWeek.getMonth(), sameDayLastWeek.getDate() + (6 - sameDayLastWeek.getDay())));
+    lastWeekSameDays = weekTotal(lastWeekSteps, sameDayLastWeek);
+  }
 
   let workoutKcalToday = 0;
   for (const workout of todayWorkouts) {
@@ -157,6 +179,7 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
 
   return {
     weekSteps,
+    lastWeekSameDays,
     todaySteps: weekSteps[now.getDay()] ?? 0,
     todayKcal: Math.round(energyToday.sumQuantity?.quantity ?? 0),
     workoutKcalToday: Math.round(workoutKcalToday),
