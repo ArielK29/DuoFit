@@ -181,50 +181,41 @@ export function bestKcal(parts: {
   pieceKcal: number;
   stepsKcal: number;
   runExtraKcal: number;
-  // Runs and walks whose calories the member gave (see runKcalAdjustments): the calories he gave count in full, and the estimate
-  // loses what it had already counted for the same distance, but never more than it has (so the day is never below the workout).
+  // Calories the member gave for today's walks and runs (a watch, a treadmill screen): added in full on top of the estimate, so
+  // what he adds is what he sees added. (If the phone also counted the steps of that walk, a part of it is counted twice: the
+  // number is an estimate and says so.)
   enteredKcal?: number;
-  stepsBaseline?: number;
-  pieceBaseline?: number;
 }): { kcal: number; estimated: boolean } {
   const measured = Math.max(cleanNumber(parts.activeKcal), cleanNumber(parts.workoutKcal));
   const entered = cleanNumber(parts.enteredKcal ?? 0);
-  const steps = cleanNumber(parts.stepsKcal);
-  const pieces = cleanNumber(parts.pieceKcal);
   const estimate = Math.max(
-    pieces - Math.min(pieces, cleanNumber(parts.pieceBaseline ?? 0)) + entered,
-    steps - Math.min(steps, cleanNumber(parts.stepsBaseline ?? 0)) + cleanNumber(parts.runExtraKcal) + entered
+    cleanNumber(parts.pieceKcal) + entered,
+    cleanNumber(parts.stepsKcal) + cleanNumber(parts.runExtraKcal) + entered
   );
   return estimate > measured ? { kcal: Math.round(estimate), estimated: true } : { kcal: Math.round(measured), estimated: false };
 }
 
 // Today's runs recorded in the app, split by whether the member gave the calories of the run:
 //  - without calories: the run adds the extra of running over walking (see runExtraKcal);
-//  - with calories (from a watch or another app): the number replaces what the steps (or the distance pieces) already counted
-//    for that distance (the baselines), so the run is counted once, with the member's number.
+//  - with calories (from a watch, a treadmill or another app): the number is added in full (enteredKcal).
 export function runKcalAdjustments(
   recordedRuns: HealthRun[],
   now: Date,
   weightKg: number | null
-): { extraKcal: number; enteredKcal: number; stepsBaseline: number; pieceBaseline: number } {
+): { extraKcal: number; enteredKcal: number } {
   const weight = weightKg !== null && Number.isFinite(weightKg) && weightKg > 0 ? weightKg : DEFAULT_WEIGHT_KG;
   const today = startOfDay(now);
   let extraKcal = 0;
   let enteredKcal = 0;
-  let stepsBaseline = 0;
-  let pieceBaseline = 0;
   for (const run of recordedRuns) {
     if (startOfDay(new Date(run.startedAt)) !== today) continue;
     const km = cleanNumber(run.km);
     const kcal = cleanNumber(run.kcal ?? 0);
     if (kcal > 0) {
-      const speedKmh = run.durationSec > 0 ? km / (run.durationSec / 3600) : 0;
       enteredKcal += kcal;
-      stepsBaseline += km * weight * KCAL_PER_KG_PER_KM;
-      pieceBaseline += km * weight * (speedKmh >= RUNNING_KMH ? 1.0 : 0.5);
     } else {
       extraKcal += km * weight * KCAL_PER_KG_PER_KM;
     }
   }
-  return { extraKcal: Math.round(extraKcal), enteredKcal: Math.round(enteredKcal), stepsBaseline: Math.round(stepsBaseline), pieceBaseline: Math.round(pieceBaseline) };
+  return { extraKcal: Math.round(extraKcal), enteredKcal: Math.round(enteredKcal) };
 }

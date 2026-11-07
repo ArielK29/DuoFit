@@ -213,26 +213,24 @@ test("runKcalAdjustments: a run with the member's calories replaces the steps es
     ...(kcal === undefined ? {} : { kcal }),
   });
   // A walk of 2.4 km in 30 minutes (4.8 km/h), 70 kg: the steps already counted 2.4 * 70 * 0.5 = 84, the member says 126.
-  assert.deepEqual(runKcalAdjustments([todayRun(2.4, 30, 126)], wed, 70), { extraKcal: 0, enteredKcal: 126, stepsBaseline: 84, pieceBaseline: 84 });
+  assert.deepEqual(runKcalAdjustments([todayRun(2.4, 30, 126)], wed, 70), { extraKcal: 0, enteredKcal: 126 });
   // A run of 5 km in 25 minutes (12 km/h): the pieces counted 5 * 70 * 1.0 = 350, the steps 175, the member says 392.
-  assert.deepEqual(runKcalAdjustments([todayRun(5, 25, 392)], wed, 70), { extraKcal: 0, enteredKcal: 392, stepsBaseline: 175, pieceBaseline: 350 });
+  assert.deepEqual(runKcalAdjustments([todayRun(5, 25, 392)], wed, 70), { extraKcal: 0, enteredKcal: 392 });
   // Without calories the run adds the running extra, like before.
-  assert.deepEqual(runKcalAdjustments([todayRun(5, 25)], wed, 70), { extraKcal: 175, enteredKcal: 0, stepsBaseline: 0, pieceBaseline: 0 });
+  assert.deepEqual(runKcalAdjustments([todayRun(5, 25)], wed, 70), { extraKcal: 175, enteredKcal: 0 });
   // A run of another day does not count today; broken numbers are ignored.
   const yesterday = { ...todayRun(5, 25, 392), startedAt: new Date(wed.getFullYear(), wed.getMonth(), wed.getDate() - 1, 7).toISOString() };
-  assert.deepEqual(runKcalAdjustments([yesterday], wed, 70), { extraKcal: 0, enteredKcal: 0, stepsBaseline: 0, pieceBaseline: 0 });
+  assert.deepEqual(runKcalAdjustments([yesterday], wed, 70), { extraKcal: 0, enteredKcal: 0 });
 });
 
-test("bestKcal: the calories the member gave count in full, the estimate loses what it had counted for that distance (never more), a watch is not added to", () => {
-  const base = { activeKcal: 0, workoutKcal: 0, pieceKcal: 0, stepsKcal: 83, runExtraKcal: 0 };
-  // The walk of 2.4 km: the steps had counted 83 of the 84 it is worth, the member says 126: the day is 126.
-  assert.deepEqual(bestKcal({ ...base, enteredKcal: 126, stepsBaseline: 84 }), { kcal: 126, estimated: true });
-  // A treadmill walk of 5 km (baseline 175, 303 given) while the phone counted few steps (70 kcal): the day is the workout, 303.
-  assert.deepEqual(bestKcal({ ...base, stepsKcal: 70, enteredKcal: 303, stepsBaseline: 175 }), { kcal: 303, estimated: true });
-  // The phone counted a lot of other steps (600 kcal): the day is those 600 minus the 175 of the walk, plus the 303.
-  assert.deepEqual(bestKcal({ ...base, stepsKcal: 600, enteredKcal: 303, stepsBaseline: 175 }), { kcal: 728, estimated: true });
+test("bestKcal: the calories the member gave are added in full on top of the estimate, a watch that measured more is not added to", () => {
+  const base = { activeKcal: 0, workoutKcal: 0, pieceKcal: 0, stepsKcal: 198, runExtraKcal: 0 };
+  // 198 counted, a treadmill walk of 303: the day is 501.
+  assert.deepEqual(bestKcal({ ...base, enteredKcal: 303 }), { kcal: 501, estimated: true });
+  // The distance pieces estimate also gets the added calories.
+  assert.deepEqual(bestKcal({ ...base, stepsKcal: 50, pieceKcal: 250, enteredKcal: 100 }), { kcal: 350, estimated: true });
   // A watch that measured more wins and nothing is added to it.
-  assert.deepEqual(bestKcal({ ...base, activeKcal: 900, enteredKcal: 303, stepsBaseline: 175 }), { kcal: 900, estimated: false });
+  assert.deepEqual(bestKcal({ ...base, activeKcal: 900, enteredKcal: 303 }), { kcal: 900, estimated: false });
   // Without calories given nothing changes.
   assert.deepEqual(bestKcal({ ...base, stepsKcal: 168 }), { kcal: 168, estimated: true });
 });
