@@ -20,6 +20,8 @@ interface RunRow {
   title: string;
   duration: string;
   pace: string;
+  // Calories the member gave for this workout (a watch, a treadmill screen), shown next to the date.
+  kcal?: number;
 }
 
 // "ריצות": running workouts from Apple Health when it is connected (`snapshot`); otherwise labelled example
@@ -44,6 +46,7 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
         title: recordedIds.has(run.id) && activityKind(run.km, run.durationSec) === 'walk' ? `${run.km} ק"מ · הליכה` : `${run.km} ק"מ`,
         duration: runDurationText(run.durationSec),
         pace: paceText(run.km, run.durationSec),
+        kcal: run.kcal,
       }))
     : MOCK_RUNS.map((run) => ({
         key: String(run.daysAgo),
@@ -92,7 +95,7 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
             </View>
             <View style={styles.info}>
               <Text style={styles.distance}>{run.title}</Text>
-              <Text style={styles.date}>{`${WEEKDAY_LETTERS[date.getDay()]} ${date.getDate()}.${date.getMonth() + 1}`}</Text>
+              <Text style={styles.date}>{`${WEEKDAY_LETTERS[date.getDay()]} ${date.getDate()}.${date.getMonth() + 1}${run.kcal ? ` · ${run.kcal} קלוריות` : ''}`}</Text>
             </View>
             <View style={styles.stats}>
               <Text style={styles.duration}>{run.duration}</Text>
