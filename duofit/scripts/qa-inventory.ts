@@ -126,7 +126,7 @@ function scan(file: string): { handlers: number; byHandler: Record<string, numbe
 // Which flow(s) in docs/QA-FLOWS.md exercise each file's buttons. "all" = shared building block used by every flow.
 // A file with handlers that is missing here fails --check: add the file (or a new flow row) when you add a screen.
 const FLOW_MAP: Record<string, string> = {
-  'components/AccountSheet.tsx': '3, 11, 18',
+  'components/AccountSheet.tsx': '3, 11, 18, 25',
   'components/BackButton.tsx': '7, 8, 12',
   'components/BarChart.tsx': '16',
   'components/BottomSheet.tsx': 'all',
@@ -146,6 +146,7 @@ const FLOW_MAP: Record<string, string> = {
   'components/UpcomingWorkoutCard.tsx': '12, 13',
   'components/ValueStepper.tsx': '16',
   'screens/admin/AdminReviewScreen.tsx': '24',
+  'screens/admin/AdminSupportScreen.tsx': '25',
   'screens/chat/ChatListScreen.tsx': '10, 11',
   'screens/chat/ConversationScreen.tsx': '10, 11, 12',
   'screens/chat/NewChatSheet.tsx': '10',
@@ -172,6 +173,7 @@ const FLOW_MAP: Record<string, string> = {
   'screens/notifications/NotificationsScreen.tsx': '15',
   'screens/verify/VerifyIdentityScreen.tsx': '23',
   'screens/progress/ProgressScreen.tsx': '16',
+  'screens/support/SupportScreen.tsx': '25',
   'screens/progress/RunsCard.tsx': '16',
   'screens/run/RunScreen.tsx': '16',
   'screens/progress/ProgressSheets.tsx': '16',
