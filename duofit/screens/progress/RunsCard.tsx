@@ -7,7 +7,7 @@ import { useRunStore } from '@hooks/useRunStore';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
 import { HEALTH_GOALS, MOCK_HEALTH, MOCK_RUNS } from '@constants/mockHealth';
 import type { HealthSnapshot } from '@lib/healthKit';
-import { bestMonthKm, paceText, recentRuns, runDurationText } from '@lib/healthData';
+import { activityKind, bestMonthKm, paceText, recentRuns, runDurationText } from '@lib/healthData';
 import { theme } from '@styles/theme';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
@@ -35,11 +35,13 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
   const isExample = snapshot === null && recorded.length === 0 && !waiting;
   const monthKm = isExample ? MOCK_HEALTH.runKm : bestMonthKm(snapshot ? snapshot.monthKm : null, recorded, now);
 
+  // A walk saved in the app is named a walk; Apple Health running workouts are runs.
+  const recordedIds = new Set(recorded.map((run) => run.id));
   const rows: RunRow[] = !isExample
     ? recentRuns([...(snapshot ? snapshot.runs : []), ...recorded], RUNS_SHOWN).map((run) => ({
         key: run.id,
         date: new Date(run.startedAt),
-        title: `${run.km} ק"מ`,
+        title: recordedIds.has(run.id) && activityKind(run.km, run.durationSec) === 'walk' ? `${run.km} ק"מ · הליכה` : `${run.km} ק"מ`,
         duration: runDurationText(run.durationSec),
         pace: paceText(run.km, run.durationSec),
       }))
@@ -53,9 +55,9 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
 
   if (waiting) {
     return (
-      <CardShell title="ריצות">
+      <CardShell title="הליכות וריצות">
         <View style={styles.startRun}>
-          <Button label="התחל ריצה" variant="primary" onPress={() => router.push('/run')} />
+          <Button label="התחל הליכה או ריצה" variant="primary" onPress={() => router.push('/run')} />
         </View>
         <Text style={styles.empty}>טוען את הנתונים שלך...</Text>
       </CardShell>
@@ -64,7 +66,7 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
 
   return (
     <CardShell
-      title="ריצות"
+      title="הליכות וריצות"
       isExample={isExample}
       chip={
         <View style={pillStyles.pill}>
@@ -76,7 +78,7 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
       }
     >
       <View style={styles.startRun}>
-        <Button label="התחל ריצה" variant="primary" onPress={() => router.push('/run')} />
+        <Button label="התחל הליכה או ריצה" variant="primary" onPress={() => router.push('/run')} />
       </View>
       {rows.length === 0 && (
         <Text style={styles.empty}>אין ריצות ב-60 הימים האחרונים ב-Apple Health. ריצה שתתועד באפל ווטש או באפליקציית ריצה תופיע כאן.</Text>

@@ -18,6 +18,7 @@ import {
   recentRuns,
   todayRunKm,
   weekAverage,
+  activityKind,
   isWeekSummaryTime,
   runKcalAdjustments,
   percentChange,
@@ -227,4 +228,11 @@ test("bestKcal: the member's calories for a run lift the estimate by the differe
   assert.deepEqual(bestKcal({ ...base, stepsAdjust: 42 }), { kcal: 125, estimated: true });
   assert.deepEqual(bestKcal({ ...base, activeKcal: 300, stepsAdjust: 42 }), { kcal: 300, estimated: false });
   assert.deepEqual(bestKcal({ ...base, stepsAdjust: -500 }), { kcal: 0, estimated: false });
+});
+
+test("activityKind: a 9:30 pace is a walk, a 6:00 pace is a run, broken numbers count as a run", () => {
+  assert.equal(activityKind(5, 47 * 60 + 31), 'walk');
+  assert.equal(activityKind(5, 30 * 60), 'run');
+  assert.equal(activityKind(5, 0), 'run');
+  assert.equal(activityKind(Number.NaN, 1800), 'walk');
 });

@@ -167,6 +167,13 @@ export function kcalFromDistancePieces(kmPerFiveMinutes: number[], weightKg: num
 
 const RUNNING_KMH = 7.5;
 
+// A recorded workout is a walk when the average speed is below running speed (about 8 minutes per km). Only used to name it.
+export function activityKind(km: number, durationSec: number): 'walk' | 'run' {
+  const hours = cleanNumber(durationSec) / 3600;
+  if (hours <= 0) return 'run';
+  return cleanNumber(km) / hours < RUNNING_KMH ? 'walk' : 'run';
+}
+
 // Today's calories: what the phone measured (active energy, workouts) when that is the biggest, otherwise the best estimate.
 export function bestKcal(parts: {
   activeKcal: number;

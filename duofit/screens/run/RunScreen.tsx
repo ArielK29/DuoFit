@@ -131,7 +131,7 @@ export const RunScreen: React.FC = () => {
     setMessage(null);
     const permission = await Location.requestForegroundPermissionsAsync();
     if (permission.status !== 'granted') {
-      setMessage('כדי למדוד ריצה צריך לאשר גישה למיקום. אפשר לאשר ב: הגדרות ← FitFriend ← מיקום. אפשר גם להזין ריצה ידנית למטה.');
+      setMessage('כדי למדוד הליכה או ריצה צריך לאשר גישה למיקום. אפשר לאשר ב: הגדרות ← FitFriend ← מיקום. אפשר גם להזין ידנית למטה.');
       return;
     }
     progressRef.current = emptyRunProgress();
@@ -155,7 +155,7 @@ export const RunScreen: React.FC = () => {
       setPhase('running');
     } catch {
       stopWatching();
-      setMessage('לא הצלחנו להפעיל את ה-GPS. נסה שוב בחוץ, או הזן את הריצה ידנית למטה.');
+      setMessage('לא הצלחנו להפעיל את ה-GPS. נסה שוב בחוץ, או הזן ידנית למטה.');
     }
   };
 
@@ -165,7 +165,7 @@ export const RunScreen: React.FC = () => {
     const durationSec = Math.round((Date.now() - startedAt.current) / 1000);
     if (km < MIN_SAVED_KM) {
       setPhase('idle');
-      setMessage('הריצה קצרה מדי כדי לשמור אותה.');
+      setMessage('האימון קצר מדי כדי לשמור אותו.');
       return;
     }
     addRun({ id: newId(), startedAt: new Date(startedAt.current).toISOString(), km, durationSec });
@@ -178,11 +178,11 @@ export const RunScreen: React.FC = () => {
     const km = manualKm ?? 0;
     const minutes = manualMinutes ?? 0;
     if (!(km >= MIN_SAVED_KM && km <= 100)) {
-      setManualError('בחר את המרחק שרצת');
+      setManualError('בחר את המרחק');
       return;
     }
     if (!(minutes >= 1 && minutes <= 1000)) {
-      setManualError('בחר את משך הריצה');
+      setManualError('בחר את משך האימון');
       return;
     }
     const kcalText = manualKcal.trim();
@@ -202,7 +202,7 @@ export const RunScreen: React.FC = () => {
     return (
       <View style={styles.container}>
         <View style={styles.centered}>
-          <Text style={styles.title}>הריצה נשמרה</Text>
+          <Text style={styles.title}>האימון נשמר</Text>
           <Text style={styles.bigValue}>{summary.km.toFixed(2)}</Text>
           <Text style={styles.unit}>ק"מ</Text>
           <Text style={styles.detail}>{`${runDurationText(summary.durationSec)} · ${paceText(summary.km, summary.durationSec)} לק"מ`}</Text>
@@ -237,7 +237,7 @@ export const RunScreen: React.FC = () => {
           </View>
           <Text style={styles.hint}>השאר את המסך דולק ואת האפליקציה פתוחה, אחרת ה-GPS נעצר.</Text>
           <View style={styles.actions}>
-            <Button label="סיים ריצה" variant="primary" size="lg" onPress={finish} />
+            <Button label="סיים" variant="primary" size="lg" onPress={finish} />
           </View>
         </View>
       </View>
@@ -248,26 +248,26 @@ export const RunScreen: React.FC = () => {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <BackButton />
-        <Text style={styles.title}>ריצה</Text>
+        <Text style={styles.title}>הליכה או ריצה</Text>
         <Text style={styles.body}>
-          הקש "התחל" ורוץ. האפליקציה מודדת מרחק, זמן וקצב עם GPS בזמן אמת. המידע נשמר בטלפון שלך בלבד.
+          הקש "התחל" וצא להליכה או לריצה. האפליקציה מודדת מרחק, זמן וקצב עם GPS בזמן אמת. המידע נשמר בטלפון שלך בלבד.
         </Text>
         {message && <Text style={styles.error}>{message}</Text>}
         <View style={styles.block}>
-          <Button label="התחל ריצה" variant="primary" size="lg" onPress={start} />
+          <Button label="התחל הליכה או ריצה" variant="primary" size="lg" onPress={start} />
         </View>
 
-        <Text style={styles.sectionTitle}>סיימת ריצה? שמור בכמה לחיצות</Text>
+        <Text style={styles.sectionTitle}>סיימת הליכה או ריצה? שמור בכמה לחיצות</Text>
 
         {textReadingSupported && (
           <View style={styles.block}>
-            <Button label="קרא מצילום של הריצה" variant="secondary" size="lg" loading={reading} disabled={reading} onPress={readFromPhoto} />
-            <Text style={styles.photoHint}>בחר צילום מסך של השעון או של אפליקציית הריצה. הקריאה נעשית בטלפון בלבד והתמונה לא נשלחת לשום מקום.</Text>
+            <Button label="קרא מצילום של האימון" variant="secondary" size="lg" loading={reading} disabled={reading} onPress={readFromPhoto} />
+            <Text style={styles.photoHint}>בחר צילום מסך של השעון, של ההליכון או של אפליקציית האימון. הקריאה נעשית בטלפון בלבד והתמונה לא נשלחת לשום מקום.</Text>
             {photoNote && <Text style={styles.photoNote}>{photoNote}</Text>}
           </View>
         )}
 
-        <Text style={styles.fieldLabel}>{manualKm === null ? 'כמה רצת?' : `רצת ${manualKm} ק"מ`}</Text>
+        <Text style={styles.fieldLabel}>{manualKm === null ? 'כמה הלכת או רצת?' : `${manualKm} ק"מ`}</Text>
         <View style={styles.chipsWrap}>
           {DISTANCE_CHIPS_KM.map((km) => (
             <Chip key={km} label={`${km} ק"מ`} selected={manualKm === km} onPress={() => chooseKm(km)} />
@@ -302,7 +302,7 @@ export const RunScreen: React.FC = () => {
         />
         {manualError && <Text style={styles.error}>{manualError}</Text>}
         <Button
-          label={manualKm !== null && manualMinutes !== null ? `שמור ריצה · ${manualKm} ק"מ · ${manualMinutes} דק'` : 'שמור ריצה'}
+          label={manualKm !== null && manualMinutes !== null ? `שמור · ${manualKm} ק"מ · ${manualMinutes} דק'` : 'שמור'}
           variant="primary"
           size="lg"
           onPress={saveManual}

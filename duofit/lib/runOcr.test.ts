@@ -70,3 +70,24 @@ test('parseRunFromText: calories after their unit, after their label, in Hebrew,
 test('parseRunFromText: a word that merely ends in cal is not calories', () => {
   assert.equal(parseRunFromText(['Local 5 km', 'Medical 30:00']).kcal, undefined);
 });
+
+test('parseRunFromText: the treadmill screen of the gym (a pace before the Calories label) gives 303, not the 30 of the pace', () => {
+  const rowByRow = ['Workout Complete!', "Today's Totals", 'Avg Heart Rate 0', 'Avg Pace 09:30', 'Calories 303', 'Distance 5.00 kilometers', 'Duration 47:31', 'Status 83% complete', 'Target Distance 6.00 kilometers'];
+  assert.deepEqual(parseRunFromText(rowByRow), { km: 5, minutes: 48, kcal: 303 });
+  const labelsThenValues = ['Avg Pace', '09:30', 'Calories', '303', 'Distance', '5.00 kilometers', 'Duration', '47:31'];
+  assert.equal(parseRunFromText(labelsThenValues).kcal, 303);
+});
+
+test('parseRunFromText: a number that belongs to a clock or a decimal is not calories', () => {
+  assert.equal(parseRunFromText(['6:30 cal']).kcal, undefined);
+  assert.equal(parseRunFromText(['2.5 kcal']).kcal, undefined);
+  assert.equal(parseRunFromText(['Calories 303.5']).kcal, undefined);
+});
+
+test('parseRunFromText: the layouts of other screens (Apple Fitness, a Hebrew watch, Strava style) give the right calories', () => {
+  assert.equal(parseRunFromText(['Active Calories', '392CAL', 'Total Calories', '523CAL', 'Distance', '5.02KM']).kcal, 392);
+  assert.equal(parseRunFromText(['קלוריות פעילות 392', '5.02 ק"מ', '31:45']).kcal, 392);
+  assert.equal(parseRunFromText(['Calories burned: 280', 'Distance 4.2 km']).kcal, 280);
+  assert.equal(parseRunFromText(['5.0 km', '31:00', '312 Cal']).kcal, 312);
+  assert.equal(parseRunFromText(['Elapsed Time 31:00', 'Calories 312', 'Avg Pace 6:12 /km']).kcal, 312);
+});

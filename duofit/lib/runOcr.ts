@@ -58,12 +58,18 @@ function findMinutes(joined: string): number | undefined {
 }
 
 // Calories burned: a number followed by its unit, or a number right after the word. A watch screen often shows both.
-const KCAL_AFTER = /(\d{1,4})\s*(?:kcal|cals?|calories|קלוריות|קלורי|קק"ל|קק״ל|קל')(?![a-zא-ת])/i;
-const KCAL_BEFORE = /(?<![a-z])(?:calories|kcal|cals?|קלוריות)\s*[:\-]?\s*(\d{1,4})(?!\d)/i;
+// A number is never taken from the middle of a clock or a decimal ("09:30 Calories 303" is a pace followed by the label, not
+// "30 calories"). The order matters: a short unit right after a number ("392 kcal") is the clearest; then a label followed by
+// its number ("Calories 303", the layout of a treadmill screen); a full word after a number ("350 קלוריות") comes last,
+// because in a table the number before the word usually belongs to the row above.
+const NOT_IN_NUMBER = '(?<![\\d:.,])';
+const KCAL_UNIT_AFTER = new RegExp(NOT_IN_NUMBER + '(\\d{1,4})\\s*(?:kcal|cals?|קק"ל|קק״ל|קל\')(?![a-zא-ת])', 'i');
+const KCAL_BEFORE = /(?<![a-z])(?:calories|kcal|cals?|קלוריות)(?:\s+(?:active|total|burned|burnt|פעילות|פעילים|סה"כ))*\s*[:\-]?\s*(\d{1,4})(?![\d:.,])/i;
+const KCAL_WORD_AFTER = new RegExp(NOT_IN_NUMBER + '(\\d{1,4})\\s*(?:calories|קלוריות|קלורי)(?![a-zא-ת])', 'i');
 const MAX_KCAL = 5000;
 
 function findKcal(joined: string): number | undefined {
-  const match = KCAL_AFTER.exec(joined) ?? KCAL_BEFORE.exec(joined);
+  const match = KCAL_UNIT_AFTER.exec(joined) ?? KCAL_BEFORE.exec(joined) ?? KCAL_WORD_AFTER.exec(joined);
   if (!match) return undefined;
   const kcal = Number(match[1]);
   return kcal >= 1 && kcal <= MAX_KCAL ? kcal : undefined;
