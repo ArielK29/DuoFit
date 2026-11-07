@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Input } from '@components/Input';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { extractTextFromImage, isSupported as textReadingSupported } from 'expo-text-extractor';
@@ -46,12 +47,14 @@ export const RunScreen: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [progress, setProgress] = useState<RunProgress>(emptyRunProgress());
   const [elapsed, setElapsed] = useState(0);
-  const [summary, setSummary] = useState<{ km: number; durationSec: number } | null>(null);
+  const [summary, setSummary] = useState<{ km: number; durationSec: number; kcal?: number } | null>(null);
   // Quick entry: tap a distance, the time is suggested from the member's pace (and can be changed with a tap).
   const [manualKm, setManualKm] = useState<number | null>(null);
   const [manualMinutes, setManualMinutes] = useState<number | null>(null);
   const [minutesChosen, setMinutesChosen] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
+  // Calories of the run from a watch or another app (optional). Text, so the member can clear it.
+  const [manualKcal, setManualKcal] = useState('');
 
   const [reading, setReading] = useState(false);
   const [photoNote, setPhotoNote] = useState<string | null>(null);
@@ -69,7 +72,7 @@ export const RunScreen: React.FC = () => {
       setReading(true);
       const lines = await extractTextFromImage(picked.assets[0].uri);
       const found = parseRunFromText(lines);
-      if (found.km === undefined && found.minutes === undefined) {
+      if (found.km === undefined && found.minutes === undefined && found.kcal === undefined) {
         // Show a little of what was read, so a wrong guess can be told apart from "nothing was read" (and sent to us).
         const seen = lines.join(' ').replace(/\s+/g, ' ').trim().slice(0, 70);
         setPhotoNote(seen ? `לא מצאנו מרחק או זמן בתמונה. הטקסט שנקרא: "${seen}". בחר ידנית בכפתורים.` : 'לא נקרא שום טקסט בתמונה. נסה צילום מסך ברור יותר, או בחר ידנית בכפתורים.');
@@ -82,7 +85,12 @@ export const RunScreen: React.FC = () => {
       } else if (found.km !== undefined && !minutesChosen) {
         setManualMinutes(suggestMinutes(found.km, previousRuns));
       }
-      const parts = [found.km !== undefined ? `${found.km} ק"מ` : null, found.minutes !== undefined ? `${found.minutes} דקות` : null].filter(Boolean);
+      if (found.kcal !== undefined) setManualKcal(String(found.kcal));
+      const parts = [
+        found.km !== undefined ? `${found.km} ק"מ` : null,
+        found.minutes !== undefined ? `${found.minutes} דקות` : null,
+        found.kcal !== undefined ? `${found.kcal} קלוריות` : null,
+      ].filter(Boolean);
       setPhotoNote(`זיהינו: ${parts.join(' ו-')}. בדוק שזה נכון ושמור.`);
     } catch (err) {
       logError('run_photo_read_failed', { error: String((err as { message?: string })?.message ?? err) });
@@ -177,10 +185,16 @@ export const RunScreen: React.FC = () => {
       setManualError('בחר את משך הריצה');
       return;
     }
+    const kcalText = manualKcal.trim();
+    const kcal = kcalText === '' ? undefined : Number(kcalText);
+    if (kcal !== undefined && !(Number.isInteger(kcal) && kcal >= 1 && kcal <= 5000)) {
+      setManualError('הקלוריות צריכות להיות מספר שלם בין 1 ל-5000, או שאפשר להשאיר ריק');
+      return;
+    }
     const durationSec = Math.round(minutes * 60);
     const rounded = Math.round(km * 100) / 100;
-    addRun({ id: newId(), startedAt: new Date(Date.now() - durationSec * 1000).toISOString(), km: rounded, durationSec });
-    setSummary({ km: rounded, durationSec });
+    addRun({ id: newId(), startedAt: new Date(Date.now() - durationSec * 1000).toISOString(), km: rounded, durationSec, ...(kcal === undefined ? {} : { kcal }) });
+    setSummary({ km: rounded, durationSec, kcal });
     setPhase('saved');
   };
 
@@ -192,6 +206,7 @@ export const RunScreen: React.FC = () => {
           <Text style={styles.bigValue}>{summary.km.toFixed(2)}</Text>
           <Text style={styles.unit}>ק"מ</Text>
           <Text style={styles.detail}>{`${runDurationText(summary.durationSec)} · ${paceText(summary.km, summary.durationSec)} לק"מ`}</Text>
+          {summary.kcal !== undefined && <Text style={styles.detail}>{`${summary.kcal} קלוריות`}</Text>}
           <View style={styles.actions}>
             <Button label="חזרה להתקדמות" variant="primary" size="lg" onPress={() => router.back()} />
           </View>
@@ -276,6 +291,15 @@ export const RunScreen: React.FC = () => {
           ))}
         </View>
 
+        <Input
+          label="קלוריות שנשרפו (לא חובה)"
+          value={manualKcal}
+          onChangeText={(text) => setManualKcal(text.replace(/[^0-9]/g, '').slice(0, 4))}
+          keyboardType="number-pad"
+          placeholder="למשל 126"
+          helperText="אם השעון או אפליקציה אחרת הראו קלוריות, כתוב אותן. הן יחליפו את ההערכה של האפליקציה."
+          maxLength={4}
+        />
         {manualError && <Text style={styles.error}>{manualError}</Text>}
         <Button
           label={manualKm !== null && manualMinutes !== null ? `שמור ריצה · ${manualKm} ק"מ · ${manualMinutes} דק'` : 'שמור ריצה'}

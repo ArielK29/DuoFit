@@ -19,6 +19,7 @@ import {
   todayRunKm,
   weekAverage,
   isWeekSummaryTime,
+  runKcalAdjustments,
   percentChange,
   weekTotal,
   type HealthRun,
@@ -200,4 +201,30 @@ test("isWeekSummaryTime: only on Saturday night from 20:00", () => {
   assert.equal(isWeekSummaryTime(new Date(2026, 9, 31, 9, 0)), false);
   assert.equal(isWeekSummaryTime(new Date(2026, 10, 1, 21, 0)), false); // Sunday
   assert.equal(isWeekSummaryTime(new Date(2026, 9, 30, 21, 0)), false); // Friday night
+});
+
+test("runKcalAdjustments: a run with the member's calories replaces the steps estimate for its distance, a run without adds the running extra", () => {
+  const todayRun = (km: number, minutes: number, kcal?: number): HealthRun => ({
+    id: String(km),
+    startedAt: new Date(wed.getFullYear(), wed.getMonth(), wed.getDate(), 7, 0, 0).toISOString(),
+    km,
+    durationSec: minutes * 60,
+    ...(kcal === undefined ? {} : { kcal }),
+  });
+  // A walk of 2.4 km in 30 minutes (4.8 km/h), 70 kg: the steps already counted 2.4 * 70 * 0.5 = 84, the member says 126.
+  assert.deepEqual(runKcalAdjustments([todayRun(2.4, 30, 126)], wed, 70), { extraKcal: 0, stepsAdjust: 42, pieceAdjust: 42 });
+  // A run of 5 km in 25 minutes (12 km/h): the pieces counted 5 * 70 * 1.0 = 350, the steps 175, the member says 392.
+  assert.deepEqual(runKcalAdjustments([todayRun(5, 25, 392)], wed, 70), { extraKcal: 0, stepsAdjust: 217, pieceAdjust: 42 });
+  // Without calories the run adds the running extra, like before.
+  assert.deepEqual(runKcalAdjustments([todayRun(5, 25)], wed, 70), { extraKcal: 175, stepsAdjust: 0, pieceAdjust: 0 });
+  // A run of another day does not count today; broken numbers are ignored.
+  const yesterday = { ...todayRun(5, 25, 392), startedAt: new Date(wed.getFullYear(), wed.getMonth(), wed.getDate() - 1, 7).toISOString() };
+  assert.deepEqual(runKcalAdjustments([yesterday], wed, 70), { extraKcal: 0, stepsAdjust: 0, pieceAdjust: 0 });
+});
+
+test("bestKcal: the member's calories for a run lift the estimate by the difference, a watch measurement is not added to", () => {
+  const base = { activeKcal: 0, workoutKcal: 0, pieceKcal: 0, stepsKcal: 83, runExtraKcal: 0 };
+  assert.deepEqual(bestKcal({ ...base, stepsAdjust: 42 }), { kcal: 125, estimated: true });
+  assert.deepEqual(bestKcal({ ...base, activeKcal: 300, stepsAdjust: 42 }), { kcal: 300, estimated: false });
+  assert.deepEqual(bestKcal({ ...base, stepsAdjust: -500 }), { kcal: 0, estimated: false });
 });
