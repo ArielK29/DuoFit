@@ -11,6 +11,7 @@ import { useFeedStore } from '@hooks/useFeedStore';
 import { logError } from '@lib/analytics';
 import { DEMO_DATA } from '@lib/demo';
 import { pickImage } from '@lib/pickImage';
+import { countNewSupportRequests } from '@lib/remoteSupport';
 import { visualRightText } from '@lib/rtl';
 import { theme } from '@styles/theme';
 
@@ -31,16 +32,33 @@ export const AccountSheet: React.FC = () => {
   const unblock = useFeedStore((state) => state.unblock);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  // How many requests from members wait for the admin (shown on the admin button).
+  const [newRequests, setNewRequests] = useState(0);
 
   // The list of blocked members is loaded with the community feed; make sure it is there.
   useEffect(() => {
     if (visible && !DEMO_DATA && !useFeedStore.getState().loaded) useFeedStore.getState().load();
   }, [visible]);
 
+  const isAdmin = user?.isAdmin ?? false;
+  useEffect(() => {
+    if (visible && isAdmin && !DEMO_DATA) countNewSupportRequests().then(setNewRequests);
+  }, [visible, isAdmin]);
+
   // The terms and privacy text stays one tap from the account sheet, as the stores require.
   const openTerms = () => {
     close();
     router.push('/terms');
+  };
+
+  const openSupport = () => {
+    close();
+    router.push('/support');
+  };
+
+  const openAdminSupport = () => {
+    close();
+    router.push('/admin-support');
   };
 
   const openAdminReview = () => {
@@ -153,6 +171,10 @@ ${message}`)) changePhoto();
       <Text style={styles.note}>הנתונים שלך שמורים בחשבון הזה. כשתתנתק, הנתונים המקומיים במכשיר יימחקו.</Text>
       <View style={styles.buttons}>
         {user?.isAdmin && <Button label="בדיקות אימות (מנהל)" variant="secondary" size="lg" onPress={openAdminReview} />}
+        {user?.isAdmin && (
+          <Button label={newRequests > 0 ? `פניות מהמשתמשים (${newRequests}) (מנהל)` : 'פניות מהמשתמשים (מנהל)'} variant="secondary" size="lg" onPress={openAdminSupport} />
+        )}
+        {!DEMO_DATA && <Button label="פנייה אלינו" variant="secondary" size="lg" onPress={openSupport} />}
         <Button label="תנאי שימוש ופרטיות" variant="secondary" size="lg" onPress={openTerms} />
         <Button label="התנתק" variant="secondary" size="lg" onPress={handleSignOut} />
       </View>

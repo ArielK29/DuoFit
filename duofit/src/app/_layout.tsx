@@ -100,6 +100,8 @@ function AppStack({ isAuthenticated, profileComplete, verified }: { isAuthentica
         <Stack.Screen name="notifications" />
         <Stack.Screen name="run" />
         <Stack.Screen name="admin-review" />
+        <Stack.Screen name="support" />
+        <Stack.Screen name="admin-support" />
       </Stack.Protected>
       {/* Open to everyone (linked from sign-up). Declared last on purpose: the first open screen
           becomes the fallback for a blocked address, and that must stay the login / home flow. */}
