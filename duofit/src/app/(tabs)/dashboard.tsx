@@ -181,8 +181,7 @@ export default function Dashboard() {
         pieceKcal: kcalFromDistancePieces(live.distanceFiveMinKm ?? [], lastWeight),
         stepsKcal: estimateKcal(live.todaySteps, lastWeight),
         runExtraKcal: runAdjust.extraKcal,
-        stepsAdjust: runAdjust.stepsAdjust,
-        pieceAdjust: runAdjust.pieceAdjust,
+        enteredKcal: runAdjust.enteredKcal,
       })
     : { kcal: MOCK_HEALTH.calories, estimated: false };
   const calories = kcal.kcal;
