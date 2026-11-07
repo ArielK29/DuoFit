@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { Check, Dumbbell, Flame, Footprints, PhoneOff, Route, Trophy, Users, X, Zap } from 'lucide-react-native';
+import { Check, Dumbbell, Flame, Footprints, Route, Trophy, Users, X, Zap } from 'lucide-react-native';
 import { StatCarousel, StatPage } from '@components/StatCarousel';
 import { HeroStatCard } from '@components/HeroStatCard';
 import { WeekStrip } from '@components/WeekStrip';
@@ -12,7 +12,6 @@ import { NearbyPartnersRow } from '@components/NearbyPartnersRow';
 import { Button } from '@components/Button';
 import { NotificationBell } from '@components/NotificationBell';
 import { HealthConnectCard } from '@components/HealthConnectCard';
-import { workoutHoursThisWeek } from '@lib/wellbeing';
 import { StickyActionBar, STICKY_BAR_CLEARANCE } from '@components/StickyActionBar';
 import { useAccountSheet } from '@hooks/useAccountSheet';
 import { useAuth } from '@hooks/useAuth';
@@ -42,8 +41,6 @@ const CHECK_IN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
 
-// Goal for the weekly training hours ring on the second Home page.
-const WEEKLY_TRAINING_HOURS_GOAL = 3;
 
 function getWeeklyEncouragement(completed: number, goal: number): string {
   const remaining = goal - completed;
@@ -193,13 +190,6 @@ export default function Dashboard() {
   const hasRealKm = !!live || recordedRuns.length > 0;
   const runKm = hasRealKm ? bestMonthKm(live ? live.monthKm : null, recordedRuns, now) : MOCK_HEALTH.runKm;
 
-  // Training hours this week: hours of real training this week (runs from Apple Health or recorded in the app, plus shared workouts).
-  const trainingHours = workoutHoursThisWeek(
-    [...(live ? live.runs : []), ...recordedRuns],
-    completedWorkouts.map((workout) => workout.scheduledAt),
-    now
-  );
-
   const statPages: StatPage[] = [
     {
       key: 'workouts',
@@ -246,18 +236,8 @@ export default function Dashboard() {
     },
     {
       key: 'wellbeing',
-      hero: (
-        <HeroStatCard
-          value={String(trainingHours)}
-          suffix=" שע'"
-          label="שעות אימון השבוע"
-          subtext={trainingHours >= WEEKLY_TRAINING_HOURS_GOAL ? 'עברת את היעד השבועי' : `יעד שבועי: ${WEEKLY_TRAINING_HOURS_GOAL} שעות`}
-          subtextColor={theme.colors.cyan}
-          progress={Math.min(1, trainingHours / WEEKLY_TRAINING_HOURS_GOAL)}
-          color={theme.colors.cyan}
-          icon={PhoneOff}
-        />
-      ),
+      // No big card on this page: the weekly training hours tracker was removed.
+      hero: null,
       stats: [
         {
           value: plankRank === null ? '—' : `#${plankRank}`,
