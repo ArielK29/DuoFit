@@ -3,6 +3,7 @@
 export interface ParsedRun {
   km?: number;
   minutes?: number;
+  kcal?: number;
 }
 
 const MAX_KM = 100;
@@ -56,6 +57,18 @@ function findMinutes(joined: string): number | undefined {
   return undefined;
 }
 
+// Calories burned: a number followed by its unit, or a number right after the word. A watch screen often shows both.
+const KCAL_AFTER = /(\d{1,4})\s*(?:kcal|cals?|calories|קלוריות|קלורי|קק"ל|קק״ל|קל')(?![a-zא-ת])/i;
+const KCAL_BEFORE = /(?<![a-z])(?:calories|kcal|cals?|קלוריות)\s*[:\-]?\s*(\d{1,4})(?!\d)/i;
+const MAX_KCAL = 5000;
+
+function findKcal(joined: string): number | undefined {
+  const match = KCAL_AFTER.exec(joined) ?? KCAL_BEFORE.exec(joined);
+  if (!match) return undefined;
+  const kcal = Number(match[1]);
+  return kcal >= 1 && kcal <= MAX_KCAL ? kcal : undefined;
+}
+
 function findLabeledDistance(joined: string): number | undefined {
   const match = LABELED_DISTANCE.exec(joined);
   if (!match) return undefined;
@@ -84,5 +97,7 @@ export function parseRunFromText(lines: string[]): ParsedRun {
   const minutes = findMinutes(joined);
   if (km !== undefined) result.km = km;
   if (minutes !== undefined) result.minutes = minutes;
+  const kcal = findKcal(joined);
+  if (kcal !== undefined) result.kcal = kcal;
   return result;
 }

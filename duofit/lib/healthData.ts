@@ -11,6 +11,8 @@ export interface HealthRun {
   startedAt: string; // ISO
   km: number;
   durationSec: number;
+  // Calories the member entered or read from a photo (a watch, another app). Missing when he did not give any.
+  kcal?: number;
 }
 
 // Runs shorter than this are walks to the bus or a watch glitch, not a run worth listing.
@@ -172,8 +174,44 @@ export function bestKcal(parts: {
   pieceKcal: number;
   stepsKcal: number;
   runExtraKcal: number;
+  // What the member entered for a run replaces the estimate for that distance: how much to add (or take off) in each way of estimating.
+  stepsAdjust?: number;
+  pieceAdjust?: number;
 }): { kcal: number; estimated: boolean } {
   const measured = Math.max(cleanNumber(parts.activeKcal), cleanNumber(parts.workoutKcal));
-  const estimate = Math.max(cleanNumber(parts.pieceKcal), cleanNumber(parts.stepsKcal) + cleanNumber(parts.runExtraKcal));
+  const estimate = Math.max(
+    0,
+    cleanNumber(parts.pieceKcal) + (parts.pieceAdjust ?? 0),
+    cleanNumber(parts.stepsKcal) + cleanNumber(parts.runExtraKcal) + (parts.stepsAdjust ?? 0)
+  );
   return estimate > measured ? { kcal: Math.round(estimate), estimated: true } : { kcal: Math.round(measured), estimated: false };
+}
+
+// Today's runs recorded in the app, split by whether the member gave the calories of the run:
+//  - without calories: the run adds the extra of running over walking (see runExtraKcal);
+//  - with calories (from a watch or another app): the number replaces what the steps (or the distance pieces) already counted
+//    for that distance, so the run is counted once, with the member's number, and the day goes up by the difference.
+export function runKcalAdjustments(
+  recordedRuns: HealthRun[],
+  now: Date,
+  weightKg: number | null
+): { extraKcal: number; stepsAdjust: number; pieceAdjust: number } {
+  const weight = weightKg !== null && Number.isFinite(weightKg) && weightKg > 0 ? weightKg : DEFAULT_WEIGHT_KG;
+  const today = startOfDay(now);
+  let extraKcal = 0;
+  let stepsAdjust = 0;
+  let pieceAdjust = 0;
+  for (const run of recordedRuns) {
+    if (startOfDay(new Date(run.startedAt)) !== today) continue;
+    const km = cleanNumber(run.km);
+    const kcal = cleanNumber(run.kcal ?? 0);
+    if (kcal > 0) {
+      const speedKmh = run.durationSec > 0 ? km / (run.durationSec / 3600) : 0;
+      stepsAdjust += kcal - km * weight * KCAL_PER_KG_PER_KM;
+      pieceAdjust += kcal - km * weight * (speedKmh >= RUNNING_KMH ? 1.0 : 0.5);
+    } else {
+      extraKcal += km * weight * KCAL_PER_KG_PER_KM;
+    }
+  }
+  return { extraKcal: Math.round(extraKcal), stepsAdjust: Math.round(stepsAdjust), pieceAdjust: Math.round(pieceAdjust) };
 }

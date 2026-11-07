@@ -57,3 +57,16 @@ test('parseRunFromText: letters the reader mistook for digits inside a clock or 
 test('parseRunFromText: garbage text gives nothing', () => {
   assert.deepEqual(parseRunFromText(['HO 00 00 11 TOП', 'e e o bob e e e e v bAL D E VIULIU HSINIS Z9:60 26']), {});
 });
+
+test('parseRunFromText: calories after their unit, after their label, in Hebrew, and absurd ones are ignored', () => {
+  assert.equal(parseRunFromText(['5.02 km', '00:31:45', '392 kcal']).kcal, 392);
+  assert.equal(parseRunFromText(['Active Calories 126', '2.4 km']).kcal, 126);
+  assert.equal(parseRunFromText(['קלוריות: 210', '4 ק"מ']).kcal, 210);
+  assert.equal(parseRunFromText(['350 קלוריות']).kcal, 350);
+  assert.equal(parseRunFromText(['9999 kcal']).kcal, undefined);
+  assert.equal(parseRunFromText(['5 km', '30:00']).kcal, undefined);
+});
+
+test('parseRunFromText: a word that merely ends in cal is not calories', () => {
+  assert.equal(parseRunFromText(['Local 5 km', 'Medical 30:00']).kcal, undefined);
+});
