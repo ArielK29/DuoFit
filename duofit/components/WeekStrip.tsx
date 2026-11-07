@@ -38,9 +38,9 @@ export const WeekStrip: React.FC<WeekStripProps> = ({ activeDates }) => {
 
         return (
           <View key={dayStart} style={styles.dayColumn}>
-            <Text style={styles.label}>{WEEKDAY_LABELS[date.getDay()]}</Text>
+            <Text style={[styles.label, isToday && styles.labelToday]}>{WEEKDAY_LABELS[date.getDay()]}</Text>
             <View style={[styles.circle, isToday && styles.circleToday, isActive && styles.circleActive]}>
-              <Text style={[styles.dayNumber, isActive && styles.dayNumberActive]}>{date.getDate()}</Text>
+              <Text style={[styles.dayNumber, isToday && styles.dayNumberToday, isActive && styles.dayNumberActive]}>{date.getDate()}</Text>
             </View>
           </View>
         );
@@ -70,19 +70,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // Today: a solid cyan ring and a bright number, so it is clear which day it is. A day with training is filled cyan; today with
+  // training is filled and keeps the ring.
   circleToday: {
-    borderWidth: 1,
-    borderColor: theme.colors.textTertiary,
-    borderStyle: 'dashed',
+    borderWidth: 2,
+    borderColor: theme.colors.cyan,
   },
   circleActive: {
     backgroundColor: theme.colors.cyan,
-    borderWidth: 0,
   },
   dayNumber: {
     fontSize: 13,
     fontFamily: theme.typography.bodySmallBold.fontFamily,
     color: theme.colors.textSecondary,
+  },
+  labelToday: {
+    color: theme.colors.cyan,
+  },
+  dayNumberToday: {
+    color: theme.colors.text,
   },
   dayNumberActive: {
     color: theme.colors.black,
