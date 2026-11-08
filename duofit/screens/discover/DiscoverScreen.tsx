@@ -28,6 +28,10 @@ import { visualRight } from '@lib/rtl';
 
 type ViewMode = 'partners' | 'places';
 
+// The places view (map and list) shows made-up venues and distances, which would mislead members: hidden until it uses real
+// places. Set to true to bring it back.
+const SHOW_PLACES = false;
+
 const VIEW_OPTIONS: { value: ViewMode; label: string }[] = [
   { value: 'partners', label: 'שותפים' },
   { value: 'places', label: 'מקומות' },
@@ -138,7 +142,7 @@ export function DiscoverScreen() {
           </View>
         </View>
 
-        <SegmentedToggle options={VIEW_OPTIONS} value={viewMode} onChange={setViewMode} />
+        {SHOW_PLACES && <SegmentedToggle options={VIEW_OPTIONS} value={viewMode} onChange={setViewMode} />}
 
         {viewMode === 'partners' ? (
           <>

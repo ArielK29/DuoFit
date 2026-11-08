@@ -86,3 +86,34 @@ export async function notifyInviteAnswered(partnerName: string, accepted: boolea
     // See module comment — expected in Expo Go on Android.
   }
 }
+
+// Every Saturday night (20:00, about when Shabbat ends) a reminder that the week's step summary is ready. The text is fixed
+// when it is scheduled, so it does not carry the number (the total is on the steps card); tapping it opens the app.
+// Scheduling again with the same identifier replaces the old one, so doing it on every start is harmless.
+const WEEKLY_SUMMARY_ID = 'weekly-steps-summary';
+let weeklySummaryScheduled = false;
+
+export async function scheduleWeeklyStepsSummary() {
+  if (weeklySummaryScheduled) return;
+  try {
+    const Notifications = await getNotifications();
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted') return;
+    await Notifications.scheduleNotificationAsync({
+      identifier: WEEKLY_SUMMARY_ID,
+      content: {
+        title: 'סיכום הצעדים השבועי מוכן',
+        body: 'כמה צעדים עשית השבוע? היכנס לראות את הסיכום וההשוואה לשבוע שעבר',
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+        weekday: 7,
+        hour: 20,
+        minute: 0,
+      },
+    });
+    weeklySummaryScheduled = true;
+  } catch {
+    // See module comment — expected in Expo Go on Android.
+  }
+}

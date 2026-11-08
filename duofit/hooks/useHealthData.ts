@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useDayKey } from '@hooks/useDayKey';
 import { useHealthStore } from '@hooks/useHealthStore';
+import { scheduleWeeklyStepsSummary } from '@lib/notifications';
 import { acquireLiveSteps, useLiveSteps } from '@hooks/useLiveSteps';
 import type { HealthSnapshot } from '@lib/healthKit';
 import { healthMode, isSameDay, type HealthMode } from '@lib/healthMode';
@@ -34,6 +35,11 @@ export function useHealthData(): {
   useEffect(() => {
     if (!connected) return undefined;
     return acquireLiveSteps();
+  }, [connected]);
+
+  // A member who follows his steps gets the weekly summary reminder on Saturday night.
+  useEffect(() => {
+    if (connected) scheduleWeeklyStepsSummary();
   }, [connected]);
 
   const shown = useMemo(() => {

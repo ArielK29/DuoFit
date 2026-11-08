@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseRunFromText } from './runOcr.ts';
+import { parseRunFromText, photoWorkout } from './runOcr.ts';
 
 test('parseRunFromText: distance and h:mm:ss time from a typical running app screen', () => {
   const lines = ['Outdoor Run', '5.02', 'KM', 'Time', '00:31:45', 'Avg Pace', '6:20 /km'];
@@ -90,4 +90,14 @@ test('parseRunFromText: the layouts of other screens (Apple Fitness, a Hebrew wa
   assert.equal(parseRunFromText(['Calories burned: 280', 'Distance 4.2 km']).kcal, 280);
   assert.equal(parseRunFromText(['5.0 km', '31:00', '312 Cal']).kcal, 312);
   assert.equal(parseRunFromText(['Elapsed Time 31:00', 'Calories 312', 'Avg Pace 6:12 /km']).kcal, 312);
+});
+
+test('photoWorkout: calories in the photo make a workout at once, with the distance and time when the photo has them', () => {
+  assert.deepEqual(photoWorkout({ km: 5, minutes: 48, kcal: 303 }, () => 30), { km: 5, durationSec: 2880, kcal: 303 });
+  // No time in the photo: the usual pace of the member is used.
+  assert.deepEqual(photoWorkout({ km: 5, kcal: 303 }, (km) => km * 6), { km: 5, durationSec: 1800, kcal: 303 });
+  // Only calories: the calories count, with no distance.
+  assert.deepEqual(photoWorkout({ kcal: 392 }, () => 30), { km: 0, durationSec: 0, kcal: 392 });
+  // No calories: nothing is saved by itself.
+  assert.equal(photoWorkout({ km: 5, minutes: 30 }, () => 30), null);
 });
