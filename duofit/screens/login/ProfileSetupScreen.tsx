@@ -9,7 +9,16 @@ import { theme } from '@styles/theme';
 import { visualRightText } from '@lib/rtl';
 import { useAuth, FitnessLevel, Gender } from '@hooks/useAuth';
 import { checkText } from '@lib/contentFilter';
-import { MAX_ACTIVITIES, PROFILE_ACTIVITIES, PROFILE_STEPS, stepProblem, toggleActivity } from '@lib/onboarding';
+import {
+  MAX_ACTIVITIES,
+  MAX_CUSTOM_ACTIVITY_CHARS,
+  PROFILE_ACTIVITIES,
+  PROFILE_STEPS,
+  addCustomActivity,
+  customActivities,
+  stepProblem,
+  toggleActivity,
+} from '@lib/onboarding';
 
 I18nManager.forceRTL(true);
 
@@ -44,6 +53,8 @@ export const ProfileSetupScreen: React.FC = () => {
   const [stepIndex, setStepIndex] = useState(0);
   const [gender, setGender] = useState<Gender | null>(user?.gender ?? null);
   const [activities, setActivities] = useState<string[]>(user?.favoriteActivities ?? []);
+  // A sport that is not on the list, written by the member.
+  const [customText, setCustomText] = useState('');
   const [fitnessLevel, setFitnessLevel] = useState<FitnessLevel | null>(user?.fitnessLevel ?? null);
   const [bio, setBio] = useState(user?.bio ?? '');
   const [localError, setError] = useState<string | null>(null);
@@ -125,7 +136,7 @@ export const ProfileSetupScreen: React.FC = () => {
         {step === 'activities' && (
           <>
             <View style={styles.activitiesGrid}>
-              {PROFILE_ACTIVITIES.map((activity) => {
+              {[...PROFILE_ACTIVITIES, ...customActivities(activities)].map((activity) => {
                 const selected = activities.includes(activity);
                 return (
                   <Pressable
@@ -143,6 +154,41 @@ export const ProfileSetupScreen: React.FC = () => {
                   </Pressable>
                 );
               })}
+            </View>
+            <View style={styles.customRow}>
+              <View style={styles.customInput}>
+                <Input
+                  label="התחום שלך לא ברשימה? כתוב אותו כאן"
+                  value={customText}
+                  onChangeText={(text) => {
+                    setCustomText(text.slice(0, MAX_CUSTOM_ACTIVITY_CHARS));
+                    setError(null);
+                  }}
+                  placeholder="למשל סקווש"
+                  maxLength={MAX_CUSTOM_ACTIVITY_CHARS}
+                  disabled={loading}
+                />
+              </View>
+              <Button
+                label="הוסף"
+                variant="secondary"
+                onPress={() => {
+                  const verdict = checkText(customText);
+                  if (!verdict.ok) {
+                    setError(verdict.message);
+                    return;
+                  }
+                  const result = addCustomActivity(activities, customText);
+                  if ('problem' in result) {
+                    setError(result.problem);
+                    return;
+                  }
+                  setActivities(result.activities);
+                  setCustomText('');
+                  setError(null);
+                }}
+                disabled={loading || customText.trim().length === 0}
+              />
             </View>
             <Text style={styles.counter}>{`${activities.length} מתוך ${MAX_ACTIVITIES} נבחרו`}</Text>
           </>
@@ -285,6 +331,16 @@ const styles = StyleSheet.create({
   },
   bigOptionTextActive: {
     color: theme.colors.black,
+  },
+  customRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.lg,
+  },
+  customInput: {
+    flex: 1,
+    minWidth: 0,
   },
   activitiesGrid: {
     flexDirection: 'row',
