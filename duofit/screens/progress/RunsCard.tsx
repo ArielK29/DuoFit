@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { Button } from '@components/Button';
 import { useRunStore } from '@hooks/useRunStore';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
-import { HEALTH_GOALS, MOCK_HEALTH, MOCK_RUNS } from '@constants/mockHealth';
+import { HEALTH_GOALS } from '@constants/mockHealth';
 import type { HealthSnapshot } from '@lib/healthKit';
 import { activityKind, bestMonthKm, paceText, recentRuns, runDurationText } from '@lib/healthData';
 import { theme } from '@styles/theme';
@@ -37,8 +37,9 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
   // Runs recorded in the app (GPS or typed in) always count; the example runs show only when there is nothing real at all.
   // While the real numbers are on their way show nothing made up (recorded runs are already on the phone and show at once).
   const waiting = loading && snapshot === null && recorded.length === 0;
-  const isExample = snapshot === null && recorded.length === 0 && !waiting;
-  const monthKm = isExample ? MOCK_HEALTH.runKm : bestMonthKm(snapshot ? snapshot.monthKm : null, recorded, now);
+  // No example runs any more: without Apple Health and without saved workouts the card is empty.
+  const isExample = false;
+  const monthKm = bestMonthKm(snapshot ? snapshot.monthKm : null, recorded, now);
 
   // A walk saved in the app is named a walk; Apple Health running workouts are runs.
   const recordedIds = new Set(recorded.map((run) => run.id));
@@ -47,8 +48,7 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
   const listed = [...recentRuns([...(snapshot ? snapshot.runs : []), ...recorded], RUNS_SHOWN), ...caloriesOnly]
     .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime())
     .slice(0, RUNS_SHOWN);
-  const rows: RunRow[] = !isExample
-    ? listed.map((run) => ({
+  const rows: RunRow[] = listed.map((run) => ({
         key: run.id,
         deletable: recordedIds.has(run.id),
         date: new Date(run.startedAt),
@@ -61,13 +61,6 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
         duration: run.km < 0.1 ? '' : runDurationText(run.durationSec),
         pace: run.km < 0.1 ? '—' : paceText(run.km, run.durationSec),
         kcal: run.kcal,
-      }))
-    : MOCK_RUNS.map((run) => ({
-        key: String(run.daysAgo),
-        date: new Date(now.getFullYear(), now.getMonth(), now.getDate() - run.daysAgo),
-        title: `${run.km} ק"מ · ${run.company}`,
-        duration: run.duration,
-        pace: run.pace,
       }));
 
   if (waiting) {
@@ -98,7 +91,11 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
         <Button label="התחל הליכה או ריצה" variant="primary" onPress={() => router.push('/run')} />
       </View>
       {rows.length === 0 && (
-        <Text style={styles.empty}>אין ריצות ב-60 הימים האחרונים ב-Apple Health. ריצה שתתועד באפל ווטש או באפליקציית ריצה תופיע כאן.</Text>
+        <Text style={styles.empty}>
+          {snapshot === null
+            ? 'חבר Apple Health, או התחל הליכה או ריצה, והן יופיעו כאן.'
+            : 'אין ריצות ב-60 הימים האחרונים ב-Apple Health. ריצה שתתועד באפל ווטש או באפליקציית ריצה תופיע כאן.'}
+        </Text>
       )}
       {rows.map((run, index) => {
         const date = run.date;
