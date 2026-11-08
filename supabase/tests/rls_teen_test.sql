@@ -1,4 +1,4 @@
--- Test for migration 20261104_teen_mode (teen world, parental consent, minimum age 13). Same way of running as rls_identity_test.sql:
+-- Test for migration 20261104_teen_mode (teen world, parental consent, minimum age 15). Same way of running as rls_identity_test.sql:
 -- paste the migration first and THIS file right after it into ONE batch; the batch ends with an exception so everything is rolled back.
 -- Every line of the result must say good.
 do $test$
@@ -7,9 +7,9 @@ declare
   b uuid := '00000000-0000-0000-0000-0000000000f2'; -- adult (1985)
   t1 uuid := '00000000-0000-0000-0000-0000000000f3'; -- teen, 15
   t2 uuid := '00000000-0000-0000-0000-0000000000f4'; -- teen, 16
-  t3 uuid := '00000000-0000-0000-0000-0000000000f5'; -- teen, 13
-  g1 uuid := '00000000-0000-0000-0000-0000000000f6'; -- sends a 12-year-old check
-  g2 uuid := '00000000-0000-0000-0000-0000000000f7'; -- sends a 13-year-old check
+  t3 uuid := '00000000-0000-0000-0000-0000000000f5'; -- teen, 17
+  g1 uuid := '00000000-0000-0000-0000-0000000000f6'; -- sends a 14-year-old check (too young, minimum is 15)
+  g2 uuid := '00000000-0000-0000-0000-0000000000f7'; -- sends a 15-year-old check (the youngest allowed)
   g3 uuid := '00000000-0000-0000-0000-0000000000f8'; -- sends a 15-year-old check while teen mode is off
   res text := '';
   n int;
@@ -26,7 +26,7 @@ begin
     (b,  (current_date - interval '41 years')::date, 'peace', '111', 'approved'),
     (t1, (current_date - interval '15 years 30 days')::date, 'peace', '111', 'approved'),
     (t2, (current_date - interval '16 years 30 days')::date, 'peace', '111', 'approved'),
-    (t3, (current_date - interval '13 years 30 days')::date, 'peace', '111', 'approved');
+    (t3, (current_date - interval '17 years 30 days')::date, 'peace', '111', 'approved');
 
   -- 0 switch OFF after the migration: everything as before
   select enabled into ok from public.app_flags where key = 'teen_mode';
@@ -73,7 +73,7 @@ begin
   select count(*) into n from public.profiles where id = t2;
   res := res || '1e on: a 15-year-old sees a 16-year-old, one year apart (expect 1): ' || n || ' ' || case when n = 1 then 'good' else 'BAD' end || E'\n';
   select count(*) into n from public.profiles where id = t3;
-  res := res || '1f on: a 15-year-old does not see a 13-year-old, two years apart (expect 0): ' || n || ' ' || case when n = 0 then 'good' else 'BAD' end || E'\n';
+  res := res || '1f on: a 15-year-old does not see a 17-year-old, two years apart (expect 0): ' || n || ' ' || case when n = 0 then 'good' else 'BAD' end || E'\n';
   select count(*) into n from public.profiles where id = t1;
   res := res || '1g on: a teen still sees his own profile (expect 1): ' || n || ' ' || case when n = 1 then 'good' else 'BAD' end || E'\n';
 
@@ -142,19 +142,19 @@ begin
   set local role authenticated;
   ok := false;
   begin
-    insert into public.identity_checks (user_id, birth_date, gesture, challenge_code) values (g1, (current_date - interval '12 years 300 days')::date, 'peace', '111');
+    insert into public.identity_checks (user_id, birth_date, gesture, challenge_code) values (g1, (current_date - interval '14 years 300 days')::date, 'peace', '111');
   exception when others then ok := true;
   end;
-  res := res || '4a on: a 12-year-old is still refused (expect refused): ' || case when ok then 'good' else 'BAD' end || E'\n';
+  res := res || '4a on: a 14-year-old is still refused (expect refused): ' || case when ok then 'good' else 'BAD' end || E'\n';
   reset role;
   perform set_config('request.jwt.claims', json_build_object('sub', g2, 'role', 'authenticated')::text, true);
   set local role authenticated;
   ok := true;
   begin
-    insert into public.identity_checks (user_id, birth_date, gesture, challenge_code) values (g2, (current_date - interval '13 years 30 days')::date, 'peace', '111');
+    insert into public.identity_checks (user_id, birth_date, gesture, challenge_code) values (g2, (current_date - interval '15 years 30 days')::date, 'peace', '111');
   exception when others then ok := false; sp := sqlerrm;
   end;
-  res := res || '4b on: a 13-year-old can send a check (expect allowed): ' || case when ok then 'good' else 'BAD ' || coalesce(sp, '') end || E'\n';
+  res := res || '4b on: a 15-year-old can send a check (expect allowed): ' || case when ok then 'good' else 'BAD ' || coalesce(sp, '') end || E'\n';
   reset role;
 
   -- 5 adults are unchanged when the switch is on
