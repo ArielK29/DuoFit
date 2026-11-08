@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Alert, Pressable, Text, View, StyleSheet } from 'react-native';
 import { Activity } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Button } from '@components/Button';
@@ -16,6 +16,8 @@ const RUNS_SHOWN = 5;
 
 interface RunRow {
   key: string;
+  // Only for workouts saved in the app: they can be deleted (long press).
+  deletable?: boolean;
   date: Date;
   title: string;
   duration: string;
@@ -29,6 +31,7 @@ interface RunRow {
 export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: boolean }> = ({ snapshot = null, loading = false }) => {
   const router = useRouter();
   const recorded = useRunStore((state) => state.runs);
+  const removeRun = useRunStore((state) => state.removeRun);
   const now = new Date();
   const monthName = now.toLocaleDateString('he-IL', { month: 'long' });
   // Runs recorded in the app (GPS or typed in) always count; the example runs show only when there is nothing real at all.
@@ -39,13 +42,24 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
 
   // A walk saved in the app is named a walk; Apple Health running workouts are runs.
   const recordedIds = new Set(recorded.map((run) => run.id));
+  // A workout saved from a photo with only calories has no distance: it is listed too, so it can be seen and deleted.
+  const caloriesOnly = recorded.filter((run) => run.km < 0.1 && (run.kcal ?? 0) > 0);
+  const listed = [...recentRuns([...(snapshot ? snapshot.runs : []), ...recorded], RUNS_SHOWN), ...caloriesOnly]
+    .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime())
+    .slice(0, RUNS_SHOWN);
   const rows: RunRow[] = !isExample
-    ? recentRuns([...(snapshot ? snapshot.runs : []), ...recorded], RUNS_SHOWN).map((run) => ({
+    ? listed.map((run) => ({
         key: run.id,
+        deletable: recordedIds.has(run.id),
         date: new Date(run.startedAt),
-        title: recordedIds.has(run.id) && activityKind(run.km, run.durationSec) === 'walk' ? `${run.km} ק"מ · הליכה` : `${run.km} ק"מ`,
-        duration: runDurationText(run.durationSec),
-        pace: paceText(run.km, run.durationSec),
+        title:
+          run.km < 0.1
+            ? 'קלוריות מצילום'
+            : recordedIds.has(run.id) && activityKind(run.km, run.durationSec) === 'walk'
+              ? `${run.km} ק"מ · הליכה`
+              : `${run.km} ק"מ`,
+        duration: run.km < 0.1 ? '' : runDurationText(run.durationSec),
+        pace: run.km < 0.1 ? '—' : paceText(run.km, run.durationSec),
         kcal: run.kcal,
       }))
     : MOCK_RUNS.map((run) => ({
@@ -88,8 +102,19 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
       )}
       {rows.map((run, index) => {
         const date = run.date;
+        const confirmDelete = () =>
+          Alert.alert('למחוק את האימון?', 'הוא יוסר גם מהקלוריות והקילומטרים שנספרו. אי אפשר לבטל.', [
+            { text: 'ביטול', style: 'cancel' },
+            { text: 'מחק', style: 'destructive', onPress: () => removeRun(run.key) },
+          ]);
         return (
-          <View key={run.key} style={[styles.row, index > 0 && styles.rowDivider]}>
+          <Pressable
+            key={run.key}
+            onLongPress={run.deletable ? confirmDelete : undefined}
+            delayLongPress={500}
+            accessibilityHint={run.deletable ? 'לחיצה ארוכה מוחקת את האימון' : undefined}
+            style={[styles.row, index > 0 && styles.rowDivider]}
+          >
             <View style={styles.iconTile}>
               <Activity color={theme.colors.cyan} size={24} strokeWidth={2} />
             </View>
@@ -101,9 +126,10 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
               <Text style={styles.duration}>{run.duration}</Text>
               <Text style={styles.pace}>{run.pace === '—' ? '—' : `${run.pace} לק"מ`}</Text>
             </View>
-          </View>
+          </Pressable>
         );
       })}
+      {rows.some((run) => run.deletable) && <Text style={styles.deleteHint}>החזק לחיצה על אימון שתיעדת באפליקציה כדי למחוק אותו</Text>}
     </CardShell>
   );
 };
@@ -111,6 +137,14 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
 const styles = StyleSheet.create({
   startRun: {
     marginBottom: theme.spacing.sm,
+  },
+  deleteHint: {
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: theme.typography.bodySmall.fontFamily,
+    color: theme.colors.textTertiary,
+    textAlign: 'center',
+    paddingTop: theme.spacing.sm,
   },
   empty: {
     fontSize: 14,
