@@ -43,8 +43,9 @@ interface Row {
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') return reply(405, { error: 'method not allowed' });
 
-  const apiKey = Deno.env.get('RESEND_API_KEY');
-  const to = Deno.env.get('SUPPORT_NOTIFY_EMAIL');
+  // Trimmed: a pasted secret often carries a space or a line break at its end.
+  const apiKey = (Deno.env.get('RESEND_API_KEY') ?? '').trim().replace(/^["']|["']$/g, '');
+  const to = (Deno.env.get('SUPPORT_NOTIFY_EMAIL') ?? '').trim().replace(/^["']|["']$/g, '');
   if (!apiKey || !to) return reply(200, { configured: false, sent: 0 });
 
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
@@ -62,6 +63,7 @@ Deno.serve(async (req: Request) => {
   if (error) return reply(500, { error: 'could not read requests' });
 
   let sent = 0;
+  let failure: { status: number; name: string } | null = null;
   for (const { id } of waiting ?? []) {
     // Claim the request first, so two calls at the same moment never send the same mail twice.
     const { data: claimed } = await admin
@@ -118,8 +120,16 @@ Deno.serve(async (req: Request) => {
         }),
       });
       ok = response.ok;
-    } catch {
+      if (!ok) {
+        // The provider's answer goes to the function log (never to the caller: it can contain the address); the caller only learns the status and the error name.
+        const answer = await response.text().catch(() => '');
+        console.error('resend_failed', response.status, answer.slice(0, 300));
+        failure = { status: response.status, name: (() => { try { return String(JSON.parse(answer).name ?? ''); } catch { return ''; } })() };
+      }
+    } catch (error) {
       ok = false;
+      console.error('resend_request_error', String(error));
+      failure = { status: 0, name: 'request_error' };
     }
     if (ok) {
       sent += 1;
@@ -129,5 +139,5 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  return reply(200, { configured: true, sent });
+  return reply(200, { configured: true, sent, ...(failure ? { failure } : {}) });
 });
