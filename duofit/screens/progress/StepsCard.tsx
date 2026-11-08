@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { BarChart, Bar } from '@components/BarChart';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
-import { MOCK_HEALTH, MOCK_STEPS_BEFORE_TODAY } from '@constants/mockHealth';
+import { MOCK_HEALTH } from '@constants/mockHealth';
 import type { HealthSnapshot } from '@lib/healthKit';
 import { isLastWeekSummaryTime, isWeekSummaryTime, percentChange, weekAverage, weekTotal } from '@lib/healthData';
 import { theme } from '@styles/theme';
@@ -16,14 +16,14 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: b
   const now = new Date();
   const todayIndex = now.getDay();
   const { stepsGoal } = MOCK_HEALTH;
-  const isExample = snapshot === null;
-  const steps = snapshot ? snapshot.todaySteps : MOCK_HEALTH.steps;
+  // Without Apple Health there is nothing to show (no example numbers): an empty week and an invitation to connect.
+  const isExample = false;
+  const noData = snapshot === null;
+  const steps = snapshot ? snapshot.todaySteps : 0;
 
   const values = snapshot
     ? snapshot.weekSteps
-    : WEEKDAY_LETTERS.map((_, index) =>
-        index < todayIndex ? MOCK_STEPS_BEFORE_TODAY[index] : index === todayIndex ? steps : 0
-      );
+    : WEEKDAY_LETTERS.map(() => 0);
   const average = weekAverage(values, now);
   const total = weekTotal(values, now);
   // The week summary shows only on Saturday night; the comparison with last week only when Apple Health gave it (a snapshot from
@@ -69,9 +69,11 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: b
       }
     >
       <View style={styles.summary}>
-        <Text style={styles.value}>{shownSteps.toLocaleString('he-IL')}</Text>
+        <Text style={styles.value}>{noData ? '–' : shownSteps.toLocaleString('he-IL')}</Text>
         <Text style={styles.remaining}>
-          {`${isToday ? 'היום' : `יום ${WEEKDAY_LETTERS[shownDay]}`} · ${remaining > 0 ? `עוד ${remaining.toLocaleString('he-IL')} ליעד` : 'עברת את היעד'}`}
+          {noData
+            ? 'חבר Apple Health כדי לראות את הצעדים שלך'
+            : `${isToday ? 'היום' : `יום ${WEEKDAY_LETTERS[shownDay]}`} · ${remaining > 0 ? `עוד ${remaining.toLocaleString('he-IL')} ליעד` : 'עברת את היעד'}`}
         </Text>
       </View>
       {lastWeekTotal !== null && lastWeekTotal > 0 && (

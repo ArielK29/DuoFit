@@ -21,7 +21,7 @@ import { useCommunityStore } from '@hooks/useCommunityStore';
 import { useProgressStore } from '@hooks/useProgressStore';
 import { useHealthData } from '@hooks/useHealthData';
 import { useToday } from '@hooks/useToday';
-import { HEALTH_GOALS, MOCK_HEALTH } from '@constants/mockHealth';
+import { HEALTH_GOALS } from '@constants/mockHealth';
 import { bestKcal, bestMonthKm, estimateKcal, kcalFromDistancePieces, runKcalAdjustments } from '@lib/healthData';
 import { useRunStore } from '@hooks/useRunStore';
 import { getActivityStyle } from '@lib/activityStyles';
@@ -167,9 +167,8 @@ export default function Dashboard() {
 
   // Real Apple Health numbers when connected, otherwise the labelled example numbers.
   const live = health.mode === 'live' ? health.snapshot : null;
-  // While the real numbers are on their way show a dash, never the example numbers.
-  const waiting = health.mode === 'loading';
-  const steps = live ? live.todaySteps : MOCK_HEALTH.steps;
+  // Without Apple Health there are no numbers (not example ones): the rings show a dash until the member connects.
+  const steps = live ? live.todaySteps : 0;
   const lastWeight = weightLog.length > 0 ? weightLog[weightLog.length - 1].kg : null;
   // Without a watch the phone reports almost no active energy, so the number is estimated from the steps and the logged weight.
   const runAdjust = runKcalAdjustments(recordedRuns, now, lastWeight);
@@ -183,13 +182,13 @@ export default function Dashboard() {
         runExtraKcal: runAdjust.extraKcal,
         enteredKcal: runAdjust.enteredKcal,
       })
-    : { kcal: MOCK_HEALTH.calories, estimated: false };
+    : { kcal: 0, estimated: false };
   const calories = kcal.kcal;
   const caloriesAreEstimated = !!live && kcal.estimated;
   const caloriesGoal = live ? HEALTH_GOALS.activeCalories : HEALTH_GOALS.calories;
   // Runs recorded in the app count even without Apple Health (Android, web, before connecting).
   const hasRealKm = !!live || recordedRuns.length > 0;
-  const runKm = hasRealKm ? bestMonthKm(live ? live.monthKm : null, recordedRuns, now) : MOCK_HEALTH.runKm;
+  const runKm = hasRealKm ? bestMonthKm(live ? live.monthKm : null, recordedRuns, now) : 0;
 
   const statPages: StatPage[] = [
     {
@@ -207,31 +206,31 @@ export default function Dashboard() {
       ),
       stats: [
         {
-          value: waiting ? '–' : steps.toLocaleString('he-IL'),
+          value: !live ? '–' : steps.toLocaleString('he-IL'),
           goal: '10K',
           label: 'צעדים היום',
-          progress: waiting ? 0 : Math.min(1, steps / HEALTH_GOALS.steps),
+          progress: !live ? 0 : Math.min(1, steps / HEALTH_GOALS.steps),
           color: theme.colors.magenta,
           icon: Footprints,
-          isExample: !live && !waiting,
+          isExample: false,
         },
         {
-          value: waiting ? '–' : calories.toLocaleString('he-IL'),
+          value: !live ? '–' : calories.toLocaleString('he-IL'),
           goal: live ? String(caloriesGoal) : '2.6K',
           label: caloriesAreEstimated ? 'קלוריות (הערכה)' : 'קלוריות שרפת',
-          progress: waiting ? 0 : Math.min(1, calories / caloriesGoal),
+          progress: !live ? 0 : Math.min(1, calories / caloriesGoal),
           color: theme.colors.warning,
           icon: Zap,
-          isExample: !live && !waiting,
+          isExample: false,
         },
         {
-          value: waiting && recordedRuns.length === 0 ? '–' : String(runKm),
+          value: !hasRealKm ? '–' : String(runKm),
           goal: String(HEALTH_GOALS.runKm),
           label: hasRealKm ? 'ק"מ בחודש' : 'ק"מ ריצה בחודש',
-          progress: waiting && recordedRuns.length === 0 ? 0 : Math.min(1, runKm / HEALTH_GOALS.runKm),
+          progress: !hasRealKm ? 0 : Math.min(1, runKm / HEALTH_GOALS.runKm),
           color: theme.colors.cyan,
           icon: Route,
-          isExample: !hasRealKm && !waiting,
+          isExample: false,
         },
       ],
     },
