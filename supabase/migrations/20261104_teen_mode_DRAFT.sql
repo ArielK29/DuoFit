@@ -1,4 +1,4 @@
--- DRAFT, NOT APPLIED (written 2026-11-04). Teen mode: members aged 13 to 17 live in a separate world from adults.
+-- DRAFT, NOT APPLIED (written 2026-11-04). Teen mode: members aged 15 to 17 live in a separate world from adults.
 -- Everything here sits behind the switch public.app_flags key 'teen_mode', which is OFF after this migration, so applying it changes
 -- nothing for anybody (checked by supabase/tests/rls_teen_test.sql). Do not turn it on before the lawyer has approved
 -- (see docs/TEEN-MODE-PLAN.md). Written as RESTRICTIVE policies so the existing permissive policies are not touched or rewritten.
@@ -20,7 +20,7 @@ $$;
 revoke execute on function private.teen_mode() from public, anon;
 grant execute on function private.teen_mode() to authenticated;
 
--- The youngest age that can send an identity check: 18 normally, 13 when teen mode is on.
+-- The youngest age that can send an identity check: 18 normally, 15 when teen mode is on.
 create function private.min_age()
 returns int
 language sql
@@ -28,7 +28,7 @@ stable
 security definer
 set search_path = ''
 as $$
-  select case when private.teen_mode() then 13 else 18 end;
+  select case when private.teen_mode() then 15 else 18 end;
 $$;
 revoke execute on function private.min_age() from public, anon;
 grant execute on function private.min_age() to authenticated;
@@ -129,7 +129,7 @@ as $$
 $$;
 
 -- ---------------------------------------------------------------------------------------------------------------------
--- 3. The identity check accepts 13 to 17 when teen mode is on
+-- 3. The identity check accepts 15 to 17 when teen mode is on
 -- ---------------------------------------------------------------------------------------------------------------------
 create or replace function private.identity_checks_guard()
 returns trigger
@@ -144,7 +144,7 @@ begin
     return new;
   end if;
 
-  -- 18 normally; 13 when the teen mode switch is on (a teenager then lives in the teen world, see private.same_world).
+  -- 18 normally; 15 when the teen mode switch is on (a teenager then lives in the teen world, see private.same_world).
   if new.birth_date > (current_date - make_interval(years => private.min_age()))::date then
     raise exception 'under_age' using errcode = 'check_violation';
   end if;
