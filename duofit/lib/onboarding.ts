@@ -29,6 +29,29 @@ export const PROFILE_ACTIVITIES = [
   'גלישה',
 ];
 
+// A sport the member writes himself (it is not on the list): 2 to 30 letters, digits, spaces or a hyphen. Matches the
+// database limit on the whole list (supabase/migrations/20261108_profile_custom_activity.sql).
+export const MIN_CUSTOM_ACTIVITY_CHARS = 2;
+export const MAX_CUSTOM_ACTIVITY_CHARS = 30;
+const CUSTOM_ACTIVITY_CHARS = /^[\p{L}\p{N}][\p{L}\p{N} \-']*$/u;
+
+export type CustomActivityResult = { activities: string[] } | { problem: string };
+
+export function addCustomActivity(selected: string[], text: string): CustomActivityResult {
+  const name = text.replace(/\s+/g, ' ').trim();
+  if (name.length < MIN_CUSTOM_ACTIVITY_CHARS) return { problem: 'כתוב שם של לפחות שני תווים' };
+  if (name.length > MAX_CUSTOM_ACTIVITY_CHARS) return { problem: `עד ${MAX_CUSTOM_ACTIVITY_CHARS} תווים` };
+  if (!CUSTOM_ACTIVITY_CHARS.test(name)) return { problem: 'אפשר רק אותיות, מספרים ורווחים' };
+  if (selected.some((item) => item.toLowerCase() === name.toLowerCase())) return { problem: 'התחום הזה כבר נבחר' };
+  if (selected.length >= MAX_ACTIVITIES) return { problem: `אפשר עד ${MAX_ACTIVITIES} תחומים. הסר אחד כדי להוסיף` };
+  return { activities: [...selected, name] };
+}
+
+// The sports the member chose that are not on the list (shown as chips he can remove).
+export function customActivities(selected: string[]): string[] {
+  return selected.filter((item) => !PROFILE_ACTIVITIES.includes(item));
+}
+
 export function toggleActivity(selected: string[], activity: string): string[] {
   if (selected.includes(activity)) return selected.filter((item) => item !== activity);
   if (selected.length >= MAX_ACTIVITIES) return selected;

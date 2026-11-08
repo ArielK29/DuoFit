@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAX_ACTIVITIES, PROFILE_ACTIVITIES, PROFILE_STEPS, stepProblem, toggleActivity } from './onboarding.ts';
+import {
+  addCustomActivity,
+  customActivities, MAX_ACTIVITIES, PROFILE_ACTIVITIES, PROFILE_STEPS, stepProblem, toggleActivity } from './onboarding.ts';
 
 test('PROFILE_STEPS: three steps, each asks one thing: gender, sports, level', () => {
   assert.deepEqual(PROFILE_STEPS, ['gender', 'activities', 'level']);
@@ -32,4 +34,19 @@ test('stepProblem: says what is missing on the current step, nothing when it is 
   assert.equal(stepProblem('activities', { ...empty, activities: ['ריצה'] }), null);
   assert.equal(stepProblem('level', empty), 'בחר את הרמה שלך');
   assert.equal(stepProblem('level', { ...empty, fitnessLevel: 'Beginner' }), null);
+});
+
+test('addCustomActivity: a sport of his own is added, trimmed, within the limits', () => {
+  assert.deepEqual(addCustomActivity(['ריצה'], '  סקווש  '), { activities: ['ריצה', 'סקווש'] });
+  assert.deepEqual(addCustomActivity([], 'Muay  Thai'), { activities: ['Muay Thai'] });
+  assert.ok('problem' in addCustomActivity([], 'א'));
+  assert.ok('problem' in addCustomActivity([], 'x'.repeat(31)));
+  assert.ok('problem' in addCustomActivity([], '<script>'));
+  assert.ok('problem' in addCustomActivity(['סקווש'], 'סקווש'));
+  assert.ok('problem' in addCustomActivity(['ריצה', 'כוח', 'יוגה', 'שחייה', 'כדורגל'], 'סקווש'));
+});
+
+test('customActivities: only the sports that are not on the list', () => {
+  assert.deepEqual(customActivities(['ריצה', 'סקווש', 'כוח']), ['סקווש']);
+  assert.deepEqual(customActivities([]), []);
 });
