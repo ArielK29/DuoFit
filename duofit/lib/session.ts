@@ -8,6 +8,8 @@ import { usePartnerStore } from '@hooks/usePartnerStore';
 import { useFeedStore } from '@hooks/useFeedStore';
 import { usePlankBoard } from '@hooks/usePlankBoard';
 import { useGroupStore } from '@hooks/useGroupStore';
+import { useRunStore } from '@hooks/useRunStore';
+import { useHealthStore } from '@hooks/useHealthStore';
 import { clearRemoteChatCache } from '@lib/remoteChat';
 
 // Everything below is stored on the device. When the user signs out (or the
@@ -32,6 +34,10 @@ function resetLocalData() {
     comments: {},
   });
   useProgressStore.setState({ weeklyGoal: DEFAULT_WEEKLY_GOAL, goalWeight: null, weightLog: [] });
+  // Walks and runs the member saved (with their calories) live on the phone: they must not show for the next member.
+  useRunStore.setState({ runs: [] });
+  // The last Apple Health numbers read; the connection itself stays (it belongs to the phone), the next read fills them again.
+  useHealthStore.setState({ snapshot: null });
 }
 
 // Call once at app start. Returns the unsubscribe function.
