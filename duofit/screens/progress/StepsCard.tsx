@@ -4,7 +4,7 @@ import { BarChart, Bar } from '@components/BarChart';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
 import { MOCK_HEALTH, MOCK_STEPS_BEFORE_TODAY } from '@constants/mockHealth';
 import type { HealthSnapshot } from '@lib/healthKit';
-import { isWeekSummaryTime, percentChange, weekAverage, weekTotal } from '@lib/healthData';
+import { isLastWeekSummaryTime, isWeekSummaryTime, percentChange, weekAverage, weekTotal } from '@lib/healthData';
 import { theme } from '@styles/theme';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
@@ -29,6 +29,8 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: b
   // The week summary shows only on Saturday night; the comparison with last week only when Apple Health gave it (a snapshot from
   // an older build or a failed read has no such number).
   const showWeekSummary = isWeekSummaryTime(now);
+  // Sunday: the total of the week that just ended (from Apple Health; nothing is shown when it could not be read).
+  const lastWeekTotal = isLastWeekSummaryTime(now) ? snapshot?.lastWeekTotal ?? null : null;
   const change = snapshot?.lastWeekSameDays !== undefined ? percentChange(total, snapshot.lastWeekSameDays) : null;
   const changeText = change === null ? '' : change === 0 ? ' · כמו בשבוע שעבר' : change > 0 ? ` · עלייה של ${change}% מהשבוע שעבר` : ` · ירידה של ${Math.abs(change)}% מהשבוע שעבר`;
   // The day whose steps are shown (today until the member taps another bar).
@@ -72,6 +74,9 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: b
           {`${isToday ? 'היום' : `יום ${WEEKDAY_LETTERS[shownDay]}`} · ${remaining > 0 ? `עוד ${remaining.toLocaleString('he-IL')} ליעד` : 'עברת את היעד'}`}
         </Text>
       </View>
+      {lastWeekTotal !== null && lastWeekTotal > 0 && (
+        <Text style={styles.weekTotal}>{`סה"כ בשבוע שעבר: ${lastWeekTotal.toLocaleString('he-IL')} צעדים`}</Text>
+      )}
       {showWeekSummary && (
         <Text style={styles.weekTotal}>{`סה"כ השבוע: ${total.toLocaleString('he-IL')} צעדים${changeText}`}</Text>
       )}

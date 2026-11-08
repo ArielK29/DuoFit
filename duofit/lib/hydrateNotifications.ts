@@ -25,6 +25,8 @@ export function toAppNotification(row: RemoteNotificationRow): Omit<AppNotificat
       return { ...base, kind: 'invite', title: `${actor} דחה/תה את ההזמנה`, body, ...chat };
     case 'workout_cancelled':
       return { ...base, kind: 'workout_cancelled', title: 'האימון בוטל', body: `${actor} ביטל/ה · ${body}`, href: '/dashboard' };
+    case 'support_request':
+      return { ...base, kind: 'message', title: `פנייה חדשה מ-${actor}`, body, href: '/admin-support' };
     default:
       return { ...base, kind: 'comment', title: `${actor} הגיב/ה על הפוסט שלך`, body, href: '/community' };
   }

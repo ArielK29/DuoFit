@@ -107,3 +107,19 @@ export function parseRunFromText(lines: string[]): ParsedRun {
   if (kcal !== undefined) result.kcal = kcal;
   return result;
 }
+
+// A photo that shows calories adds them at once (the member can undo); the distance and time are saved with it when the photo
+// has them. A photo with only a distance and time is not saved by itself: it pre-fills the form (a wrong read must not
+// create a workout nobody looked at).
+export interface PhotoWorkout {
+  km: number;
+  durationSec: number;
+  kcal: number;
+}
+
+export function photoWorkout(found: ParsedRun, suggestMinutes: (km: number) => number): PhotoWorkout | null {
+  if (found.kcal === undefined) return null;
+  const km = found.km !== undefined && found.km > 0 ? found.km : 0;
+  const minutes = found.minutes !== undefined ? found.minutes : km > 0 ? suggestMinutes(km) : 0;
+  return { km, durationSec: Math.round(minutes * 60), kcal: found.kcal };
+}

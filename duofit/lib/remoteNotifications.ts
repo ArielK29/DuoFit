@@ -9,7 +9,8 @@ export type RemoteNotificationKind =
   | 'invite_accepted'
   | 'invite_declined'
   | 'workout_cancelled'
-  | 'post_comment';
+  | 'post_comment'
+  | 'support_request';
 
 export interface RemoteNotificationRow {
   id: string;

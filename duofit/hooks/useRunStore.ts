@@ -9,6 +9,7 @@ const MAX_RUNS = 200;
 interface RunState {
   runs: HealthRun[];
   addRun: (run: HealthRun) => void;
+  removeRun: (id: string) => void;
 }
 
 export const useRunStore = create<RunState>()(
@@ -16,6 +17,7 @@ export const useRunStore = create<RunState>()(
     (set, get) => ({
       runs: [],
       addRun: (run) => set({ runs: [run, ...get().runs].slice(0, MAX_RUNS) }),
+      removeRun: (id) => set({ runs: get().runs.filter((run) => run.id !== id) }),
     }),
     { name: 'duofit-runs', storage: createJSONStorage(() => AsyncStorage) }
   )

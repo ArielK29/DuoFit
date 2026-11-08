@@ -15,6 +15,8 @@ export interface HealthSnapshot {
   // Last week's steps on the same weekdays as this week so far (the whole week on Saturday night), for the percent change in
   // the week summary. Missing in a snapshot saved by an older build, and when Apple Health could not be asked.
   lastWeekSameDays?: number;
+  // All of last week (Sunday to Saturday), shown on Sunday as the week that just ended.
+  lastWeekTotal?: number;
   todaySteps: number;
   todayKcal: number;
   // Energy of every workout that started today (Apple Watch, a running app that writes to Health), 0 when there is none.
@@ -143,6 +145,7 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
   weekSteps[now.getDay()] = mergeTodaySteps(weekSteps[now.getDay()] ?? 0, sensorSteps);
 
   let lastWeekSameDays: number | undefined;
+  let lastWeekTotal: number | undefined;
   if (lastWeekDays) {
     const lastWeekDaily = lastWeekDays
       .filter((day) => day.startDate)
@@ -151,6 +154,7 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
     const sameDayLastWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
     const lastWeekSteps = buildWeekSteps(lastWeekDaily, new Date(sameDayLastWeek.getFullYear(), sameDayLastWeek.getMonth(), sameDayLastWeek.getDate() + (6 - sameDayLastWeek.getDay())));
     lastWeekSameDays = weekTotal(lastWeekSteps, sameDayLastWeek);
+    lastWeekTotal = lastWeekSteps.reduce((sum, value) => sum + value, 0);
   }
 
   let workoutKcalToday = 0;
@@ -180,6 +184,7 @@ export async function readHealthSnapshot(now: Date = new Date()): Promise<Health
   return {
     weekSteps,
     lastWeekSameDays,
+    lastWeekTotal,
     todaySteps: weekSteps[now.getDay()] ?? 0,
     todayKcal: Math.round(energyToday.sumQuantity?.quantity ?? 0),
     workoutKcalToday: Math.round(workoutKcalToday),

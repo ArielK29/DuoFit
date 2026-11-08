@@ -19,6 +19,7 @@ import {
   todayRunKm,
   weekAverage,
   activityKind,
+  isLastWeekSummaryTime,
   isWeekSummaryTime,
   runKcalAdjustments,
   percentChange,
@@ -240,4 +241,10 @@ test("activityKind: a 9:30 pace is a walk, a 6:00 pace is a run, broken numbers 
   assert.equal(activityKind(5, 30 * 60), 'run');
   assert.equal(activityKind(5, 0), 'run');
   assert.equal(activityKind(Number.NaN, 1800), 'walk');
+});
+
+test("isLastWeekSummaryTime: only on Sunday", () => {
+  assert.equal(isLastWeekSummaryTime(new Date(2026, 10, 1, 9, 0)), true); // Sunday
+  assert.equal(isLastWeekSummaryTime(new Date(2026, 10, 2, 9, 0)), false);
+  assert.equal(isLastWeekSummaryTime(new Date(2026, 9, 31, 22, 0)), false); // Saturday night has its own summary
 });

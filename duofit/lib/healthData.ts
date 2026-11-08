@@ -60,6 +60,11 @@ export function isWeekSummaryTime(now: Date): boolean {
   return now.getDay() === 6 && now.getHours() >= WEEK_SUMMARY_FROM_HOUR;
 }
 
+// Sunday: the week that just ended is still worth a look (the summary of Saturday night, for those who were not looking then).
+export function isLastWeekSummaryTime(now: Date): boolean {
+  return now.getDay() === 0;
+}
+
 // Percent change from last week to this week, rounded; null when last week has no steps to compare with.
 export function percentChange(current: number, previous: number): number | null {
   const before = cleanNumber(previous);

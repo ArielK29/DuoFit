@@ -11,7 +11,7 @@ import { Button } from '@components/Button';
 import { useRunStore } from '@hooks/useRunStore';
 import { paceText, runDurationText } from '@lib/healthData';
 import { addRunPoint, emptyRunProgress, type RunProgress } from '@lib/runTracker';
-import { parseRunFromText } from '@lib/runOcr';
+import { parseRunFromText, photoWorkout } from '@lib/runOcr';
 import { logError } from '@lib/analytics';
 import { DISTANCE_CHIPS_KM, TIME_CHIPS_MIN, stepKm, stepMinutes, suggestMinutes } from '@lib/runPresets';
 import { visualRightText } from '@lib/rtl';
@@ -41,13 +41,14 @@ const Chip: React.FC<{ label: string; selected: boolean; onPress: () => void }> 
 export const RunScreen: React.FC = () => {
   const router = useRouter();
   const addRun = useRunStore((state) => state.addRun);
+  const removeRun = useRunStore((state) => state.removeRun);
   const previousRuns = useRunStore((state) => state.runs);
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [message, setMessage] = useState<string | null>(null);
   const [progress, setProgress] = useState<RunProgress>(emptyRunProgress());
   const [elapsed, setElapsed] = useState(0);
-  const [summary, setSummary] = useState<{ km: number; durationSec: number; kcal?: number } | null>(null);
+  const [summary, setSummary] = useState<{ id: string; km: number; durationSec: number; kcal?: number; fromPhoto?: boolean } | null>(null);
   // Quick entry: tap a distance, the time is suggested from the member's pace (and can be changed with a tap).
   const [manualKm, setManualKm] = useState<number | null>(null);
   const [manualMinutes, setManualMinutes] = useState<number | null>(null);
@@ -76,6 +77,24 @@ export const RunScreen: React.FC = () => {
         // Show a little of what was read, so a wrong guess can be told apart from "nothing was read" (and sent to us).
         const seen = lines.join(' ').replace(/\s+/g, ' ').trim().slice(0, 70);
         setPhotoNote(seen ? `לא מצאנו מרחק או זמן בתמונה. הטקסט שנקרא: "${seen}". בחר ידנית בכפתורים.` : 'לא נקרא שום טקסט בתמונה. נסה צילום מסך ברור יותר, או בחר ידנית בכפתורים.');
+        return;
+      }
+      // Calories in the photo: the workout is saved at once and its calories join today's burned calories (undo is on the next
+      // screen). The same photo twice does not add twice.
+      const workout = photoWorkout(found, (km) => suggestMinutes(km, previousRuns));
+      if (workout) {
+        const today = new Date().toDateString();
+        const duplicate = previousRuns.some(
+          (run) => run.kcal === workout.kcal && Math.abs(run.km - workout.km) < 0.01 && new Date(run.startedAt).toDateString() === today
+        );
+        if (duplicate) {
+          setPhotoNote(`האימון הזה כבר נוסף היום (${workout.kcal} קלוריות).`);
+          return;
+        }
+        const id = newId();
+        addRun({ id, startedAt: new Date(Date.now() - workout.durationSec * 1000).toISOString(), km: workout.km, durationSec: workout.durationSec, kcal: workout.kcal });
+        setSummary({ id, km: workout.km, durationSec: workout.durationSec, kcal: workout.kcal, fromPhoto: true });
+        setPhase('saved');
         return;
       }
       if (found.km !== undefined) setManualKm(found.km);
@@ -168,8 +187,9 @@ export const RunScreen: React.FC = () => {
       setMessage('האימון קצר מדי כדי לשמור אותו.');
       return;
     }
-    addRun({ id: newId(), startedAt: new Date(startedAt.current).toISOString(), km, durationSec });
-    setSummary({ km, durationSec });
+    const id = newId();
+    addRun({ id, startedAt: new Date(startedAt.current).toISOString(), km, durationSec });
+    setSummary({ id, km, durationSec });
     setPhase('saved');
   };
 
@@ -193,8 +213,9 @@ export const RunScreen: React.FC = () => {
     }
     const durationSec = Math.round(minutes * 60);
     const rounded = Math.round(km * 100) / 100;
-    addRun({ id: newId(), startedAt: new Date(Date.now() - durationSec * 1000).toISOString(), km: rounded, durationSec, ...(kcal === undefined ? {} : { kcal }) });
-    setSummary({ km: rounded, durationSec, kcal });
+    const id = newId();
+    addRun({ id, startedAt: new Date(Date.now() - durationSec * 1000).toISOString(), km: rounded, durationSec, ...(kcal === undefined ? {} : { kcal }) });
+    setSummary({ id, km: rounded, durationSec, kcal });
     setPhase('saved');
   };
 
@@ -202,13 +223,32 @@ export const RunScreen: React.FC = () => {
     return (
       <View style={styles.container}>
         <View style={styles.centered}>
-          <Text style={styles.title}>האימון נשמר</Text>
-          <Text style={styles.bigValue}>{summary.km.toFixed(2)}</Text>
-          <Text style={styles.unit}>ק"מ</Text>
-          <Text style={styles.detail}>{`${runDurationText(summary.durationSec)} · ${paceText(summary.km, summary.durationSec)} לק"מ`}</Text>
-          {summary.kcal !== undefined && <Text style={styles.detail}>{`${summary.kcal} קלוריות`}</Text>}
+          <Text style={styles.title}>{summary.fromPhoto ? 'נוסף מהצילום' : 'האימון נשמר'}</Text>
+          {summary.km > 0 && (
+            <>
+              <Text style={styles.bigValue}>{summary.km.toFixed(2)}</Text>
+              <Text style={styles.unit}>ק"מ</Text>
+              <Text style={styles.detail}>{`${runDurationText(summary.durationSec)} · ${paceText(summary.km, summary.durationSec)} לק"מ`}</Text>
+            </>
+          )}
+          {summary.kcal !== undefined && (
+            <Text style={summary.km > 0 ? styles.detail : styles.bigValue}>{`${summary.kcal} קלוריות${summary.fromPhoto ? ' נוספו לקלוריות של היום' : ''}`}</Text>
+          )}
           <View style={styles.actions}>
-            <Button label="חזרה להתקדמות" variant="primary" size="lg" onPress={() => router.back()} />
+            <Button label="חזרה" variant="primary" size="lg" onPress={() => router.back()} />
+            {summary.fromPhoto && (
+              <Button
+                label="זה לא נכון, בטל"
+                variant="secondary"
+                size="lg"
+                onPress={() => {
+                  removeRun(summary.id);
+                  setSummary(null);
+                  setPhase('idle');
+                  setPhotoNote('הוסר. אפשר לבחור צילום אחר או למלא ידנית.');
+                }}
+              />
+            )}
           </View>
         </View>
       </View>
