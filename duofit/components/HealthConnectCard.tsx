@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { HeartPulse } from 'lucide-react-native';
 import { Button } from '@components/Button';
 import { visualRightText } from '@lib/rtl';
+import { healthPermissionHint, healthSourceName } from '@lib/healthSource';
 import { theme } from '@styles/theme';
 
 interface HealthConnectCardProps {
@@ -11,21 +12,21 @@ interface HealthConnectCardProps {
   onConnect: () => void;
 }
 
-// Invitation to connect Apple Health (iPhone only; the screens decide when to show it).
+// Invitation to connect Apple Health (iPhone) or Health Connect (Android); the screens decide when to show it.
 export const HealthConnectCard: React.FC<HealthConnectCardProps> = ({ loading, failed, onConnect }) => (
   <View style={styles.card}>
     <View style={styles.header}>
       <View style={styles.iconTile}>
         <HeartPulse color={theme.colors.magenta} size={24} strokeWidth={2} />
       </View>
-      <Text style={styles.title}>חבר את Apple Health</Text>
+      <Text style={styles.title}>{`חבר את ${healthSourceName(Platform.OS)}`}</Text>
     </View>
     <Text style={styles.body}>
       כדי לראות כאן צעדים, קלוריות וריצות אמיתיים במקום מספרים לדוגמה. המידע נקרא רק בטלפון שלך ולא נשלח לשרת של FitFriend.
     </Text>
     {failed && (
       <Text style={styles.error}>
-        לא הצלחנו לקרוא מ-Apple Health. אפשר לאשר את הגישה ב: הגדרות ← בריאות ← גישה לנתונים ← FitFriend.
+        {`לא הצלחנו לקרוא מ-${healthSourceName(Platform.OS)}. ${healthPermissionHint(Platform.OS)}`}
       </Text>
     )}
     <Button label={failed ? 'נסה שוב' : 'חבר'} variant="primary" loading={loading} onPress={onConnect} />

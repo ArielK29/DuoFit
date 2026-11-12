@@ -92,3 +92,18 @@ test('the icon and splash files named in the config exist', () => {
     assert.ok(fs.existsSync(new URL(`../${file}`, import.meta.url)), file);
   }
 });
+
+test('Health Connect (Android): read-only permissions for exactly the four data types the app reads, plugin and SDK levels set', () => {
+  const permissions: string[] = config.android.permissions;
+  assert.deepEqual([...permissions].sort(), [
+    'android.permission.health.READ_ACTIVE_CALORIES_BURNED',
+    'android.permission.health.READ_DISTANCE',
+    'android.permission.health.READ_EXERCISE',
+    'android.permission.health.READ_STEPS',
+  ]);
+  assert.ok(permissions.every((p) => p.includes('.READ_')), 'no write permission to Health Connect');
+  assert.ok(config.plugins.includes('react-native-health-connect'));
+  const sdk = plugin('expo-build-properties').android as { minSdkVersion: number; compileSdkVersion: number; targetSdkVersion: number };
+  assert.ok(sdk.minSdkVersion >= 26, 'Health Connect needs Android 8 or later');
+  assert.ok(sdk.targetSdkVersion >= 34);
+});

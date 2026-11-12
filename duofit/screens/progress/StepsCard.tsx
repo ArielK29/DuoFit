@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, Platform } from 'react-native';
 import { BarChart, Bar } from '@components/BarChart';
 import { CardShell, pillStyles } from '@screens/progress/CardShell';
 import { MOCK_HEALTH } from '@constants/mockHealth';
 import type { HealthSnapshot } from '@lib/healthKit';
 import { isLastWeekSummaryTime, isWeekSummaryTime, percentChange, weekAverage, weekTotal } from '@lib/healthData';
+import { healthSourceName } from '@lib/healthSource';
 import { theme } from '@styles/theme';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
@@ -72,7 +73,7 @@ export const StepsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: b
         <Text style={styles.value}>{noData ? '–' : shownSteps.toLocaleString('he-IL')}</Text>
         <Text style={styles.remaining}>
           {noData
-            ? 'חבר Apple Health כדי לראות את הצעדים שלך'
+            ? `חבר ${healthSourceName(Platform.OS)} כדי לראות את הצעדים שלך`
             : `${isToday ? 'היום' : `יום ${WEEKDAY_LETTERS[shownDay]}`} · ${remaining > 0 ? `עוד ${remaining.toLocaleString('he-IL')} ליעד` : 'עברת את היעד'}`}
         </Text>
       </View>
