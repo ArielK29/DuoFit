@@ -30,7 +30,13 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      }
+      },
+      "permissions": [
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.READ_DISTANCE",
+        "android.permission.health.READ_EXERCISE"
+      ]
     },
     "web": {
       "output": "single",
@@ -68,6 +74,17 @@
           "NSHealthShareUsageDescription": "FitFriend קוראת מ-Apple Health את הצעדים, הקלוריות והריצות שלך כדי להציג אותם במסך הבית ובהתקדמות. המידע נקרא ומוצג רק בטלפון שלך, לא נשלח לשרת ולא נשמר שם, ו-FitFriend לא כותבת ל-Apple Health.",
           "NSHealthUpdateUsageDescription": "FitFriend לא כותבת ולא משנה נתונים ב-Apple Health, והיא לא מבקשת ממך הרשאה לכתוב. ההסבר הזה נדרש על ידי רכיב החיבור ל-Apple Health ולא נעשה בו שימוש.",
           "background": false
+        }
+      ],
+      "react-native-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 26
+          }
         }
       ],
       "expo-notifications",

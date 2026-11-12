@@ -51,7 +51,17 @@ function loadModule(): HealthKitModule | null {
   return cached;
 }
 
+// The same three functions serve both phones: Apple Health on the iPhone (below), Health Connect on Android
+// (lib/healthConnect.ts). The screens and the store do not know the difference.
+function androidSide(): typeof import('@lib/healthConnect') | null {
+  if (Platform.OS !== 'android') return null;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('@lib/healthConnect') as typeof import('@lib/healthConnect');
+}
+
 export async function isHealthAvailable(): Promise<boolean> {
+  const android = androidSide();
+  if (android) return android.isHealthConnectAvailable();
   const healthKit = loadModule();
   if (!healthKit) return false;
   try {
@@ -64,6 +74,8 @@ export async function isHealthAvailable(): Promise<boolean> {
 // Shows the system permission sheet the first time; afterwards it returns at once. Apple never says
 // whether the member allowed or refused reading (a privacy rule), so a refusal simply shows zeros.
 export async function requestHealthAccess(): Promise<boolean> {
+  const android = androidSide();
+  if (android) return android.requestHealthConnectAccess();
   const healthKit = loadModule();
   if (!healthKit) return false;
   try {
@@ -86,6 +98,8 @@ function distanceToMeters(quantity: number, unit: string): number {
 // Reads this week's steps, today's active calories and the latest running workouts.
 // Call requestHealthAccess() first (reading before authorization can crash the native side).
 export async function readHealthSnapshot(now: Date = new Date()): Promise<HealthSnapshot> {
+  const android = androidSide();
+  if (android) return android.readHealthConnectSnapshot(now);
   const healthKit = loadModule();
   if (!healthKit) throw new Error('health-unavailable');
 

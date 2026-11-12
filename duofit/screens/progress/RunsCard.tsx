@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Pressable, Text, View, StyleSheet } from 'react-native';
+import { Alert, Pressable, Text, View, StyleSheet, Platform } from 'react-native';
 import { Activity } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Button } from '@components/Button';
@@ -8,6 +8,7 @@ import { CardShell, pillStyles } from '@screens/progress/CardShell';
 import { HEALTH_GOALS } from '@constants/mockHealth';
 import type { HealthSnapshot } from '@lib/healthKit';
 import { activityKind, bestMonthKm, paceText, recentRuns, runDurationText } from '@lib/healthData';
+import { healthSourceName } from '@lib/healthSource';
 import { theme } from '@styles/theme';
 
 const WEEKDAY_LETTERS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
@@ -93,8 +94,8 @@ export const RunsCard: React.FC<{ snapshot?: HealthSnapshot | null; loading?: bo
       {rows.length === 0 && (
         <Text style={styles.empty}>
           {snapshot === null
-            ? 'חבר Apple Health, או התחל הליכה או ריצה, והן יופיעו כאן.'
-            : 'אין ריצות ב-60 הימים האחרונים ב-Apple Health. ריצה שתתועד באפל ווטש או באפליקציית ריצה תופיע כאן.'}
+            ? `חבר ${healthSourceName(Platform.OS)}, או התחל הליכה או ריצה, והן יופיעו כאן.`
+            : `אין ריצות ב-60 הימים האחרונים ב-${healthSourceName(Platform.OS)}. ריצה שתתועד בשעון חכם או באפליקציית ריצה תופיע כאן.`}
         </Text>
       )}
       {rows.map((run, index) => {
