@@ -51,6 +51,11 @@ export const AccountSheet: React.FC = () => {
     router.push('/terms');
   };
 
+  const openPlans = () => {
+    close();
+    router.push('/paywall');
+  };
+
   const openSupport = () => {
     close();
     router.push('/support');
@@ -174,6 +179,7 @@ ${message}`)) changePhoto();
         {user?.isAdmin && (
           <Button label={newRequests > 0 ? `פניות מהמשתמשים (${newRequests}) (מנהל)` : 'פניות מהמשתמשים (מנהל)'} variant="secondary" size="lg" onPress={openAdminSupport} />
         )}
+        {!DEMO_DATA && <Button label="חבילות FitFriend Plus ו-Pro" variant="secondary" size="lg" onPress={openPlans} />}
         {!DEMO_DATA && <Button label="פנייה אלינו" variant="secondary" size="lg" onPress={openSupport} />}
         <Button label="תנאי שימוש ופרטיות" variant="secondary" size="lg" onPress={openTerms} />
         <Button label="התנתק" variant="secondary" size="lg" onPress={handleSignOut} />
