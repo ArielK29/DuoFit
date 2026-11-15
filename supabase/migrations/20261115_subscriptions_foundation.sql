@@ -18,6 +18,8 @@ create table public.subscriptions (
   -- trial: free trial; active: paid; grace: billing problem, Apple still retrying; cancelled: will not renew, valid until expires_at
   status text not null default 'active',
   expires_at timestamptz not null,
+  -- RevenueCat event time (ms): a late or repeated event never overwrites a newer one.
+  event_ms bigint not null default 0,
   updated_at timestamptz not null default now(),
   constraint subscriptions_tier_check check (tier in ('plus', 'pro')),
   constraint subscriptions_status_check check (status in ('trial', 'active', 'grace', 'cancelled')),
@@ -63,6 +65,30 @@ as $$
   select case tier when 'pro' then 70 when 'plus' then 40 else 5 end;
 $$;
 revoke execute on function private.invite_limit(text) from public, anon, authenticated;
+
+-- The ONE way a row is written: called by the revenuecat-webhook Edge Function with the service role. Atomic and ordered by event time.
+-- Returns true when the row was written, false when a newer event had already been applied.
+create function public.apply_subscription_event(
+  p_user uuid, p_tier text, p_product text, p_status text, p_expires_at timestamptz, p_event_ms bigint
+)
+returns boolean
+language sql
+security invoker
+set search_path = ''
+as $$
+  with up as (
+    insert into public.subscriptions as s (user_id, tier, product_id, status, expires_at, event_ms, updated_at)
+    values (p_user, p_tier, p_product, p_status, p_expires_at, p_event_ms, now())
+    on conflict (user_id) do update
+      set tier = excluded.tier, product_id = excluded.product_id, status = excluded.status,
+          expires_at = excluded.expires_at, event_ms = excluded.event_ms, updated_at = now()
+      where s.event_ms <= excluded.event_ms
+    returning 1
+  )
+  select exists (select 1 from up);
+$$;
+revoke execute on function public.apply_subscription_event(uuid, text, text, text, timestamptz, bigint) from public, anon, authenticated;
+grant execute on function public.apply_subscription_event(uuid, text, text, text, timestamptz, bigint) to service_role;
 
 -- ---------------------------------------------------------------------------------------------------------------------
 -- 3. Weekly cap for new invitations

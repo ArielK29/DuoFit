@@ -212,6 +212,35 @@ begin
   end;
   res := res || '10a an unknown tier is refused (expect refused): ' || case when not ok then 'good' else 'BAD' end || E'\n';
 
+  -- 11 the webhook function writes in order of event time (service role only)
+  set local role authenticated;
+  ok := true; sp := null;
+  begin
+    perform public.apply_subscription_event(a, 'pro', 'x', 'active', now() + interval '30 days', 1000);
+  exception when others then ok := false; sp := sqlerrm;
+  end;
+  res := res || '11a a member cannot call the write function (expect permission denied): ' || coalesce(sp, 'allowed') || ' ' || case when not ok then 'good' else 'BAD' end || E'\n';
+  reset role;
+  set local role service_role;
+  select public.apply_subscription_event(a, 'plus', 'com.arielk29.fitfriend.plus.monthly', 'active', now() + interval '30 days', 2000) into ok;
+  res := res || '11b service role writes a new row (expect true): ' || ok || ' ' || case when ok then 'good' else 'BAD' end || E'\n';
+  select public.apply_subscription_event(a, 'plus', 'com.arielk29.fitfriend.plus.monthly', 'cancelled', now() - interval '1 day', 1500) into ok;
+  res := res || '11c an older event is ignored (expect false): ' || ok || ' ' || case when not ok then 'good' else 'BAD' end || E'\n';
+  reset role;
+  res := res || '11d the row still has the newer data (expect plus): ' || private.tier_of(a) || ' ' || case when private.tier_of(a) = 'plus' then 'good' else 'BAD' end || E'\n';
+  set local role service_role;
+  select public.apply_subscription_event(a, 'plus', 'com.arielk29.fitfriend.plus.monthly', 'cancelled', now() - interval '1 minute', 3000) into ok;
+  reset role;
+  res := res || '11e a newer expiry event applies (expect true and tier free): ' || ok || ',' || private.tier_of(a) || ' ' || case when ok and private.tier_of(a) = 'free' then 'good' else 'BAD' end || E'\n';
+  ok := true; sp := null;
+  begin
+    set local role service_role;
+    perform public.apply_subscription_event('00000000-0000-0000-0000-00000000dead', 'plus', 'x', 'active', now() + interval '1 day', 1);
+  exception when others then ok := false; sp := sqlerrm;
+  end;
+  reset role;
+  res := res || '11f an unknown user is refused by the foreign key (expect an error): ' || coalesce(sp, 'allowed') || ' ' || case when not ok then 'good' else 'BAD' end || E'\n';
+
   raise exception E'RESULTS (rolled back):\n%', res;
 end;
 $test$;
