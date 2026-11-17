@@ -4,6 +4,7 @@
 // instead of failing. The key is the PUBLIC iOS SDK key (EXPO_PUBLIC_REVENUECAT_IOS_KEY), never a secret key.
 import { Platform } from 'react-native';
 import type { PurchasesPackage } from 'react-native-purchases';
+import { billingPeriodOf, type BillingPeriod } from './entitlements';
 
 export type PurchasesApi = typeof import('react-native-purchases').default;
 
@@ -61,15 +62,9 @@ export interface PlanOption {
   productId: string;
   // Price text exactly as the store formats it for this member's country, e.g. "‏9.90 ‏₪" (never typed by hand).
   priceString: string;
-  period: 'monthly' | 'yearly' | 'other';
+  period: BillingPeriod;
   // Free trial text from the store, when the product has an introductory offer.
   trialDays: number | null;
-}
-
-function periodOf(type: string): PlanOption['period'] {
-  if (type === 'MONTHLY') return 'monthly';
-  if (type === 'ANNUAL') return 'yearly';
-  return 'other';
 }
 
 function trialDaysOf(pkg: PurchasesPackage): number | null {
@@ -95,7 +90,7 @@ export async function loadPlans(): Promise<PlanOption[] | null> {
       pkg,
       productId: pkg.product.identifier,
       priceString: pkg.product.priceString,
-      period: periodOf(pkg.packageType),
+      period: billingPeriodOf(pkg.product.identifier, pkg.packageType),
       trialDays: trialDaysOf(pkg),
     }));
   } catch {

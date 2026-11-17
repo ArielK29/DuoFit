@@ -38,6 +38,18 @@ export function tierFromProductId(productId: string | null | undefined): Tier {
   }
 }
 
+export type BillingPeriod = 'monthly' | 'yearly' | 'other';
+
+// The four RevenueCat packages are custom packages (two monthly and two yearly cannot share the standard ids), so their
+// package type is CUSTOM. The billing period therefore comes from the store product id; the package type is the fallback.
+export function billingPeriodOf(productId: string, packageType: string): BillingPeriod {
+  if (productId.endsWith('.monthly')) return 'monthly';
+  if (productId.endsWith('.yearly')) return 'yearly';
+  if (packageType === 'MONTHLY') return 'monthly';
+  if (packageType === 'ANNUAL') return 'yearly';
+  return 'other';
+}
+
 export function isPaidTier(tier: Tier): boolean {
   return tier !== 'free';
 }

@@ -1,4 +1,5 @@
--- DRAFT 2026-11-15, NOT APPLIED. Apply only after the owner says yes (then save as applied, see CLAUDE.md "Before merging any database change").
+-- APPLIED 2026-11-16 to project wtheyjuqpidgrgehplgw (migration name subscriptions_foundation) after the owner's yes. Switch invite_cap_enabled is OFF.
+-- Test supabase/tests/rls_subscriptions_test.sql: 31 of 31 good (rolled back); security advisors: only the old auth_leaked_password_protection warning.
 -- Subscriptions foundation (docs/superpowers/plans/2026-11-15-subscriptions-foundation.md):
 --   1. public.subscriptions: the member's paid tier. Written ONLY by the revenuecat-webhook Edge Function (service role); a member can read their own row.
 --   2. private helpers: tier_of(uid) and invite_limit(tier).

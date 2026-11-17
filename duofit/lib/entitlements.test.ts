@@ -7,7 +7,22 @@ import {
   invitesLeft,
   isPaidTier,
   tierFromProductId,
+  billingPeriodOf,
 } from './entitlements.ts';
+
+test('billingPeriodOf: the period comes from the product id, so custom RevenueCat packages still show monthly / yearly', () => {
+  assert.equal(billingPeriodOf(PRODUCT_IDS.plusMonthly, 'CUSTOM'), 'monthly');
+  assert.equal(billingPeriodOf(PRODUCT_IDS.plusYearly, 'CUSTOM'), 'yearly');
+  assert.equal(billingPeriodOf(PRODUCT_IDS.proMonthly, 'CUSTOM'), 'monthly');
+  assert.equal(billingPeriodOf(PRODUCT_IDS.proYearly, 'CUSTOM'), 'yearly');
+});
+
+test('billingPeriodOf: an unknown product falls back to the package type, otherwise "other"', () => {
+  assert.equal(billingPeriodOf('x.unknown', 'MONTHLY'), 'monthly');
+  assert.equal(billingPeriodOf('x.unknown', 'ANNUAL'), 'yearly');
+  assert.equal(billingPeriodOf('x.unknown', 'CUSTOM'), 'other');
+  assert.equal(billingPeriodOf('', ''), 'other');
+});
 
 test('TIER_LIMITS: new invitations per week are 5 / 40 / 70 (the owner-approved packages)', () => {
   assert.equal(TIER_LIMITS.free.invitesPerWeek, 5);
