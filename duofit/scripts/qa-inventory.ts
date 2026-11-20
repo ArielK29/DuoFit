@@ -174,6 +174,7 @@ const FLOW_MAP: Record<string, string> = {
   'screens/verify/VerifyIdentityScreen.tsx': '23',
   'screens/progress/ProgressScreen.tsx': '16',
   'screens/support/SupportScreen.tsx': '25',
+  'screens/subscription/PaywallScreen.tsx': '26',
   'screens/progress/RunsCard.tsx': '16',
   'screens/run/RunScreen.tsx': '16',
   'screens/progress/ProgressSheets.tsx': '16',

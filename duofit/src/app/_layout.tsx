@@ -19,6 +19,7 @@ import { ProgressSync } from '@components/ProgressSync';
 import { WorkoutSync } from '@components/WorkoutSync';
 import { NotificationSync } from '@components/NotificationSync';
 import { GroupSync } from '@components/GroupSync';
+import { PurchasesSync } from '@components/PurchasesSync';
 import { useAuth, isProfileComplete, isVerified } from '@hooks/useAuth';
 import { startSessionSync } from '@lib/session';
 import { AnalyticsProvider } from '@lib/analytics';
@@ -102,6 +103,7 @@ function AppStack({ isAuthenticated, profileComplete, verified }: { isAuthentica
         <Stack.Screen name="admin-review" />
         <Stack.Screen name="support" />
         <Stack.Screen name="admin-support" />
+        <Stack.Screen name="paywall" />
       </Stack.Protected>
       {/* Open to everyone (linked from sign-up). Declared last on purpose: the first open screen
           becomes the fallback for a blocked address, and that must stay the login / home flow. */}
@@ -178,6 +180,7 @@ export default function RootLayout() {
             {appReady && <WorkoutSync />}
             {appReady && <NotificationSync />}
             {appReady && <GroupSync />}
+            {appReady && <PurchasesSync />}
             </ConnectivityShell>
           </PostHogErrorBoundary>
         )}

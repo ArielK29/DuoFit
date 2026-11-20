@@ -13,6 +13,8 @@ import { useFeedStore } from '@hooks/useFeedStore';
 import { fetchBlocked } from '@lib/remoteCommunity';
 import { groupIdFromKey, isGroupKey, sendGroupMessage } from '@lib/remoteGroups';
 import { notifyInviteAnswered } from '@lib/notifications';
+import { isInviteLimitError } from '@lib/subscription';
+import { notifyInviteLimit } from '@lib/notifyInviteLimit';
 import {
   MessageRow,
   conversationIdForPartner,
@@ -491,9 +493,11 @@ export const useChatStore = create<ChatState>()(
           ensureRemoteConversation(me, partnerId)
             .then((cid) => sendRemoteInvite(cid, id, invite))
             .then((row) => putMessage(partnerId, partnerName, toChatMessage(row, me)))
-            .catch(() => {
+            .catch((error) => {
               dropMessage(partnerId, id);
-              notifyFailure();
+              // The weekly invitation limit of the member's plan is a clear answer, not a failure: offer the plans.
+              if (isInviteLimitError(error)) notifyInviteLimit();
+              else notifyFailure();
             });
           return;
         }
