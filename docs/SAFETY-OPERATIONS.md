@@ -45,3 +45,4 @@ The server part is built so it can go in **before** the new build: the rules sit
 - Keep the video for a limited time instead of deleting at once (lawyer, question 10).
 - A paid liveness or AI-detection service when there are many members.
 - An alert to the owner when a new check arrives (today: open the review screen daily; an e-mail or WhatsApp alert is a later improvement).
+- **Review while the owner is in the army (from 2027-03-14):** more reviewers, an alert, and a recommendation-only assistant. See `docs/IDENTITY-REVIEW-ARMY-PLAN.md`.
